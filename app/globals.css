@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+/* Tokens mirror peec.ai's neutral system: warm off-white page, white surfaces,
+   hairline borders, black actions. Color only comes from data. */
+@theme {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --color-page: #f7f7f7;
+  --color-surface: #ffffff;
+  --color-sunken: #f2f2f2;
+  --color-ink: #171717;
+  --color-ink-2: #404040;
+  --color-muted: #737373;
+  --color-faint: #a3a3a3;
+  --color-line: rgb(0 0 0 / 0.07);
+  --color-line-strong: rgb(0 0 0 / 0.12);
+  --color-night: #111111;
+  --color-up: #16a34a;
+  --color-down: #e5484d;
+
+  --radius-control: 8px;
+  --radius-card: 14px;
+
+  --animate-marquee: marquee 50s linear infinite;
+  --animate-marquee-rev: marquee-rev 50s linear infinite;
+  --animate-dot-sweep: dot-sweep 6s ease-in-out infinite;
+  --animate-ping-soft: ping-soft 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes marquee-rev {
+    from { transform: translateX(-50%); }
+    to { transform: translateX(0); }
+  }
+  @keyframes dot-sweep {
+    0% { mask-position: -60% 0; }
+    100% { mask-position: 160% 0; }
+  }
+  @keyframes ping-soft {
+    0% { transform: scale(1); opacity: 0.55; }
+    80%, 100% { transform: scale(2.6); opacity: 0; }
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+body {
+  background: var(--color-page);
+  color: var(--color-ink);
+  font-feature-settings: "ss01", "cv11";
+}
+
+::selection {
+  background: #171717;
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid #0a5fcc;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
