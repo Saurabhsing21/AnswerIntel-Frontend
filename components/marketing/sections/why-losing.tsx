@@ -2,6 +2,7 @@
 
 import {
   Article,
+  CaretDown,
   Check,
   Compass,
   Gauge,
@@ -13,20 +14,22 @@ import {
 } from "@phosphor-icons/react";
 import {
   AnimatePresence,
+  animate,
   motion,
-  useMotionValueEvent,
+  useInView,
+  useMotionValue,
   useReducedMotion,
-  useScroll,
   useTransform,
 } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-import { SectionHeading } from "@/components/marketing/section";
+import { Section, SectionHeading } from "@/components/marketing/section";
 import { BrandMark } from "@/components/product/brand-mark";
+import { EngineIcon } from "@/components/product/engine-icon";
 import { Mark } from "@/components/ui/mark";
-import { brands } from "@/lib/data";
+import { brands, you } from "@/lib/data";
 import { cx } from "@/lib/cx";
-import { useMediaQuery } from "@/lib/use-media-query";
 import { ease } from "@/lib/motion";
+
 const byId = Object.fromEntries(brands.map((b) => [b.id, b]));
 
 type GapId = "content" | "citation" | "authority" | "positioning" | "comparison" | "technical";
@@ -256,208 +259,300 @@ const evidence: Record<GapId, (p: { reduce: boolean | null }) => React.ReactNode
   technical: TechnicalEvidence,
 };
 
-function GapCard({
-  gap,
-  index,
-  active,
-  reached,
-  pinned,
-  planned,
-  onTogglePlan,
-}: {
-  gap: (typeof gaps)[number];
-  index: number;
-  active: boolean;
-  reached: boolean;
-  pinned: boolean;
-  planned: boolean;
-  onTogglePlan: () => void;
-}) {
+/* ---------------- Diagnosis report ---------------- */
+
+// How much of the lost answer each gap explains, and the expected lift of fixing it.
+const detail: Record<GapId, { share: number; lift: number; summary: string; short: string }> = {
+  citation: { share: 31, lift: 6, summary: "Kiteline is cited by 7 sources, you by 2", short: "Get listed on 5 cited sources" },
+  content: { share: 24, lift: 5, summary: "No page answers “CRM for startups”", short: "Publish a CRM for startups page" },
+  positioning: { share: 19, lift: 4, summary: "1 of 3 category terms on your homepage", short: "Rewrite the homepage headline" },
+  comparison: { share: 12, lift: 2, summary: "No Halden vs Kiteline page to quote", short: "Publish a comparison page" },
+  authority: { share: 9, lift: 2, summary: "Missing from r/startups and TechCrunch", short: "Win the top Reddit thread" },
+  technical: { share: 5, lift: 1, summary: "Pricing page is empty to crawlers", short: "Server-render pricing" },
+};
+
+const ranked = [...gaps].sort((a, b) => detail[b.id].share - detail[a.id].share);
+// Monochrome by rank; the highlighted gap turns lime.
+const shades = ["#171717", "#3d3d3d", "#666664", "#8f8f8c", "#b8b8b5", "#d6d6d3"];
+const BASE_RATE = 38;
+const AUTOPLAY_MS = 5500;
+
+function Counter({ value, suffix = "" }: { value: number; suffix?: string }) {
   const reduce = useReducedMotion();
-  const Icon = gap.icon;
-  const Evidence = evidence[gap.id];
-  return (
-    <motion.article
-      initial={false}
-      animate={pinned ? { opacity: active ? 1 : 0.42, scale: active ? 1 : 0.96 } : { opacity: 1, scale: 1 }}
-      transition={{ duration: reduce ? 0 : 0.4, ease }}
-      className="flex w-full shrink-0 flex-col overflow-hidden rounded-card border border-line-strong bg-surface shadow-[0_24px_60px_-30px_rgb(0_0_0/0.2)] lg:h-[min(470px,58dvh)] lg:w-[660px]"
-    >
-      <div className="flex items-start gap-3.5 border-b border-line px-5 py-4 md:px-6">
-        <span
-          className={cx(
-            "grid size-10 shrink-0 place-items-center rounded-full transition-colors duration-300",
-            active || !pinned ? "bg-ink text-white" : "bg-sunken text-ink-2",
-          )}
-        >
-          <Icon size={17} />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="flex flex-wrap items-center gap-x-2 text-[16px] font-medium text-ink">
-            {gap.title}
-            <span className="font-mono text-[11px] font-normal text-faint">
-              {index + 1}/{gaps.length}
-            </span>
-          </p>
-          <p className="text-[13px] text-muted">{gap.body}</p>
-        </div>
-        <span className="hidden shrink-0 items-center gap-1.5 text-[11px] sm:flex">
-          <span className={cx("rounded-full px-2 py-0.5 font-medium", gap.impact === "High" ? "bg-[#fdf2f2] text-[#b91c1c]" : "bg-[#fdf6dd] text-[#a16207]")}>
-            {gap.impact}
-          </span>
-          <span className="rounded-full bg-sunken px-2 py-0.5 text-ink-2">{gap.prompts} prompts</span>
-        </span>
-      </div>
-
-      <div className="flex flex-1 flex-col justify-center overflow-hidden p-5 md:p-6">
-        {/* Remounts when the card is first reached, so its evidence animates in on scroll. */}
-        <Evidence key={reached ? "on" : "off"} reduce={reached ? reduce : true} />
-      </div>
-
-      <div className="flex flex-col gap-3 border-t border-line bg-[#fbfbfa] px-5 py-3.5 sm:flex-row sm:items-center md:px-6">
-        <p className="text-[13px] text-ink-2">
-          <span className="mr-1.5 rounded-[4px] bg-mark px-1 font-medium text-ink">Fix</span>
-          {gap.fix}
-        </p>
-        <button
-          type="button"
-          aria-pressed={planned}
-          onClick={onTogglePlan}
-          className={cx(
-            "inline-flex shrink-0 items-center justify-center gap-1.5 self-start rounded-full px-3.5 py-1.5 text-[12px] font-medium transition-colors active:scale-[0.98] sm:ml-auto sm:self-auto",
-            planned ? "border border-line-strong bg-surface text-ink" : "bg-ink text-white hover:bg-[#2b2b2b]",
-          )}
-        >
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.span
-              key={planned ? "y" : "n"}
-              initial={reduce ? false : { scale: 0.6, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.6, opacity: 0 }}
-              transition={{ duration: 0.15 }}
-            >
-              {planned ? <Check size={12} weight="bold" /> : <Plus size={12} weight="bold" />}
-            </motion.span>
-          </AnimatePresence>
-          {planned ? "In your plan" : "Add to plan"}
-        </button>
-      </div>
-    </motion.article>
-  );
+  const mv = useMotionValue(value);
+  const text = useTransform(mv, (v) => `${Math.round(v)}${suffix}`);
+  useEffect(() => {
+    const c = animate(mv, value, { duration: reduce ? 0 : 0.5, ease });
+    return () => c.stop();
+  }, [value, mv, reduce]);
+  return <motion.span>{text}</motion.span>;
 }
 
-// Scroll range (of the pinned section) over which the track pans.
-const PAN: [number, number] = [0.06, 0.94];
-
-/**
- * Pinned horizontal scroll on desktop: the section sticks while vertical scroll
- * pans the six diagnoses sideways. Stacks vertically on mobile / reduced motion.
- */
 export function WhyLosing() {
   const reduce = useReducedMotion();
-  const desktop = useMediaQuery("(min-width: 1024px)");
-  const pinned = desktop && !reduce;
+  const ref = useRef<HTMLDivElement>(null);
+  const seen = useInView(ref, { once: true, amount: 0.3 });
+  const inView = useInView(ref, { amount: 0.3 });
+  const [open, setOpen] = useState<GapId>(ranked[0].id);
+  const [hover, setHover] = useState<GapId | null>(null);
+  const [userDriven, setUserDriven] = useState(false);
+  const [plan, setPlan] = useState<GapId[]>(["citation"]);
 
-  const section = useRef<HTMLElement>(null);
-  const track = useRef<HTMLDivElement>(null);
-  const [distance, setDistance] = useState(0);
-  const [active, setActive] = useState(0);
-  const [reached, setReached] = useState(0);
-  const [planned, setPlanned] = useState<Record<string, boolean>>({});
-
-  const { scrollYProgress } = useScroll({ target: section, offset: ["start start", "end end"] });
-  const x = useTransform(scrollYProgress, PAN, [0, -distance]);
-  const fill = useTransform(scrollYProgress, PAN, [0, 1]);
-
+  // Autoplay walks down the ranked list until the visitor takes over.
   useEffect(() => {
-    const el = track.current;
-    if (!pinned || !el) return;
-    const measure = () => setDistance(Math.max(0, el.scrollWidth - window.innerWidth));
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    window.addEventListener("resize", measure);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", measure);
-    };
-  }, [pinned]);
+    if (reduce || userDriven || !inView) return;
+    const t = setTimeout(() => {
+      const i = ranked.findIndex((g) => g.id === open);
+      setOpen(ranked[(i + 1) % ranked.length].id);
+    }, AUTOPLAY_MS);
+    return () => clearTimeout(t);
+  }, [open, reduce, userDriven, inView]);
 
-  useMotionValueEvent(scrollYProgress, "change", (v) => {
-    if (!pinned) return;
-    const t = Math.min(1, Math.max(0, (v - PAN[0]) / (PAN[1] - PAN[0])));
-    const i = Math.round(t * (gaps.length - 1));
-    setActive(i);
-    setReached((r) => Math.max(r, i));
-  });
+  const focus = hover ?? open;
+  const lift = plan.reduce((n, id) => n + detail[id].lift, 0);
+  const togglePlan = (id: GapId) => {
+    setUserDriven(true);
+    setPlan((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
+  };
+  const select = (id: GapId) => {
+    setUserDriven(true);
+    setOpen(id);
+  };
 
   return (
-    <section
-      id="gaps"
-      ref={section}
-      className="relative"
-      style={pinned ? { height: `${gaps.length * 70 + 60}vh` } : undefined}
-    >
-      <div className={cx(pinned && "sticky top-0 flex h-dvh flex-col justify-center overflow-hidden")}>
-        <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-6 px-5 pt-20 md:px-8 lg:flex-row lg:items-end lg:pt-16">
-          <SectionHeading
-            className="max-w-[640px]"
-            title={
-              <>
-                Know <Mark>why</Mark> AI picks your competitors
-              </>
-            }
-            muted="Every lost answer is diagnosed, backed by evidence, and turned into a fix. Keep scrolling."
-          />
-          {pinned && (
-            <div className="w-full max-w-[280px] pb-2 lg:ml-auto">
-              <div className="flex items-baseline justify-between text-[12px]">
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.span
-                    key={active}
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
-                    transition={{ duration: 0.15 }}
-                    className="font-medium text-ink"
-                  >
-                    {gaps[active].title}
-                  </motion.span>
-                </AnimatePresence>
-                <span className="font-mono text-muted">
-                  {active + 1} of {gaps.length}
-                </span>
+    <Section id="gaps">
+      <SectionHeading
+        className="max-w-[720px]"
+        title={
+          <>
+            Know <Mark>why</Mark> AI picks your competitors
+          </>
+        }
+        muted="Every lost answer is broken down into causes, ranked by impact, and turned into a plan."
+      />
+
+      <div ref={ref} className="mt-12 grid items-start gap-4 lg:grid-cols-[1.65fr_1fr]">
+        {/* Diagnosis report */}
+        <motion.div
+          initial={reduce ? false : { opacity: 0, y: 28 }}
+          animate={seen ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, ease }}
+          className="overflow-hidden rounded-card border border-line-strong bg-surface shadow-[0_24px_60px_-30px_rgb(0_0_0/0.2)]"
+        >
+          <div className="border-b border-line p-5 md:p-6">
+            <div className="flex flex-wrap items-center gap-2 text-[12px] text-muted">
+              <span className="rounded-full bg-sunken px-2 py-0.5 text-ink-2">Lost prompt</span>
+              <EngineIcon engine="chatgpt" size={13} />
+              ChatGPT, this week
+            </div>
+            <p className="mt-3 font-display text-[22px] leading-snug tracking-[-0.02em] text-ink md:text-[24px]">
+              &ldquo;Which CRM should a 10-person startup use?&rdquo;
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2 text-[12px]">
+              <span className="flex items-center gap-1.5 rounded-full border border-line-strong px-2.5 py-1 text-ink">
+                <BrandMark brand={byId.kiteline} size={14} /> Kiteline recommended #1
+              </span>
+              <span className="flex items-center gap-1.5 rounded-full border border-dashed border-line-strong px-2.5 py-1 text-muted">
+                <BrandMark brand={you} size={14} /> {you.name} not mentioned
+              </span>
+            </div>
+
+            <div className="mt-6">
+              <div className="mb-2 flex justify-between text-[12px] text-muted">
+                <span>Why you lost it</span>
+                <span>Share of the gap</span>
               </div>
-              <div className="mt-2 h-1 overflow-hidden rounded-full bg-[#e6e6e3]">
-                <motion.div className="h-full origin-left rounded-full bg-ink" style={{ scaleX: fill }} />
+              <div className="flex h-3 gap-[3px]" onPointerLeave={() => setHover(null)}>
+                {ranked.map((g, i) => {
+                  const on = focus === g.id;
+                  return (
+                    <motion.button
+                      key={g.id}
+                      type="button"
+                      aria-label={`${g.title}: ${detail[g.id].share}% of the gap`}
+                      onPointerEnter={() => setHover(g.id)}
+                      onClick={() => select(g.id)}
+                      className="h-full origin-left rounded-full transition-colors duration-200"
+                      style={{ width: `${detail[g.id].share}%`, background: on ? "var(--color-mark)" : shades[i] }}
+                      initial={reduce ? false : { scaleX: 0 }}
+                      animate={seen ? { scaleX: 1 } : {}}
+                      transition={{ duration: 0.5, delay: reduce ? 0 : 0.25 + i * 0.08, ease }}
+                    />
+                  );
+                })}
+              </div>
+              <div className="mt-2 flex text-[11px]">
+                {ranked.map((g) => (
+                  <span
+                    key={g.id}
+                    className={cx("truncate pr-1 transition-colors", focus === g.id ? "font-medium text-ink" : "text-faint")}
+                    style={{ width: `${detail[g.id].share}%` }}
+                  >
+                    {detail[g.id].share >= 9 ? `${detail[g.id].share}%` : ""}
+                  </span>
+                ))}
               </div>
             </div>
-          )}
-        </div>
+          </div>
 
-        <div className={cx(pinned ? "mt-10" : "mx-auto mt-10 max-w-[1200px] px-5 pb-20 md:px-8")}>
-          <motion.div
-            ref={track}
-            style={pinned ? { x } : undefined}
-            className={cx(
-              "flex gap-5",
-              pinned ? "w-max pr-[20vw] pl-[max(20px,calc((100vw-1200px)/2+32px))]" : "flex-col",
-            )}
-          >
-            {gaps.map((g, i) => (
-              <GapCard
-                key={g.id}
-                gap={g}
-                index={i}
-                active={!pinned || i === active}
-                reached={!pinned || i <= reached}
-                pinned={pinned}
-                planned={!!planned[g.id]}
-                onTogglePlan={() => setPlanned((p) => ({ ...p, [g.id]: !p[g.id] }))}
-              />
-            ))}
-          </motion.div>
-        </div>
+          <ul onPointerLeave={() => setHover(null)}>
+            {ranked.map((g, i) => {
+              const isOpen = open === g.id;
+              const Icon = g.icon;
+              const Evidence = evidence[g.id];
+              const inPlan = plan.includes(g.id);
+              return (
+                <motion.li
+                  key={g.id}
+                  initial={reduce ? false : { opacity: 0, y: 10 }}
+                  animate={seen ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.4, delay: reduce ? 0 : 0.5 + i * 0.06, ease }}
+                  onPointerEnter={() => setHover(g.id)}
+                  className={cx("border-b border-line last:border-0 transition-colors", focus === g.id && !isOpen && "bg-[#fbfbfa]")}
+                >
+                  <button
+                    type="button"
+                    aria-expanded={isOpen}
+                    onClick={() => select(isOpen ? ranked[(i + 1) % ranked.length].id : g.id)}
+                    className="grid w-full grid-cols-[auto_1fr_auto_auto] items-center gap-3 px-5 py-3.5 text-left md:px-6"
+                  >
+                    <span
+                      className={cx(
+                        "grid size-8 place-items-center rounded-full transition-colors duration-300",
+                        focus === g.id ? "bg-mark text-ink" : "bg-sunken text-ink-2",
+                      )}
+                    >
+                      <Icon size={15} />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-[14px] font-medium text-ink">{g.title}</span>
+                      <span className="block truncate text-[12px] text-muted">{detail[g.id].summary}</span>
+                    </span>
+                    <span className="font-mono text-[13px] tabular-nums text-ink">{detail[g.id].share}%</span>
+                    <CaretDown size={13} className={cx("text-faint transition-transform duration-300", isOpen && "rotate-180 text-ink")} />
+                  </button>
+
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div
+                        initial={reduce ? false : { height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.35, ease }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-5 pb-5 md:px-6 md:pl-[68px]">
+                          <Evidence reduce={reduce} />
+                          <div className="mt-4 flex flex-col gap-3 rounded-[12px] bg-page px-4 py-3 sm:flex-row sm:items-center">
+                            <p className="text-[13px] text-ink-2">
+                              <span className="mr-1.5 rounded-[4px] bg-mark px-1 font-medium text-ink">Fix</span>
+                              {g.fix}
+                            </p>
+                            <button
+                              type="button"
+                              aria-pressed={inPlan}
+                              onClick={() => togglePlan(g.id)}
+                              className={cx(
+                                "inline-flex shrink-0 items-center justify-center gap-1.5 self-start rounded-full px-3.5 py-1.5 text-[12px] font-medium transition-colors active:scale-[0.98] sm:ml-auto sm:self-auto",
+                                inPlan ? "border border-line-strong bg-surface text-ink" : "bg-ink text-white hover:bg-[#2b2b2b]",
+                              )}
+                            >
+                              {inPlan ? <Check size={12} weight="bold" /> : <Plus size={12} weight="bold" />}
+                              {inPlan ? "In your plan" : `Add to plan, +${detail[g.id].lift} pts`}
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.li>
+              );
+            })}
+          </ul>
+        </motion.div>
+
+        {/* Fix plan */}
+        <motion.aside
+          initial={reduce ? false : { opacity: 0, y: 28 }}
+          animate={seen ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: reduce ? 0 : 0.15, ease }}
+          className="rounded-card border border-line-strong bg-surface p-5 md:p-6 lg:sticky lg:top-24"
+          aria-label="Fix plan"
+        >
+          <div className="flex items-center">
+            <p className="text-[15px] font-medium text-ink">Fix plan</p>
+            <span className="ml-auto rounded-full bg-sunken px-2 py-0.5 font-mono text-[11px] text-ink-2">
+              {plan.length}/{ranked.length}
+            </span>
+          </div>
+
+          <div className="mt-5 rounded-[14px] bg-page p-4">
+            <p className="text-[12px] text-muted">Projected recommendation rate</p>
+            <p className="mt-1 flex items-baseline gap-2 font-mono tabular-nums">
+              <span className="text-[18px] text-muted">{BASE_RATE}%</span>
+              <span className="text-faint">→</span>
+              <span className="rounded-[6px] bg-mark px-1.5 text-[28px] leading-tight text-ink">
+                <Counter value={BASE_RATE + lift} suffix="%" />
+              </span>
+            </p>
+            <p className="mt-1 text-[12px] text-muted">
+              <Counter value={lift} /> pts from {plan.length} {plan.length === 1 ? "fix" : "fixes"}, sample estimate
+            </p>
+          </div>
+
+          <ul className="mt-4 space-y-2">
+            <AnimatePresence initial={false}>
+              {ranked
+                .filter((g) => plan.includes(g.id))
+                .map((g) => {
+                  const Icon = g.icon;
+                  return (
+                    <motion.li
+                      key={g.id}
+                      layout={!reduce}
+                      initial={reduce ? false : { opacity: 0, x: 16, scale: 0.98 }}
+                      animate={{ opacity: 1, x: 0, scale: 1 }}
+                      exit={{ opacity: 0, x: 16, transition: { duration: 0.18 } }}
+                      transition={{ duration: 0.3, ease }}
+                      className="group flex items-center gap-3 rounded-[12px] border border-line px-3 py-2.5"
+                    >
+                      <span className="grid size-7 shrink-0 place-items-center rounded-full bg-sunken text-ink-2">
+                        <Icon size={13} />
+                      </span>
+                      <span className="min-w-0 flex-1 truncate text-[13px] text-ink">{detail[g.id].short}</span>
+                      <span className="font-mono text-[12px] text-ink">+{detail[g.id].lift}</span>
+                      <button
+                        type="button"
+                        aria-label={`Remove ${g.title} from plan`}
+                        onClick={() => togglePlan(g.id)}
+                        className="grid size-6 place-items-center rounded-full text-faint transition-colors hover:bg-sunken hover:text-ink"
+                      >
+                        <X size={11} weight="bold" />
+                      </button>
+                    </motion.li>
+                  );
+                })}
+            </AnimatePresence>
+          </ul>
+          {plan.length === 0 && (
+            <p className="mt-4 rounded-[12px] border border-dashed border-line-strong px-4 py-6 text-center text-[13px] text-muted">
+              Add fixes from the diagnosis to build your plan.
+            </p>
+          )}
+          {plan.length < ranked.length && (
+            <button
+              type="button"
+              onClick={() => {
+                setUserDriven(true);
+                setPlan(ranked.map((g) => g.id));
+              }}
+              className="mt-3 w-full rounded-full border border-line-strong py-2 text-[13px] text-ink-2 transition-colors hover:border-[rgb(0_0_0/0.25)] hover:text-ink"
+            >
+              Add all fixes
+            </button>
+          )}
+        </motion.aside>
       </div>
-    </section>
+    </Section>
   );
 }
