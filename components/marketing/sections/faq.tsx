@@ -27,8 +27,12 @@ export function Faq() {
         {faqs.map((item, i) => {
           const isOpen = open === i;
           return (
-            <li
+            <motion.li
               key={item.q}
+              initial={reduce ? false : { opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.45, delay: reduce ? 0 : i * 0.05, ease }}
               className={cx(
                 "rounded-[18px] border transition-colors duration-300",
                 isOpen ? "border-line-strong bg-surface" : "border-transparent bg-sunken/70 hover:bg-sunken",
@@ -70,7 +74,7 @@ export function Faq() {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </li>
+            </motion.li>
           );
         })}
       </ul>

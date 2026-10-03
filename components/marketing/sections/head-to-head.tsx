@@ -7,6 +7,7 @@ import {
   motion,
   useInView,
   useMotionValue,
+  useMotionValueEvent,
   useReducedMotion,
   useTransform,
   type AnimationPlaybackControls,
@@ -58,8 +59,9 @@ export function HeadToHead() {
   const reduce = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { amount: 0.35 });
+  // Bars grow from zero the first time the section scrolls into view.
+  const seen = useInView(ref, { once: true, amount: 0.35 });
   const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
   const [hoverRow, setHoverRow] = useState<number | null>(null);
   // One winning prompt is always expanded so its reason is visible at rest.
   const [openWin, setOpenWin] = useState(0);
@@ -87,10 +89,17 @@ export function HeadToHead() {
     return () => controls.current?.stop();
   }, [index, reduce, progress]);
 
+  // Reasons step through the winning prompts as the progress line fills.
+  useMotionValueEvent(progress, "change", (v) => {
+    const n = rivalWins[rival.id].length;
+    setOpenWin(Math.min(n - 1, Math.floor(v * n)));
+  });
+
   useEffect(() => {
-    if (paused || !inView) controls.current?.pause();
+    // Plays whenever visible; hovering never pauses, so scrolling past with the pointer resting on it still animates.
+    if (!inView) controls.current?.pause();
     else controls.current?.play();
-  }, [paused, inView, index]);
+  }, [inView, index]);
 
   return (
     <Section id="competitors">
@@ -104,7 +113,7 @@ export function HeadToHead() {
         muted="Pick a competitor and see exactly where they beat you, and on which prompts."
       />
 
-      <div ref={ref} onPointerEnter={() => setPaused(true)} onPointerLeave={() => setPaused(false)}>
+      <div ref={ref}>
         <div role="tablist" aria-label="Competitor" className="mt-10 flex flex-wrap gap-2">
           {rivals.map((r, i) => {
             const selected = i === index;
@@ -217,8 +226,8 @@ export function HeadToHead() {
                         className={cx("h-2.5 origin-right rounded-full transition-colors duration-300", youWin ? "bg-mark" : "bg-[#d9d9d6]")}
                         style={{ width: "70%" }}
                         initial={false}
-                        animate={{ scaleX: width(m.value) }}
-                        transition={{ type: "spring", stiffness: 140, damping: 20 }}
+                        animate={{ scaleX: seen ? width(m.value) : 0 }}
+                        transition={{ type: "spring", stiffness: 140, damping: 20, delay: reduce ? 0 : i * 0.06 }}
                       />
                     </span>
                     <span className="grid w-[120px] place-items-center text-center text-[12px] text-muted md:w-[136px]">
@@ -250,8 +259,8 @@ export function HeadToHead() {
                         className={cx("h-2.5 origin-left rounded-full transition-colors duration-300", !youWin ? "bg-ink" : "bg-[#d9d9d6]")}
                         style={{ width: "70%" }}
                         initial={false}
-                        animate={{ scaleX: width(t.value) }}
-                        transition={{ type: "spring", stiffness: 140, damping: 20 }}
+                        animate={{ scaleX: seen ? width(t.value) : 0 }}
+                        transition={{ type: "spring", stiffness: 140, damping: 20, delay: reduce ? 0 : i * 0.06 }}
                       />
                       <Num value={t.value} format={m.format} className={cx("font-mono text-[13px] tabular-nums", !youWin ? "text-ink" : "text-muted")} />
                     </span>
@@ -264,9 +273,9 @@ export function HeadToHead() {
             </p>
           </div>
 
-          <div className="flex flex-col rounded-card bg-night p-5 text-white md:p-8">
+          <div className="flex flex-col rounded-card border border-line-strong bg-surface p-5 md:p-8">
             <div className="flex items-center text-[13px]">
-              <span className="text-white/55">Prompts {rival.name} wins</span>
+              <span className="font-medium text-ink">Prompts {rival.name} wins</span>
               <span className="ml-auto rounded-full bg-mark px-2 py-0.5 font-medium text-ink">
                 {rivalWins[rival.id].length} to fix
               </span>
@@ -287,19 +296,19 @@ export function HeadToHead() {
                   variants={{ hidden: { opacity: 0, y: 8 }, shown: { opacity: 1, y: 0 } }}
                   transition={{ duration: 0.3, ease }}
                   className={cx(
-                    "group rounded-[14px] p-3.5 text-[14px] leading-snug transition-colors outline-none",
-                    openWin === wi ? "bg-white/[0.11]" : "bg-white/[0.05]",
+                    "group rounded-[14px] border p-3.5 text-[14px] leading-snug text-ink transition-[background-color,border-color,box-shadow] duration-300 outline-none",
+                    openWin === wi ? "border-line-strong bg-surface shadow-[0_8px_24px_-14px_rgb(0_0_0/0.18)]" : "border-transparent bg-page hover:bg-sunken",
                   )}
                 >
                   <span className="flex items-start gap-3">
-                    <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-white text-ink">
+                    <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full border border-line bg-surface text-ink">
                       <EngineIcon engine={w.engine} size={12} />
                     </span>
                     <span className="flex-1">{w.prompt}</span>
                     <ArrowRight
                       size={14}
                       className={cx(
-                        "mt-1 shrink-0 text-mark transition-[opacity,transform] duration-200",
+                        "mt-1 shrink-0 text-ink transition-[opacity,transform] duration-200",
                         openWin === wi ? "translate-x-0.5 opacity-100" : "opacity-0",
                       )}
                     />
@@ -311,13 +320,13 @@ export function HeadToHead() {
                     )}
                   >
                     <span className="overflow-hidden">
-                      <span className="mt-2 block border-l-2 border-mark pl-3 text-[13px] text-white/70 ml-9">{w.why}</span>
+                      <span className="mt-2 ml-9 block border-l-[3px] border-mark pl-3 text-[13px] text-ink-2">{w.why}</span>
                     </span>
                   </span>
                 </motion.li>
               ))}
             </motion.ul>
-            <p className="mt-auto pt-5 text-[13px] leading-relaxed text-white/55">
+            <p className="mt-auto pt-5 text-[13px] leading-relaxed text-muted">
               Hover a prompt to see why they win it. Each one becomes an opportunity.
             </p>
           </div>

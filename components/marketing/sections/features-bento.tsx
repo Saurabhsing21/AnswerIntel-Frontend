@@ -18,16 +18,23 @@ function Card({
   body,
   className,
   surface = "plain",
+  delay = 0,
   children,
 }: {
   title: string;
   body: string;
   className?: string;
   surface?: "plain" | "dots" | "sunken";
+  delay?: number;
   children: React.ReactNode;
 }) {
+  const reduce = useReducedMotion();
   return (
-    <article
+    <motion.article
+      initial={reduce ? false : { opacity: 0, y: 28 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.65, delay: reduce ? 0 : delay, ease }}
       className={cx(
         "group relative flex min-h-[380px] flex-col overflow-hidden rounded-card border border-line-strong",
         surface === "plain" && "bg-surface",
@@ -42,7 +49,7 @@ function Card({
         <p className="mt-1.5 max-w-[340px] text-[15px] leading-relaxed text-muted">{body}</p>
       </div>
       <div className="relative mt-auto flex-1 px-6 pb-6 md:px-8 md:pb-8">{children}</div>
-    </article>
+    </motion.article>
   );
 }
 
@@ -340,6 +347,7 @@ export function FeaturesBento() {
 
       <div className="mt-12 grid gap-3 lg:grid-cols-12">
         <Card
+          delay={0}
           className="lg:col-span-7"
           title="Discover the questions buyers ask"
           body="We turn your category, market, and competitors into 30 to 50 realistic prompts."
@@ -347,6 +355,7 @@ export function FeaturesBento() {
           <DiscoverPrompts />
         </Card>
         <Card
+          delay={0.1}
           className="lg:col-span-5"
           surface="dots"
           title="Focus on prompts that sell"
@@ -355,6 +364,7 @@ export function FeaturesBento() {
           <PickPrompts />
         </Card>
         <Card
+          delay={0}
           className="lg:col-span-5"
           title="Add the competitors that matter"
           body="Track up to five rivals and see every answer where they beat you."
@@ -362,6 +372,7 @@ export function FeaturesBento() {
           <AddCompetitors />
         </Card>
         <Card
+          delay={0.1}
           className="lg:col-span-7"
           surface="sunken"
           title="Pick the AI engines to scan"
@@ -370,6 +381,7 @@ export function FeaturesBento() {
           <ChooseEngines />
         </Card>
         <Card
+          delay={0}
           className="lg:col-span-7"
           surface="dots"
           title="Find the sources AI trusts"
@@ -378,6 +390,7 @@ export function FeaturesBento() {
           <KeySources />
         </Card>
         <Card
+          delay={0.1}
           className="lg:col-span-5"
           title="Act on clear next steps"
           body="Every gap becomes a short list of actions, ranked by impact."

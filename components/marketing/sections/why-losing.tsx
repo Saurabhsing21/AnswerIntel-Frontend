@@ -13,23 +13,20 @@ import {
 } from "@phosphor-icons/react";
 import {
   AnimatePresence,
-  animate,
   motion,
-  useInView,
-  useMotionValue,
+  useMotionValueEvent,
   useReducedMotion,
+  useScroll,
   useTransform,
-  type AnimationPlaybackControls,
 } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-import { Section, SectionHeading } from "@/components/marketing/section";
+import { SectionHeading } from "@/components/marketing/section";
 import { BrandMark } from "@/components/product/brand-mark";
 import { Mark } from "@/components/ui/mark";
 import { brands } from "@/lib/data";
 import { cx } from "@/lib/cx";
+import { useMediaQuery } from "@/lib/use-media-query";
 import { ease } from "@/lib/motion";
-
-const CYCLE_SECONDS = 7;
 const byId = Object.fromEntries(brands.map((b) => [b.id, b]));
 
 type GapId = "content" | "citation" | "authority" | "positioning" | "comparison" | "technical";
@@ -259,159 +256,208 @@ const evidence: Record<GapId, (p: { reduce: boolean | null }) => React.ReactNode
   technical: TechnicalEvidence,
 };
 
-/** Icon wrapped in a ring that fills over the cycle duration. */
-function ProgressRing({ progress, active, children }: { progress: ReturnType<typeof useMotionValue<number>>; active: boolean; children: React.ReactNode }) {
-  const dash = useTransform(progress, (p) => `${p * 100} 100`);
+function GapCard({
+  gap,
+  index,
+  active,
+  reached,
+  pinned,
+  planned,
+  onTogglePlan,
+}: {
+  gap: (typeof gaps)[number];
+  index: number;
+  active: boolean;
+  reached: boolean;
+  pinned: boolean;
+  planned: boolean;
+  onTogglePlan: () => void;
+}) {
+  const reduce = useReducedMotion();
+  const Icon = gap.icon;
+  const Evidence = evidence[gap.id];
   return (
-    <span className="relative grid size-10 shrink-0 place-items-center">
-      <svg viewBox="0 0 40 40" className="absolute inset-0 -rotate-90" aria-hidden>
-        <circle cx="20" cy="20" r="18.5" pathLength={100} fill="none" stroke="rgb(0 0 0 / 0.08)" strokeWidth="1.5" />
-        {active && (
-          <motion.circle cx="20" cy="20" r="18.5" pathLength={100} fill="none" stroke="#171717" strokeWidth="1.5" strokeLinecap="round" style={{ strokeDasharray: dash }} />
-        )}
-      </svg>
-      <span className={cx("grid size-8 place-items-center rounded-full transition-colors duration-300", active ? "bg-ink text-white" : "bg-sunken text-ink-2")}>
-        {children}
-      </span>
-    </span>
+    <motion.article
+      initial={false}
+      animate={pinned ? { opacity: active ? 1 : 0.42, scale: active ? 1 : 0.96 } : { opacity: 1, scale: 1 }}
+      transition={{ duration: reduce ? 0 : 0.4, ease }}
+      className="flex w-full shrink-0 flex-col overflow-hidden rounded-card border border-line-strong bg-surface shadow-[0_24px_60px_-30px_rgb(0_0_0/0.2)] lg:h-[min(470px,58dvh)] lg:w-[660px]"
+    >
+      <div className="flex items-start gap-3.5 border-b border-line px-5 py-4 md:px-6">
+        <span
+          className={cx(
+            "grid size-10 shrink-0 place-items-center rounded-full transition-colors duration-300",
+            active || !pinned ? "bg-ink text-white" : "bg-sunken text-ink-2",
+          )}
+        >
+          <Icon size={17} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="flex flex-wrap items-center gap-x-2 text-[16px] font-medium text-ink">
+            {gap.title}
+            <span className="font-mono text-[11px] font-normal text-faint">
+              {index + 1}/{gaps.length}
+            </span>
+          </p>
+          <p className="text-[13px] text-muted">{gap.body}</p>
+        </div>
+        <span className="hidden shrink-0 items-center gap-1.5 text-[11px] sm:flex">
+          <span className={cx("rounded-full px-2 py-0.5 font-medium", gap.impact === "High" ? "bg-[#fdf2f2] text-[#b91c1c]" : "bg-[#fdf6dd] text-[#a16207]")}>
+            {gap.impact}
+          </span>
+          <span className="rounded-full bg-sunken px-2 py-0.5 text-ink-2">{gap.prompts} prompts</span>
+        </span>
+      </div>
+
+      <div className="flex flex-1 flex-col justify-center overflow-hidden p-5 md:p-6">
+        {/* Remounts when the card is first reached, so its evidence animates in on scroll. */}
+        <Evidence key={reached ? "on" : "off"} reduce={reached ? reduce : true} />
+      </div>
+
+      <div className="flex flex-col gap-3 border-t border-line bg-[#fbfbfa] px-5 py-3.5 sm:flex-row sm:items-center md:px-6">
+        <p className="text-[13px] text-ink-2">
+          <span className="mr-1.5 rounded-[4px] bg-mark px-1 font-medium text-ink">Fix</span>
+          {gap.fix}
+        </p>
+        <button
+          type="button"
+          aria-pressed={planned}
+          onClick={onTogglePlan}
+          className={cx(
+            "inline-flex shrink-0 items-center justify-center gap-1.5 self-start rounded-full px-3.5 py-1.5 text-[12px] font-medium transition-colors active:scale-[0.98] sm:ml-auto sm:self-auto",
+            planned ? "border border-line-strong bg-surface text-ink" : "bg-ink text-white hover:bg-[#2b2b2b]",
+          )}
+        >
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span
+              key={planned ? "y" : "n"}
+              initial={reduce ? false : { scale: 0.6, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.6, opacity: 0 }}
+              transition={{ duration: 0.15 }}
+            >
+              {planned ? <Check size={12} weight="bold" /> : <Plus size={12} weight="bold" />}
+            </motion.span>
+          </AnimatePresence>
+          {planned ? "In your plan" : "Add to plan"}
+        </button>
+      </div>
+    </motion.article>
   );
 }
 
+// Scroll range (of the pinned section) over which the track pans.
+const PAN: [number, number] = [0.06, 0.94];
+
+/**
+ * Pinned horizontal scroll on desktop: the section sticks while vertical scroll
+ * pans the six diagnoses sideways. Stacks vertically on mobile / reduced motion.
+ */
 export function WhyLosing() {
   const reduce = useReducedMotion();
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { amount: 0.35 });
-  const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const desktop = useMediaQuery("(min-width: 1024px)");
+  const pinned = desktop && !reduce;
+
+  const section = useRef<HTMLElement>(null);
+  const track = useRef<HTMLDivElement>(null);
+  const [distance, setDistance] = useState(0);
+  const [active, setActive] = useState(0);
+  const [reached, setReached] = useState(0);
   const [planned, setPlanned] = useState<Record<string, boolean>>({});
-  const progress = useMotionValue(0);
-  const controls = useRef<AnimationPlaybackControls | null>(null);
-  const gap = gaps[index];
-  const Evidence = evidence[gap.id];
+
+  const { scrollYProgress } = useScroll({ target: section, offset: ["start start", "end end"] });
+  const x = useTransform(scrollYProgress, PAN, [0, -distance]);
+  const fill = useTransform(scrollYProgress, PAN, [0, 1]);
 
   useEffect(() => {
-    progress.set(reduce ? 1 : 0);
-    if (reduce) return;
-    controls.current = animate(progress, 1, {
-      duration: CYCLE_SECONDS,
-      ease: "linear",
-      onComplete: () => setIndex((i) => (i + 1) % gaps.length),
-    });
-    return () => controls.current?.stop();
-  }, [index, reduce, progress]);
+    const el = track.current;
+    if (!pinned || !el) return;
+    const measure = () => setDistance(Math.max(0, el.scrollWidth - window.innerWidth));
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    window.addEventListener("resize", measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, [pinned]);
 
-  useEffect(() => {
-    if (paused || !inView) controls.current?.pause();
-    else controls.current?.play();
-  }, [paused, inView, index]);
+  useMotionValueEvent(scrollYProgress, "change", (v) => {
+    if (!pinned) return;
+    const t = Math.min(1, Math.max(0, (v - PAN[0]) / (PAN[1] - PAN[0])));
+    const i = Math.round(t * (gaps.length - 1));
+    setActive(i);
+    setReached((r) => Math.max(r, i));
+  });
 
   return (
-    <Section id="gaps">
-      <SectionHeading
-        className="max-w-[720px]"
-        title={
-          <>
-            Know <Mark>why</Mark> AI picks your competitors
-          </>
-        }
-        muted="Every lost answer is diagnosed, backed by evidence, and turned into a fix."
-      />
-
-      <div
-        ref={ref}
-        onPointerEnter={() => setPaused(true)}
-        onPointerLeave={() => setPaused(false)}
-        className="mt-12 grid gap-4 lg:grid-cols-[400px_1fr]"
-      >
-        <div role="tablist" aria-label="Gap types" aria-orientation="vertical" className="flex flex-col gap-1.5">
-          {gaps.map((g, i) => {
-            const selected = i === index;
-            const Icon = g.icon;
-            return (
-              <button
-                key={g.id}
-                role="tab"
-                type="button"
-                aria-selected={selected}
-                onClick={() => setIndex(i)}
-                className={cx(
-                  "flex items-center gap-3.5 rounded-[16px] border p-3 text-left transition-[background-color,border-color,box-shadow] duration-300",
-                  selected
-                    ? "border-line-strong bg-surface shadow-[0_1px_2px_rgb(0_0_0/0.04),0_8px_24px_-12px_rgb(0_0_0/0.12)]"
-                    : "border-transparent hover:bg-surface/70",
-                )}
-              >
-                <ProgressRing progress={progress} active={selected}>
-                  <Icon size={16} />
-                </ProgressRing>
-                <span className="min-w-0">
-                  <span className={cx("block text-[15px] font-medium", selected ? "text-ink" : "text-ink-2")}>{g.title}</span>
-                  <span className={cx("block truncate text-[13px]", selected ? "text-muted" : "text-faint")}>{g.body}</span>
+    <section
+      id="gaps"
+      ref={section}
+      className="relative"
+      style={pinned ? { height: `${gaps.length * 70 + 60}vh` } : undefined}
+    >
+      <div className={cx(pinned && "sticky top-0 flex h-dvh flex-col justify-center overflow-hidden")}>
+        <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-6 px-5 pt-20 md:px-8 lg:flex-row lg:items-end lg:pt-16">
+          <SectionHeading
+            className="max-w-[640px]"
+            title={
+              <>
+                Know <Mark>why</Mark> AI picks your competitors
+              </>
+            }
+            muted="Every lost answer is diagnosed, backed by evidence, and turned into a fix. Keep scrolling."
+          />
+          {pinned && (
+            <div className="w-full max-w-[280px] pb-2 lg:ml-auto">
+              <div className="flex items-baseline justify-between text-[12px]">
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.span
+                    key={active}
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.15 }}
+                    className="font-medium text-ink"
+                  >
+                    {gaps[active].title}
+                  </motion.span>
+                </AnimatePresence>
+                <span className="font-mono text-muted">
+                  {active + 1} of {gaps.length}
                 </span>
-              </button>
-            );
-          })}
+              </div>
+              <div className="mt-2 h-1 overflow-hidden rounded-full bg-[#e6e6e3]">
+                <motion.div className="h-full origin-left rounded-full bg-ink" style={{ scaleX: fill }} />
+              </div>
+            </div>
+          )}
         </div>
 
-        <div
-          role="tabpanel"
-          aria-label={gap.title}
-          className="flex min-h-[460px] flex-col overflow-hidden rounded-card border border-line-strong bg-surface shadow-[0_24px_60px_-30px_rgb(0_0_0/0.2)]"
-        >
-          <div className="flex flex-wrap items-center gap-2 border-b border-line px-5 py-3.5 text-[12px] md:px-6">
-            <span className="text-muted">Diagnosis</span>
-            <span className="text-faint">/</span>
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.span key={gap.id} initial={reduce ? false : { opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.18 }} className="font-medium text-ink">
-                {gap.title}
-              </motion.span>
-            </AnimatePresence>
-            <span className="ml-auto flex items-center gap-2">
-              <span className={cx("rounded-full px-2 py-0.5 font-medium", gap.impact === "High" ? "bg-[#fdf2f2] text-[#b91c1c]" : "bg-[#fdf6dd] text-[#a16207]")}>
-                {gap.impact} impact
-              </span>
-              <span className="rounded-full bg-sunken px-2 py-0.5 text-ink-2">{gap.prompts} prompts affected</span>
-            </span>
-          </div>
-
-          <div className="relative flex flex-1 flex-col justify-center p-5 md:p-6">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={gap.id}
-                initial={reduce ? false : { opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-                transition={{ duration: 0.25, ease }}
-              >
-                <Evidence reduce={reduce} />
-              </motion.div>
-            </AnimatePresence>
-          </div>
-
-          <div className="flex flex-col gap-3 border-t border-line bg-[#fbfbfa] px-5 py-4 sm:flex-row sm:items-center md:px-6">
-            <p className="text-[13px] text-ink-2">
-              <span className="mr-1.5 rounded-[4px] bg-mark px-1 font-medium text-ink">Fix</span>
-              {gap.fix}
-            </p>
-            <button
-              type="button"
-              aria-pressed={!!planned[gap.id]}
-              onClick={() => setPlanned((p) => ({ ...p, [gap.id]: !p[gap.id] }))}
-              className={cx(
-                "inline-flex shrink-0 items-center justify-center gap-1.5 self-start rounded-full px-3.5 py-1.5 text-[12px] font-medium transition-colors active:scale-[0.98] sm:ml-auto sm:self-auto",
-                planned[gap.id] ? "border border-line-strong bg-surface text-ink" : "bg-ink text-white hover:bg-[#2b2b2b]",
-              )}
-            >
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.span key={planned[gap.id] ? "y" : "n"} initial={reduce ? false : { scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.6, opacity: 0 }} transition={{ duration: 0.15 }}>
-                  {planned[gap.id] ? <Check size={12} weight="bold" /> : <Plus size={12} weight="bold" />}
-                </motion.span>
-              </AnimatePresence>
-              {planned[gap.id] ? "In your plan" : "Add to plan"}
-            </button>
-          </div>
+        <div className={cx(pinned ? "mt-10" : "mx-auto mt-10 max-w-[1200px] px-5 pb-20 md:px-8")}>
+          <motion.div
+            ref={track}
+            style={pinned ? { x } : undefined}
+            className={cx(
+              "flex gap-5",
+              pinned ? "w-max pr-[20vw] pl-[max(20px,calc((100vw-1200px)/2+32px))]" : "flex-col",
+            )}
+          >
+            {gaps.map((g, i) => (
+              <GapCard
+                key={g.id}
+                gap={g}
+                index={i}
+                active={!pinned || i === active}
+                reached={!pinned || i <= reached}
+                pinned={pinned}
+                planned={!!planned[g.id]}
+                onTogglePlan={() => setPlanned((p) => ({ ...p, [g.id]: !p[g.id] }))}
+              />
+            ))}
+          </motion.div>
         </div>
       </div>
-    </Section>
+    </section>
   );
 }

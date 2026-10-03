@@ -87,7 +87,13 @@ export function PromptLibrary() {
         muted="We generate 30 to 50 prompts across every way buyers search, then track where each engine puts you."
       />
 
-      <div className="mt-12 overflow-hidden rounded-card border border-line-strong bg-surface shadow-[0_24px_60px_-30px_rgb(0_0_0/0.2)]">
+      <motion.div
+        initial={reduce ? false : { opacity: 0, y: 32 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.15 }}
+        transition={{ duration: 0.7, ease }}
+        className="mt-12 overflow-hidden rounded-card border border-line-strong bg-surface shadow-[0_24px_60px_-30px_rgb(0_0_0/0.2)]"
+      >
         <div className="flex flex-col gap-3 border-b border-line p-3 md:flex-row md:items-center">
           <label className="flex h-10 items-center gap-2 rounded-full border border-line-strong bg-page px-3.5 transition-colors focus-within:border-ink md:w-[280px]">
             <MagnifyingGlass size={15} className="shrink-0 text-muted" />
@@ -240,7 +246,7 @@ export function PromptLibrary() {
           <span className="flex items-center gap-1.5"><span className="size-3 rounded-[4px] bg-mark" /> Mentioned</span>
           <span className="flex items-center gap-1.5"><span className="size-3 rounded-[4px] bg-sunken" /> Not mentioned</span>
         </div>
-      </div>
+      </motion.div>
     </Section>
   );
 }

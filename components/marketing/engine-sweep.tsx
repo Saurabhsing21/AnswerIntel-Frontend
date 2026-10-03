@@ -60,13 +60,13 @@ export function EngineSweep() {
   const reduce = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { amount: 0.4 });
-  const [paused, setPaused] = useState(false);
   const [index, setIndex] = useState(0);
   const [typedRaw, setTyped] = useState(0);
   const [resolvedRaw, setResolved] = useState(0);
 
   const sweep = sweeps[index];
-  const running = inView && !paused && !reduce;
+  // Never pauses on hover: it keeps playing while on screen.
+  const running = inView && !reduce;
   // Reduced motion: show the first prompt fully resolved, no typing or cycling.
   const typed = reduce ? sweep.prompt.length : typedRaw;
   const resolved = reduce ? engines.length : resolvedRaw;
@@ -97,8 +97,6 @@ export function EngineSweep() {
   return (
     <div
       ref={ref}
-      onPointerEnter={() => setPaused(true)}
-      onPointerLeave={() => setPaused(false)}
       className="relative rounded-card border border-line-strong bg-surface p-3 shadow-[0_30px_70px_-30px_rgb(0_0_0/0.25)] md:p-4"
     >
       <div className="flex items-center gap-2.5 rounded-full border border-line-strong bg-page px-4 py-3 text-[14px]">
