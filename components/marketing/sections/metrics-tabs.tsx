@@ -121,7 +121,7 @@ function ChatScene({ tab }: { tab: TabId }) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25 }}
-      className="flex h-full flex-col gap-4 p-5 md:p-8"
+      className="flex h-full flex-col justify-center gap-4 p-5 md:p-8"
     >
       <motion.div
         initial={hidden ?? { opacity: 0, y: 8 }}
@@ -169,38 +169,52 @@ function ChatScene({ tab }: { tab: TabId }) {
                 >
                   <Badge tab={tab} item={item} />
                 </motion.span>
+                {item.brand.you && (
+                  // Inline, so the tooltip sits on the brand row and never covers answer text.
+                  <span className="relative ml-1 inline-flex">
+                    <motion.span
+                      aria-hidden
+                      className="absolute top-3 -left-3 z-10 text-ink"
+                      initial={reduce ? false : { x: 120, y: 60, opacity: 0 }}
+                      animate={{ x: 0, y: 0, opacity: 1 }}
+                      transition={{ duration: 0.9, delay: reduce ? 0 : 2.3, ease }}
+                    >
+                      <Cursor size={16} weight="fill" />
+                    </motion.span>
+                    <motion.span
+                      initial={reduce ? false : { opacity: 0, x: -4, scale: 0.96 }}
+                      animate={{ opacity: 1, x: 0, scale: 1 }}
+                      transition={t(3.1)}
+                      className="inline-flex items-center gap-3 rounded-[8px] bg-night px-2.5 py-1 text-[11px] font-normal text-white shadow-[0_8px_20px_rgb(0_0_0/0.18)]"
+                    >
+                      {tooltip[tab].map((row) => (
+                        <span key={row.label}>
+                          <span className="text-white/55">{row.label}</span>{" "}
+                          <span className="font-mono">{row.value}</span>
+                        </span>
+                      ))}
+                    </motion.span>
+                  </span>
+                )}
               </p>
               <p className="pl-6 leading-relaxed text-muted">{item.text}</p>
 
-              {item.brand.you && (
-                <>
-                  <motion.span
-                    aria-hidden
-                    className="absolute top-2 left-24 text-ink md:left-[13.5rem]"
-                    initial={reduce ? false : { x: 140, y: 70, opacity: 0 }}
-                    animate={{ x: 0, y: 0, opacity: 1 }}
-                    transition={{ duration: 0.9, delay: reduce ? 0 : 2.3, ease }}
-                  >
-                    <Cursor size={18} weight="fill" />
-                  </motion.span>
-                  <motion.div
-                    initial={reduce ? false : { opacity: 0, y: 6, scale: 0.97 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={t(3.2)}
-                    className="absolute top-8 left-8 z-10 flex gap-4 md:-top-2 md:left-[15rem] rounded-[10px] bg-night px-3 py-2 text-white shadow-[0_10px_30px_rgb(0_0_0/0.2)]"
-                  >
-                    {tooltip[tab].map((row) => (
-                      <span key={row.label} className="text-[11px]">
-                        <span className="block text-white/55">{row.label}</span>
-                        <span className="font-mono">{row.value}</span>
-                      </span>
-                    ))}
-                  </motion.div>
-                </>
-              )}
             </motion.li>
           ))}
         </ol>
+        <motion.div
+          initial={hidden ?? { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={t(1.9)}
+          className="mt-4 flex flex-wrap items-center gap-1.5 border-t border-line pt-3 text-[11px] text-muted"
+        >
+          Sources
+          {["g2.com", "reddit.com", "kiteline.io", "techcrunch.com"].map((s) => (
+            <span key={s} className="rounded-[5px] bg-sunken px-1.5 py-0.5 text-ink-2">
+              {s}
+            </span>
+          ))}
+        </motion.div>
       </motion.div>
     </motion.div>
   );
@@ -237,7 +251,7 @@ export function MetricsTabs() {
       <SectionHeading
         className="mx-auto max-w-[920px] text-center"
         title="See exactly what AI tells your buyers"
-        muted="The three numbers that decide who gets picked."
+        muted="Three numbers decide who gets picked."
       />
 
       <div

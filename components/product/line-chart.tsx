@@ -1,17 +1,15 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ease } from "@/lib/motion";
 import type { Brand } from "@/lib/data";
 
-const W = 560;
-const H = 200;
 const PAD = { top: 12, right: 12, bottom: 26, left: 12 };
 
 type Line = { brand: Brand; values: number[] };
 
-function toPoints(values: number[], min: number, max: number) {
+function toPoints(values: number[], min: number, max: number, W: number, H: number) {
   const innerW = W - PAD.left - PAD.right;
   const innerH = H - PAD.top - PAD.bottom;
   return values.map((v, i) => [
@@ -38,19 +36,35 @@ function smoothPath(pts: number[][]) {
 export function LineChart({
   lines,
   labels,
-  defaultIndex = 3,
+  defaultIndex,
 }: {
   lines: Line[];
   labels: string[];
   defaultIndex?: number;
 }) {
   const reduce = useReducedMotion();
-  const [active, setActive] = useState(defaultIndex);
+  // Tooltip only while hovering, so it never hides the lines at rest.
+  const [hover, setHover] = useState<number | null>(null);
+  const active = hover ?? defaultIndex ?? labels.length - 1;
+
+  // Draw at the container's real pixel size so the chart fills its slot exactly.
+  const box = useRef<HTMLDivElement>(null);
+  const [{ W, H }, setSize] = useState({ W: 560, H: 220 });
+  useEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      if (width > 0 && height > 0) setSize({ W: Math.round(width), H: Math.round(height) });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const all = lines.flatMap((l) => l.values);
-  const min = Math.floor(Math.min(...all) / 10) * 10 - 5;
-  const max = Math.ceil(Math.max(...all) / 10) * 10 + 5;
-  const plotted = lines.map((l) => ({ ...l, pts: toPoints(l.values, min, max) }));
+  const min = Math.min(...all) - 4;
+  const max = Math.max(...all) + 4;
+  const plotted = lines.map((l) => ({ ...l, pts: toPoints(l.values, min, max, W, H) }));
   const x = plotted[0].pts[active][0];
   const flip = active >= labels.length - 2;
 
@@ -58,18 +72,20 @@ export function LineChart({
     const rect = e.currentTarget.getBoundingClientRect();
     const ratio = (e.clientX - rect.left) / rect.width;
     const i = Math.round(ratio * (labels.length - 1));
-    setActive(Math.max(0, Math.min(labels.length - 1, i)));
+    setHover(Math.max(0, Math.min(labels.length - 1, i)));
   }
 
   const ranked = [...plotted].sort((a, b) => b.values[active] - a.values[active]);
 
   return (
-    <div className="relative">
+    <div ref={box} className="relative h-full min-h-[200px]">
       <svg
         viewBox={`0 0 ${W} ${H}`}
-        className="w-full touch-none select-none"
+        width={W}
+        height={H}
+        className="absolute inset-0 touch-none select-none"
         onPointerMove={onMove}
-        onPointerLeave={() => setActive(defaultIndex)}
+        onPointerLeave={() => setHover(null)}
         role="img"
         aria-label="Sample visibility trend for five brands over six months"
       >
@@ -88,7 +104,8 @@ export function LineChart({
           y1={PAD.top}
           y2={H - PAD.bottom}
           stroke="rgb(0 0 0 / 0.14)"
-          animate={{ x1: x, x2: x }}
+          initial={false}
+          animate={{ x1: x, x2: x, opacity: hover === null ? 0 : 1 }}
           transition={{ duration: reduce ? 0 : 0.25, ease }}
         />
         {plotted.map((l, i) => (
@@ -135,9 +152,11 @@ export function LineChart({
       <motion.div
         aria-hidden
         className="pointer-events-none absolute top-2 w-[168px] rounded-[10px] bg-night p-2.5 text-white shadow-[0_8px_24px_rgb(0_0_0/0.18)]"
+        initial={false}
         animate={{
           left: `${(x / W) * 100}%`,
           x: flip ? "calc(-100% - 12px)" : "12px",
+          opacity: hover === null ? 0 : 1,
         }}
         transition={{ duration: reduce ? 0 : 0.25, ease }}
       >

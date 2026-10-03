@@ -117,7 +117,7 @@ function PickPrompts() {
 }
 
 function AddCompetitors() {
-  const [tracking, setTracking] = useState<Record<string, boolean>>({ kiteline: true, vantor: false });
+  const [tracking, setTracking] = useState<Record<string, boolean>>({ kiteline: true, vantor: false, norrow: true });
   const reduce = useReducedMotion();
   return (
     <MiniPanel>
@@ -129,7 +129,7 @@ function AddCompetitors() {
         </span>
       </div>
       <ul className="divide-y divide-line">
-        {(["kiteline", "vantor"] as const).map((id) => {
+        {(["kiteline", "vantor", "norrow"] as const).map((id) => {
           const on = tracking[id];
           return (
             <li key={id} className="flex items-center gap-2.5 px-3.5 py-3">
@@ -160,25 +160,26 @@ function AddCompetitors() {
   );
 }
 
-const engineList: { engine: Engine; available: boolean }[] = [
-  { engine: "chatgpt", available: true },
-  { engine: "perplexity", available: true },
-  { engine: "gemini", available: true },
-  { engine: "google", available: true },
+// Sample per-engine visibility (PRD section 7 example numbers).
+const engineList: { engine: Engine; available: boolean; visibility?: number }[] = [
+  { engine: "chatgpt", available: true, visibility: 42 },
+  { engine: "perplexity", available: true, visibility: 31 },
+  { engine: "gemini", available: true, visibility: 28 },
+  { engine: "google", available: true, visibility: 19 },
   { engine: "claude", available: false },
   { engine: "copilot", available: false },
 ];
 
 function ChooseEngines() {
-  const [on, setOn] = useState<Record<string, boolean>>({ chatgpt: true, perplexity: true, gemini: true, google: false });
+  const [on, setOn] = useState<Record<string, boolean>>({ chatgpt: true, perplexity: true, gemini: true, google: true });
   return (
-    <MiniPanel className="max-w-[360px]">
+    <MiniPanel>
       <div className="flex items-center border-b border-line px-3.5 py-2.5 font-medium">
         AI engines
-        <span className="ml-auto font-normal text-muted">Scans weekly</span>
+        <span className="ml-auto font-normal text-muted">Your visibility</span>
       </div>
       <ul className="p-1.5">
-        {engineList.map(({ engine, available }) => (
+        {engineList.map(({ engine, available, visibility }) => (
           <li key={engine}>
             <label
               className={cx(
@@ -202,10 +203,16 @@ function ChooseEngines() {
               >
                 {on[engine] && <Check size={10} weight="bold" />}
               </span>
+              <EngineIcon engine={engine} size={14} />
               <span className="text-ink">{engineNames[engine]}</span>
-              <span className="ml-auto flex items-center gap-2">
-                {!available && <span className="text-[10px] text-muted">Soon</span>}
-                <EngineIcon engine={engine} size={14} />
+              <span className="ml-auto font-mono text-[12px] tabular-nums">
+                {!available ? (
+                  <span className="font-sans text-[11px] text-muted">Coming soon</span>
+                ) : on[engine] ? (
+                  <span className="text-ink">{visibility}%</span>
+                ) : (
+                  <span className="font-sans text-[11px] text-faint">Paused</span>
+                )}
               </span>
             </label>
           </li>
