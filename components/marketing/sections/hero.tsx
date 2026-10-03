@@ -41,9 +41,9 @@ export function Hero() {
         </Reveal>
       </div>
 
-      {/* Our frame: a soft lime panel that fades out, instead of a dotted band. */}
+      {/* Neutral frame that fades out; the dashboard itself stays colorless apart from data. */}
       <Reveal delay={0.2} y={28} className="mt-10 md:mt-14">
-        <div className="rounded-[30px] bg-[linear-gradient(180deg,var(--color-mark-soft)_0%,rgb(240_251_201/0.35)_45%,transparent_100%)] p-2 md:p-3">
+        <div className="rounded-[30px] bg-[linear-gradient(180deg,#ececea_0%,rgb(236_236_234/0.4)_45%,transparent_100%)] p-2 md:p-3">
           <AppFrame />
         </div>
       </Reveal>

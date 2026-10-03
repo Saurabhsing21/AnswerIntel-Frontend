@@ -165,7 +165,7 @@ export function LineChart({
           {ranked.map((l) => (
             <li key={l.brand.id} className="flex items-center gap-2 text-[11px]">
               <span className="size-2 rounded-[2px]" style={{ background: l.brand.color }} />
-              <span className={l.brand.you ? "font-medium text-mark" : "text-white/60"}>{l.brand.name}</span>
+              <span className={l.brand.you ? "font-medium text-white" : "text-white/60"}>{l.brand.name}</span>
               <span className="ml-auto font-mono tabular-nums">{l.values[active]}%</span>
             </li>
           ))}
