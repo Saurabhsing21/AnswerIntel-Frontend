@@ -1,26 +1,21 @@
 import { cx } from "@/lib/cx";
 
-export function Logo({ inverse = false }: { inverse?: boolean }) {
+export function Logo({ size = "md" }: { size?: "md" | "lg" }) {
   return (
     <span className="inline-flex items-center gap-2">
       <span
         aria-hidden
         className={cx(
-          "relative grid size-6 place-items-center rounded-[6px]",
-          inverse ? "bg-white" : "bg-ink",
+          "relative grid place-items-center overflow-hidden rounded-[8px] bg-ink",
+          size === "lg" ? "size-8" : "size-6",
         )}
       >
-        <span
-          className={cx(
-            "size-2 translate-x-[3px] -translate-y-[3px] rounded-full",
-            inverse ? "bg-ink" : "bg-white",
-          )}
-        />
+        <span className="h-[34%] w-[62%] -rotate-12 rounded-[2px] bg-mark" />
       </span>
       <span
         className={cx(
-          "text-[17px] font-semibold tracking-[-0.03em]",
-          inverse ? "text-white" : "text-ink",
+          "font-display font-semibold tracking-[-0.03em] text-ink",
+          size === "lg" ? "text-[22px]" : "text-[18px]",
         )}
       >
         AnswerIntel

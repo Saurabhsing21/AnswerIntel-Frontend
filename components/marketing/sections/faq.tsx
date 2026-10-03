@@ -4,6 +4,7 @@ import { Plus } from "@phosphor-icons/react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useState } from "react";
 import { Section, SectionHeading } from "@/components/marketing/section";
+import { buttonClass, ButtonArrow } from "@/components/ui/button";
 import { faqs } from "@/lib/data";
 import { cx } from "@/lib/cx";
 import { ease } from "@/lib/motion";
@@ -13,13 +14,26 @@ export function Faq() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <Section id="faq" innerClassName="py-20 md:py-28">
-      <SectionHeading className="text-center" title="Questions" />
-      <ul className="mx-auto mt-12 max-w-[760px]">
+    <Section id="faq" innerClassName="grid gap-10 lg:grid-cols-[1fr_1.5fr] lg:gap-16">
+      <div className="lg:sticky lg:top-28 lg:self-start">
+        <SectionHeading title="Questions, answered" muted="Anything else? Join the waitlist and we will walk you through it." />
+        <a href="#waitlist" className={cx(buttonClass("secondary"), "mt-8")}>
+          Join waitlist
+          <ButtonArrow />
+        </a>
+      </div>
+
+      <ul className="space-y-2">
         {faqs.map((item, i) => {
           const isOpen = open === i;
           return (
-            <li key={item.q} className="border-b border-line-strong">
+            <li
+              key={item.q}
+              className={cx(
+                "rounded-[18px] border transition-colors duration-300",
+                isOpen ? "border-line-strong bg-surface" : "border-transparent bg-sunken/70 hover:bg-sunken",
+              )}
+            >
               <h3>
                 <button
                   type="button"
@@ -27,16 +41,17 @@ export function Faq() {
                   aria-expanded={isOpen}
                   aria-controls={`faq-a-${i}`}
                   onClick={() => setOpen(isOpen ? null : i)}
-                  className="flex w-full items-center gap-4 py-5 text-left text-[16px] font-medium text-ink transition-colors hover:text-ink-2 md:text-[17px]"
+                  className="flex w-full items-center gap-4 px-5 py-4 text-left text-[16px] font-medium text-ink md:px-6 md:py-5"
                 >
                   {item.q}
-                  <Plus
-                    size={16}
+                  <span
                     className={cx(
-                      "ml-auto shrink-0 text-muted transition-transform duration-300",
-                      isOpen && "rotate-45 text-ink",
+                      "ml-auto grid size-7 shrink-0 place-items-center rounded-full transition-[background-color,transform] duration-300",
+                      isOpen ? "rotate-45 bg-mark" : "bg-surface",
                     )}
-                  />
+                  >
+                    <Plus size={14} weight="bold" />
+                  </span>
                 </button>
               </h3>
               <AnimatePresence initial={false}>
@@ -51,7 +66,7 @@ export function Faq() {
                     transition={{ duration: 0.28, ease }}
                     className="overflow-hidden"
                   >
-                    <p className="max-w-[640px] pb-6 text-[15px] leading-relaxed text-muted">{item.a}</p>
+                    <p className="max-w-[620px] px-5 pb-5 text-[15px] leading-relaxed text-muted md:px-6 md:pb-6">{item.a}</p>
                   </motion.div>
                 )}
               </AnimatePresence>

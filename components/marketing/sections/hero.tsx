@@ -1,70 +1,49 @@
-import { ChatCircle, Eye, Target } from "@phosphor-icons/react/ssr";
-import { DotBand } from "@/components/marketing/effects/dot-band";
 import { Reveal } from "@/components/marketing/effects/reveal";
-import { AppFrame } from "@/components/product/app-frame";
-import { ButtonGlyph, ButtonLink } from "@/components/ui/button";
+import { EngineSweep } from "@/components/marketing/engine-sweep";
+import { WaitlistForm } from "@/components/marketing/waitlist-form";
+import { EngineIcon } from "@/components/product/engine-icon";
+import { Mark } from "@/components/ui/mark";
+import type { Engine } from "@/lib/data";
 
-function MetricChip({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
-  return (
-    <span className="mx-0.5 inline-flex translate-y-[-1px] items-center gap-1 rounded-[7px] border border-line-strong bg-surface px-1.5 py-0.5 align-middle text-[15px] text-ink shadow-[0_1px_1px_rgb(0_0_0/0.03)] md:text-base">
-      {icon}
-      {children}
-    </span>
-  );
-}
+const tracked: Engine[] = ["chatgpt", "perplexity", "gemini", "google"];
 
 export function Hero() {
   return (
-    <section className="relative">
-      <div className="mx-auto max-w-[1200px] border-x border-line px-5 pt-16 md:px-10 md:pt-20 pb-14 md:pb-16">
-        <Reveal className="flex justify-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-line-strong bg-surface px-3 py-1 text-[13px] text-ink shadow-[0_1px_2px_rgb(0_0_0/0.04)]">
-            <span className="relative flex size-2">
-              <span className="absolute inset-0 rounded-full bg-[#e5484d] motion-safe:animate-ping-soft" />
-              <span className="relative size-2 rounded-full bg-[#e5484d]" />
+    <section className="mx-auto grid max-w-[1200px] items-center gap-12 px-5 pt-14 pb-16 md:px-8 md:pt-20 lg:grid-cols-[1fr_1.05fr] lg:gap-16 lg:pb-20">
+      <div className="min-w-0">
+        <Reveal>
+          <p className="flex items-center gap-2 text-[13px] text-muted">
+            <span className="flex -space-x-1">
+              {tracked.map((e) => (
+                <span key={e} className="grid size-6 place-items-center rounded-full border-2 border-page bg-surface">
+                  <EngineIcon engine={e} size={12} />
+                </span>
+              ))}
             </span>
-            Private beta opening soon
-          </span>
+            Tracks ChatGPT, Perplexity, Gemini and Google AI
+          </p>
         </Reveal>
 
         <Reveal delay={0.05}>
-          <h1 className="mx-auto mt-6 max-w-[880px] text-balance text-center text-[40px] font-semibold leading-[1.02] tracking-[-0.045em] md:text-[68px]">
-            See how AI recommends you
-            <span className="block text-muted">and who it picks instead</span>
+          <h1 className="mt-6 font-display text-[38px] font-semibold leading-[1] sm:text-[44px] sm:leading-[0.98] tracking-[-0.045em] text-balance md:text-[64px]">
+            When buyers ask AI, does it <Mark delay={0.5}>recommend you?</Mark>
           </h1>
         </Reveal>
 
         <Reveal delay={0.1}>
-          <p className="mx-auto mt-6 max-w-[620px] text-center text-[16px] leading-[1.75] text-muted md:text-[18px]">
-            Measure your
-            <MetricChip icon={<Eye size={14} />}>Mentions</MetricChip>,
-            <MetricChip icon={<Target size={14} />}>Recommendations</MetricChip>
-            and
-            <MetricChip icon={<ChatCircle size={14} />}>Share of voice</MetricChip>
-            across AI search, then learn exactly what to fix.
+          <p className="mt-6 max-w-[480px] text-[17px] leading-relaxed text-muted md:text-[18px]">
+            AnswerIntel asks AI the questions your buyers ask, then shows where you win, where you lose, and why.
           </p>
         </Reveal>
 
-        <Reveal delay={0.15} className="mt-8 flex flex-wrap justify-center gap-3">
-          <ButtonLink href="#how-it-works" variant="secondary">
-            <ButtonGlyph />
-            See how it works
-          </ButtonLink>
-          <ButtonLink href="#waitlist">Join waitlist</ButtonLink>
+        <Reveal delay={0.15} className="mt-8">
+          <WaitlistForm />
         </Reveal>
       </div>
 
-      <div className="border-t border-line">
-        <div className="mx-auto max-w-[1200px] border-x border-line">
-          <DotBand className="h-20" />
-        </div>
-      </div>
-
-      <div className="mx-auto max-w-[1200px] border-x border-line px-2 pb-16 md:px-3 md:pb-24">
-        <Reveal delay={0.2} y={24}>
-          <AppFrame />
-        </Reveal>
-      </div>
+      <Reveal delay={0.2} y={20} className="min-w-0">
+        <EngineSweep />
+      </Reveal>
     </section>
   );
 }

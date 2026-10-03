@@ -1,12 +1,13 @@
+import { AnswerAnatomy } from "@/components/marketing/sections/answer-anatomy";
+import { DashboardShowcase } from "@/components/marketing/sections/dashboard-showcase";
 import { Experiments } from "@/components/marketing/sections/experiments";
 import { Faq } from "@/components/marketing/sections/faq";
 import { FeaturesBento } from "@/components/marketing/sections/features-bento";
 import { Footer } from "@/components/marketing/sections/footer";
+import { HeadToHead } from "@/components/marketing/sections/head-to-head";
 import { Hero } from "@/components/marketing/sections/hero";
-import { MetricsTabs } from "@/components/marketing/sections/metrics-tabs";
 import { Nav } from "@/components/marketing/sections/nav";
-import { PromptMarquee } from "@/components/marketing/sections/prompt-marquee";
-import { Standing } from "@/components/marketing/sections/standing";
+import { PromptLibrary } from "@/components/marketing/sections/prompt-library";
 import { WaitlistCta } from "@/components/marketing/sections/waitlist-cta";
 import { WhyLosing } from "@/components/marketing/sections/why-losing";
 
@@ -16,17 +17,15 @@ export default function Home() {
       <Nav />
       <main id="top">
         <Hero />
-        <MetricsTabs />
+        <DashboardShowcase />
+        <AnswerAnatomy />
         <FeaturesBento />
-        <Standing />
+        <HeadToHead />
         <WhyLosing />
+        <PromptLibrary />
         <Experiments />
-        <PromptMarquee />
         <WaitlistCta />
         <Faq />
-        <div className="h-16 border-t border-line">
-          <div className="mx-auto h-full max-w-[1200px] border-x border-line" />
-        </div>
       </main>
       <Footer />
     </>

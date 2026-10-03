@@ -18,8 +18,8 @@ import { cx } from "@/lib/cx";
 import { ease } from "@/lib/motion";
 
 const product = [
-  { icon: Eye, title: "AI visibility", body: "Mentions, recommendations, and position", href: "#metrics" },
-  { icon: Users, title: "Competitor intelligence", body: "Why AI picks them over you", href: "#standing" },
+  { icon: Eye, title: "AI visibility", body: "Mentions, recommendations, and position", href: "#signals" },
+  { icon: Users, title: "Competitor intelligence", body: "Why AI picks them over you", href: "#competitors" },
   { icon: Link, title: "Source analysis", body: "The sites AI cites in your category", href: "#how-it-works" },
   { icon: Lightbulb, title: "Opportunities", body: "Gaps turned into a to-do list", href: "#gaps" },
   { icon: Flask, title: "Experiments", body: "Prove a change moved the numbers", href: "#experiments" },
@@ -47,8 +47,8 @@ export function Nav() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-page/85 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-[1200px] items-center px-5 md:px-10">
+    <header className="sticky top-3 z-40 px-3 md:top-4">
+      <div className="relative mx-auto flex h-14 max-w-[1100px] items-center rounded-full border border-line-strong bg-surface/80 pr-2 pl-5 shadow-[0_8px_30px_-12px_rgb(0_0_0/0.15)] backdrop-blur-md">
         <a href="#top" aria-label="AnswerIntel home" className="rounded-[6px]">
           <Logo />
         </a>
@@ -63,7 +63,7 @@ export function Nav() {
                 onClick={() => setOpen((o) => !o)}
                 onKeyDown={(e) => e.key === "Escape" && setOpen(false)}
                 className={cx(
-                  "inline-flex items-center gap-1 rounded-[8px] px-3 py-1.5 transition-colors",
+                  "inline-flex items-center gap-1 rounded-full px-3 py-1.5 transition-colors",
                   open ? "bg-black/[0.05] text-ink" : "text-muted hover:bg-black/[0.04] hover:text-ink",
                 )}
               >
@@ -149,7 +149,7 @@ export function Nav() {
               <li key={l.href}>
                 <a
                   href={l.href}
-                  className="rounded-[8px] px-3 py-1.5 text-muted transition-colors hover:bg-black/[0.04] hover:text-ink"
+                  className="rounded-full px-3 py-1.5 text-muted transition-colors hover:bg-black/[0.04] hover:text-ink"
                 >
                   {l.label}
                 </a>
@@ -167,7 +167,7 @@ export function Nav() {
             aria-label={mobile ? "Close menu" : "Open menu"}
             aria-expanded={mobile}
             onClick={() => setMobile((m) => !m)}
-            className="grid size-9 place-items-center rounded-[8px] border border-line-strong bg-surface md:hidden"
+            className="grid size-9 place-items-center rounded-full border border-line-strong bg-surface md:hidden"
           >
             {mobile ? <X size={16} /> : <List size={16} />}
           </button>
@@ -182,7 +182,7 @@ export function Nav() {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25, ease }}
-            className="overflow-hidden border-t border-line md:hidden"
+            className="mx-auto mt-2 max-w-[1100px] overflow-hidden rounded-[20px] border border-line-strong bg-surface md:hidden"
           >
             <ul className="space-y-1 px-5 py-3">
               {[...product.slice(0, 3).map((p) => ({ label: p.title, href: p.href })), ...links].map((l) => (
@@ -190,7 +190,7 @@ export function Nav() {
                   <a
                     href={l.href}
                     onClick={() => setMobile(false)}
-                    className="block rounded-[8px] px-2 py-2 text-[15px] text-ink hover:bg-black/[0.04]"
+                    className="block rounded-[12px] px-2 py-2 text-[15px] text-ink hover:bg-black/[0.04]"
                   >
                     {l.label}
                   </a>

@@ -1,122 +1,69 @@
-"use client";
+import { ArrowDownRight, ArrowUpRight, Envelope } from "@phosphor-icons/react/ssr";
+import { Reveal } from "@/components/marketing/effects/reveal";
+import { WaitlistForm } from "@/components/marketing/waitlist-form";
+import { Mark } from "@/components/ui/mark";
 
-import { ArrowRight, CheckCircle } from "@phosphor-icons/react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useState } from "react";
-import { CompetitorTable } from "@/components/product/competitor-table";
-import { buttonClass } from "@/components/ui/button";
-import { cx } from "@/lib/cx";
-import { ease } from "@/lib/motion";
+const actions = [
+  "Publish a CRM for startups comparison page",
+  "Rewrite homepage positioning for small teams",
+  "Pitch 3 startup tool roundups that cite Kiteline",
+];
 
-type Status = "idle" | "loading" | "done" | "error";
+/** Preview of the weekly founder report (PRD: weekly report). Sample content. */
+function ReportPreview() {
+  return (
+    <div className="rotate-[1.5deg] rounded-card border border-line-strong bg-surface p-5 shadow-[0_30px_60px_-30px_rgb(0_0_0/0.3)] transition-transform duration-500 ease-out hover:rotate-0 md:p-6">
+      <div className="flex items-center gap-2 border-b border-line pb-4 text-[12px] text-muted">
+        <Envelope size={14} />
+        Monday, 8:00
+        <span className="ml-auto rounded-full border border-dashed border-line-strong px-2 py-0.5">Sample</span>
+      </div>
+      <p className="mt-4 font-display text-[20px] font-semibold tracking-[-0.02em]">Your AI visibility this week</p>
+      <div className="mt-4 grid grid-cols-2 gap-2 text-[13px]">
+        <div className="rounded-[14px] bg-mark-soft p-3">
+          <p className="flex items-center gap-1 text-[12px] text-ink-2">
+            <ArrowUpRight size={12} weight="bold" /> Biggest win
+          </p>
+          <p className="mt-1 leading-snug text-ink">Now recommended for &quot;CRM for early-stage startups&quot;</p>
+        </div>
+        <div className="rounded-[14px] bg-sunken p-3">
+          <p className="flex items-center gap-1 text-[12px] text-ink-2">
+            <ArrowDownRight size={12} weight="bold" /> Biggest loss
+          </p>
+          <p className="mt-1 leading-snug text-ink">Kiteline took &quot;simple CRM for small teams&quot;</p>
+        </div>
+      </div>
+      <p className="mt-5 text-[12px] text-muted">Do this week</p>
+      <ol className="mt-2 space-y-2 text-[13px] text-ink">
+        {actions.map((a, i) => (
+          <li key={a} className="flex gap-2.5">
+            <span className="grid size-5 shrink-0 place-items-center rounded-full bg-ink font-mono text-[10px] text-white">
+              {i + 1}
+            </span>
+            {a}
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
 
 export function WaitlistCta() {
-  const reduce = useReducedMotion();
-  const [status, setStatus] = useState<Status>("idle");
-  const [error, setError] = useState("");
-
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const email = String(new FormData(e.currentTarget).get("email") ?? "");
-    setStatus("loading");
-    setError("");
-    try {
-      const res = await fetch("/api/waitlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      if (!res.ok) {
-        const data = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
-        throw new Error(data?.error?.message ?? "Something went wrong. Please try again.");
-      }
-      setStatus("done");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
-      setStatus("error");
-    }
-  }
-
   return (
-    <section id="waitlist" className="border-t border-line">
-      <div className="mx-auto max-w-[1200px] border-x border-line p-2 md:p-3">
-        <div className="relative grid overflow-hidden rounded-[16px] bg-night lg:grid-cols-[1fr_1fr]">
-          <div className="relative z-10 px-6 py-14 md:px-14 md:py-20">
-            <h2 className="text-[34px] font-semibold leading-[1.05] tracking-[-0.04em] text-white md:text-[48px]">
-              Be first to see what AI
-              <span className="block text-white/45">says about your brand</span>
-            </h2>
-
-            <div className="mt-8 min-h-[104px] max-w-[440px]">
-              <AnimatePresence mode="wait" initial={false}>
-                {status === "done" ? (
-                  <motion.p
-                    key="done"
-                    initial={reduce ? false : { opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.35, ease }}
-                    className="flex items-start gap-2.5 text-[16px] text-white"
-                    role="status"
-                  >
-                    <CheckCircle size={22} weight="fill" className="shrink-0 text-[#4ade80]" />
-                    You are on the list. We will email you when your spot opens.
-                  </motion.p>
-                ) : (
-                  <motion.form
-                    key="form"
-                    exit={reduce ? undefined : { opacity: 0, y: -8 }}
-                    transition={{ duration: 0.2 }}
-                    onSubmit={onSubmit}
-                    noValidate
-                  >
-                    <label htmlFor="email" className="block text-[13px] text-white/70">
-                      Work email
-                    </label>
-                    <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-                      <input
-                        id="email"
-                        name="email"
-                        type="email"
-                        required
-                        autoComplete="email"
-                        placeholder="you@company.com"
-                        aria-invalid={status === "error"}
-                        aria-describedby={error ? "email-error" : undefined}
-                        className={cx(
-                          "h-11 flex-1 rounded-control border bg-white/[0.06] px-3.5 text-[15px] text-white placeholder:text-white/40",
-                          "transition-colors outline-none focus:border-white/50 focus:bg-white/[0.09]",
-                          status === "error" ? "border-[#f87171]" : "border-white/15",
-                        )}
-                      />
-                      <button
-                        type="submit"
-                        disabled={status === "loading"}
-                        className={buttonClass("inverse")}
-                      >
-                        {status === "loading" ? "Joining..." : "Join waitlist"}
-                        <ArrowRight
-                          size={15}
-                          className="transition-transform duration-200 group-hover:translate-x-0.5"
-                        />
-                      </button>
-                    </div>
-                    {error && (
-                      <p id="email-error" className="mt-2 text-[13px] text-[#fca5a5]">
-                        {error}
-                      </p>
-                    )}
-                  </motion.form>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-
-          <div aria-hidden className="relative hidden min-h-[360px] [perspective:1400px] lg:block">
-            <div className="absolute top-14 -right-24 w-[620px] origin-top-left [transform:rotateX(38deg)_rotateZ(-14deg)_rotateY(8deg)] rounded-[12px] bg-surface opacity-90 [mask-image:linear-gradient(to_bottom,black_30%,transparent)]">
-              <CompetitorTable interactive={false} />
-            </div>
-          </div>
-        </div>
+    <section id="waitlist" className="mx-auto max-w-[1200px] px-5 py-12 md:px-8 md:py-20">
+      <div className="grid items-center gap-12 overflow-hidden rounded-[32px] border border-line-strong bg-surface px-6 py-14 md:px-14 md:py-20 lg:grid-cols-[1.1fr_1fr]">
+        <Reveal>
+          <h2 className="font-display text-[38px] font-semibold leading-[1.02] tracking-[-0.04em] text-balance md:text-[54px]">
+            Get your first <Mark delay={0.4}>AI visibility</Mark> report
+          </h2>
+          <p className="mt-5 max-w-[440px] text-[17px] leading-relaxed text-muted">
+            We are opening access in small groups. Join the waitlist and your first scan is on us.
+          </p>
+          <WaitlistForm className="mt-8" />
+        </Reveal>
+        <Reveal delay={0.1} y={24}>
+          <ReportPreview />
+        </Reveal>
       </div>
     </section>
   );

@@ -98,32 +98,6 @@ export const competitorRows: CompetitorRow[] = brands.map((brand) => {
   };
 });
 
-export const marqueePrompts: { text: string; engine: Engine }[][] = [
-  [
-    { text: "Which CRM should a 10-person startup use?", engine: "chatgpt" },
-    { text: "Best HubSpot alternatives for small teams", engine: "perplexity" },
-    { text: "What CRM is easiest to set up in a day?", engine: "gemini" },
-    { text: "Affordable CRM with a good free plan", engine: "google" },
-    { text: "CRM that works well with Gmail and Slack", engine: "chatgpt" },
-    { text: "Is a spreadsheet enough before buying a CRM?", engine: "perplexity" },
-  ],
-  [
-    { text: "Kiteline vs Vantor for a seed-stage startup", engine: "gemini" },
-    { text: "How do small sales teams track deals?", engine: "chatgpt" },
-    { text: "Simplest pipeline tool for founders", engine: "google" },
-    { text: "Which CRM has the best reporting for SaaS?", engine: "perplexity" },
-    { text: "Tools to stop losing leads in email threads", engine: "chatgpt" },
-    { text: "CRM recommendations for a B2B agency", engine: "gemini" },
-  ],
-  [
-    { text: "What should I look for in a startup CRM?", engine: "perplexity" },
-    { text: "Lightweight CRM alternatives to Salesforce", engine: "google" },
-    { text: "How do I migrate contacts to a new CRM?", engine: "chatgpt" },
-    { text: "Best CRM for founder-led sales", engine: "gemini" },
-    { text: "CRM with built-in email sequences", engine: "perplexity" },
-    { text: "Which CRM do YC startups use?", engine: "chatgpt" },
-  ],
-];
 
 export const faqs = [
   {
@@ -151,3 +125,126 @@ export const faqs = [
     a: "We are onboarding teams from the waitlist in small groups. Join with your work email and we will reach out when your spot opens.",
   },
 ];
+
+// Hero engine sweep: one buyer question, four engines, what each one said.
+export type EngineResult = {
+  mentioned: boolean;
+  recommended: boolean;
+  position: number | null;
+  /** Answer excerpt; "Halden" is highlighted wherever it appears. */
+  snippet: string;
+};
+
+export const sweeps: { prompt: string; results: Record<"chatgpt" | "perplexity" | "gemini" | "google", EngineResult> }[] = [
+  {
+    prompt: "Which CRM should a 10-person startup use?",
+    results: {
+      chatgpt: { mentioned: true, recommended: false, position: 3, snippet: "Kiteline and Vantor are the safest picks. Halden is a newer option." },
+      perplexity: { mentioned: true, recommended: true, position: 2, snippet: "Halden stands out for fast setup and a clean interface." },
+      gemini: { mentioned: false, recommended: false, position: null, snippet: "Most small teams choose Kiteline, Vantor, or Norrow." },
+      google: { mentioned: true, recommended: false, position: 4, snippet: "Popular options include Kiteline, Vantor, Norrow and Halden." },
+    },
+  },
+  {
+    prompt: "Best Kiteline alternatives for small teams",
+    results: {
+      chatgpt: { mentioned: true, recommended: true, position: 1, snippet: "Halden is the closest alternative, with simpler pricing." },
+      perplexity: { mentioned: true, recommended: true, position: 2, snippet: "Vantor and Halden are the two most cited alternatives." },
+      gemini: { mentioned: true, recommended: false, position: 3, snippet: "Consider Vantor, Norrow, or Halden depending on budget." },
+      google: { mentioned: false, recommended: false, position: null, snippet: "Vantor and Norrow are frequent Kiteline replacements." },
+    },
+  },
+  {
+    prompt: "Simplest CRM for founder-led sales",
+    results: {
+      chatgpt: { mentioned: false, recommended: false, position: null, snippet: "Founders often start with Kiteline's free plan." },
+      perplexity: { mentioned: true, recommended: false, position: 4, snippet: "Kiteline leads; Halden is mentioned for its clean pipeline view." },
+      gemini: { mentioned: true, recommended: true, position: 2, snippet: "Halden keeps the pipeline simple, which suits founder-led sales." },
+      google: { mentioned: true, recommended: true, position: 1, snippet: "Halden is frequently recommended for founder-led sales." },
+    },
+  },
+];
+
+// Prompt library, grouped by the PRD's prompt categories.
+export const promptLibrary: {
+  category: string;
+  prompts: { text: string; intent: string; seenOn: Engine[] }[];
+}[] = [
+  {
+    category: "Category",
+    prompts: [
+      { text: "What are the best CRMs for startups?", intent: "Commercial", seenOn: ["chatgpt", "perplexity"] },
+      { text: "Top CRM tools for small B2B teams", intent: "Commercial", seenOn: ["perplexity", "google"] },
+      { text: "Which CRMs are popular with SaaS companies?", intent: "Informational", seenOn: ["gemini"] },
+      { text: "Most loved CRM software in 2026", intent: "Commercial", seenOn: [] },
+    ],
+  },
+  {
+    category: "Comparison",
+    prompts: [
+      { text: "Kiteline vs Vantor for a seed-stage startup", intent: "Comparison", seenOn: ["chatgpt"] },
+      { text: "Halden vs Kiteline: which is easier to set up?", intent: "Comparison", seenOn: ["chatgpt", "perplexity", "gemini"] },
+      { text: "Vantor or Norrow for a 5-person sales team?", intent: "Comparison", seenOn: [] },
+      { text: "Is Halden cheaper than Vantor?", intent: "Comparison", seenOn: ["perplexity", "google"] },
+    ],
+  },
+  {
+    category: "Alternatives",
+    prompts: [
+      { text: "Best Kiteline alternatives for small teams", intent: "Commercial", seenOn: ["chatgpt", "perplexity", "gemini"] },
+      { text: "Cheaper alternatives to Vantor", intent: "Transactional", seenOn: ["perplexity"] },
+      { text: "Lightweight Salesforce alternatives", intent: "Commercial", seenOn: [] },
+      { text: "Norrow alternatives with better reporting", intent: "Commercial", seenOn: ["gemini"] },
+    ],
+  },
+  {
+    category: "Problem",
+    prompts: [
+      { text: "How do I stop losing leads in email threads?", intent: "Informational", seenOn: ["chatgpt"] },
+      { text: "Is a spreadsheet enough before buying a CRM?", intent: "Informational", seenOn: [] },
+      { text: "How do small teams keep a sales pipeline clean?", intent: "Informational", seenOn: ["perplexity", "gemini"] },
+      { text: "Why do founders struggle with sales follow-up?", intent: "Informational", seenOn: [] },
+    ],
+  },
+  {
+    category: "Buyer intent",
+    prompts: [
+      { text: "Which CRM should a 10-person startup use?", intent: "Commercial", seenOn: ["chatgpt", "perplexity", "google"] },
+      { text: "Simplest CRM for founder-led sales", intent: "Commercial", seenOn: ["perplexity", "gemini", "google"] },
+      { text: "Affordable CRM with a good free plan", intent: "Transactional", seenOn: ["google"] },
+      { text: "CRM I can set up in one afternoon", intent: "Transactional", seenOn: ["chatgpt"] },
+    ],
+  },
+];
+
+// Head-to-head: extra per-brand signals not in the series above.
+export const citedSources: Record<string, number> = {
+  kiteline: 7,
+  vantor: 5,
+  halden: 2,
+  norrow: 3,
+  pellucid: 1,
+};
+
+export const rivalWins: Record<string, { prompt: string; engine: Engine }[]> = {
+  kiteline: [
+    { prompt: "Which CRM should a 10-person startup use?", engine: "chatgpt" },
+    { prompt: "CRM with the best free plan", engine: "google" },
+    { prompt: "Easiest CRM to set up for a small team", engine: "gemini" },
+  ],
+  vantor: [
+    { prompt: "CRM with strong automation for startups", engine: "perplexity" },
+    { prompt: "Which CRM has the best reporting for SaaS?", engine: "chatgpt" },
+    { prompt: "CRM for a growing B2B sales team", engine: "gemini" },
+  ],
+  norrow: [
+    { prompt: "CRM for agencies managing many clients", engine: "google" },
+    { prompt: "Simple CRM with built-in invoicing", engine: "perplexity" },
+    { prompt: "CRM with the best client portal", engine: "chatgpt" },
+  ],
+  pellucid: [
+    { prompt: "Open-source CRM options for startups", engine: "chatgpt" },
+    { prompt: "Self-hosted CRM for privacy-focused teams", engine: "perplexity" },
+    { prompt: "CRM with unlimited free users", engine: "google" },
+  ],
+};

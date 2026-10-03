@@ -1,53 +1,43 @@
 import { Logo } from "@/components/ui/logo";
 
-const columns = [
-  {
-    title: "Product",
-    links: [
-      { label: "How it works", href: "#how-it-works" },
-      { label: "Metrics", href: "#metrics" },
-      { label: "Competitors", href: "#standing" },
-      { label: "Experiments", href: "#experiments" },
-    ],
-  },
-  {
-    title: "Get started",
-    links: [
-      { label: "Join waitlist", href: "#waitlist" },
-      { label: "FAQ", href: "#faq" },
-    ],
-  },
+const links = [
+  { label: "Engine sweep", href: "#top" },
+  { label: "Dashboard", href: "#dashboard" },
+  { label: "Signals", href: "#signals" },
+  { label: "Competitors", href: "#competitors" },
+  { label: "Experiments", href: "#experiments" },
+  { label: "FAQ", href: "#faq" },
 ];
 
 export function Footer() {
   return (
-    <footer className="bg-night text-white">
-      <div className="mx-auto grid max-w-[1200px] gap-12 px-5 py-16 md:grid-cols-[1.4fr_1fr_1fr] md:px-10">
+    <footer className="overflow-hidden border-t border-line">
+      <div className="mx-auto flex max-w-[1200px] flex-col gap-8 px-5 pt-14 md:flex-row md:items-start md:px-8">
         <div>
-          <Logo inverse />
-          <p className="mt-6 text-[22px] font-medium leading-tight tracking-[-0.03em]">
-            AI visibility intelligence
-            <span className="block text-white/45">for founders and small teams</span>
+          <Logo />
+          <p className="mt-3 max-w-[280px] text-[14px] leading-relaxed text-muted">
+            AI visibility intelligence for founders and small teams.
           </p>
         </div>
-        {columns.map((col) => (
-          <div key={col.title}>
-            <p className="text-[14px] font-medium">{col.title}</p>
-            <ul className="mt-4 space-y-3">
-              {col.links.map((l) => (
-                <li key={l.label}>
-                  <a href={l.href} className="text-[15px] text-white/55 transition-colors hover:text-white">
-                    {l.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
+        <nav aria-label="Footer" className="md:ml-auto">
+          <ul className="grid grid-cols-2 gap-x-10 gap-y-3 sm:grid-cols-3">
+            {links.map((l) => (
+              <li key={l.label}>
+                <a href={l.href} className="text-[14px] text-ink-2 transition-colors hover:text-ink">
+                  {l.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
-      <div className="mx-auto max-w-[1200px] border-t border-white/10 px-5 py-6 text-[13px] text-white/45 md:px-10">
-        © 2026 AnswerIntel. All rights reserved.
-      </div>
+      <div className="mx-auto max-w-[1200px] px-5 pt-10 text-[13px] text-muted md:px-8">© 2026 AnswerIntel</div>
+      <p
+        aria-hidden
+        className="mt-2 text-center font-display text-[19vw] leading-[0.8] font-semibold tracking-[-0.06em] text-ink/[0.05] select-none"
+      >
+        AnswerIntel
+      </p>
     </footer>
   );
 }
