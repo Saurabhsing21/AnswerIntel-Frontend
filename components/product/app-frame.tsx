@@ -12,14 +12,17 @@ import {
   MagnifyingGlass,
   Hash,
   Users,
+  Gear,
+  UsersThree,
 } from "@phosphor-icons/react";
 import { motion } from "motion/react";
 import { useState } from "react";
 import { BrandMark } from "@/components/product/brand-mark";
 import { CompetitorTable } from "@/components/product/competitor-table";
 import { Delta } from "@/components/product/delta";
+import { EngineIcon } from "@/components/product/engine-icon";
 import { LineChart } from "@/components/product/line-chart";
-import { brands, metricLabels, months, series, you, type MetricKey } from "@/lib/data";
+import { brands, metricLabels, months, series, you, type Engine, type MetricKey } from "@/lib/data";
 import { cx } from "@/lib/cx";
 
 const nav = [
@@ -49,6 +52,25 @@ const nav = [
 
 const metrics: MetricKey[] = ["mentions", "recommendations", "sov"];
 
+const opportunities = [
+  { impact: "High", title: "Citation gap", evidence: "Kiteline is cited by 7 sources, you by 2", prompts: 5 },
+  { impact: "High", title: "Content gap", evidence: "No page answers \"CRM for startups\"", prompts: 6 },
+  { impact: "Medium", title: "Comparison gap", evidence: "No Halden vs Kiteline page for AI to quote", prompts: 3 },
+];
+
+const recentScans = [
+  { date: "Mon, Sep 28", done: 48 },
+  { date: "Mon, Sep 21", done: 46 },
+  { date: "Mon, Sep 14", done: 48 },
+];
+
+const recentAnswers: { engine: Engine; prompt: string; verdict: "Recommended" | "Mentioned" | "Not mentioned"; when: string }[] = [
+  { engine: "chatgpt", prompt: "Which CRM should a 10-person startup use?", verdict: "Mentioned", when: "2h ago" },
+  { engine: "perplexity", prompt: "Best Kiteline alternatives for small teams", verdict: "Recommended", when: "5h ago" },
+  { engine: "gemini", prompt: "Simplest CRM for founder-led sales", verdict: "Recommended", when: "1d ago" },
+  { engine: "google", prompt: "Affordable CRM with a good free plan", verdict: "Not mentioned", when: "1d ago" },
+];
+
 function last(key: MetricKey) {
   const v = series[key][you.id];
   return { value: v[v.length - 1], delta: v[v.length - 1] - v[v.length - 2] };
@@ -63,7 +85,7 @@ export function AppFrame() {
   return (
     <div className="overflow-hidden rounded-card border border-line-strong bg-surface text-left shadow-[0_24px_60px_-24px_rgb(0_0_0/0.18)]">
       <div className="grid md:grid-cols-[196px_1fr]">
-        <aside className="hidden border-r border-line bg-[#fbfbfb] p-3 md:block">
+        <aside className="hidden border-r border-line bg-[#fbfbfb] p-3 md:flex md:flex-col">
           <div className="mb-3 flex items-center gap-2 px-1.5 text-[12px] font-medium">
             <BrandMark brand={you} size={20} />
             Halden workspace
@@ -91,6 +113,42 @@ export function AppFrame() {
               ))}
             </div>
           ))}
+          <div className="mb-3">
+            <p className="px-2 pb-1 text-[10px] text-faint">Recent scans</p>
+            {recentScans.map((s) => (
+              <div key={s.date} className="flex items-center gap-2 rounded-[6px] px-2 py-1.5 text-[11px] text-ink-2">
+                <span
+                  className={cx("size-1.5 rounded-full", s.done === 48 ? "bg-up" : "bg-[#eab308]")}
+                  aria-label={s.done === 48 ? "Completed" : "Partial"}
+                />
+                {s.date}
+                <span className="ml-auto font-mono text-faint">{s.done}/48</span>
+              </div>
+            ))}
+          </div>
+          <div className="mb-3">
+            <p className="px-2 pb-1 text-[10px] text-faint">Workspace</p>
+            {[
+              { label: "Settings", icon: Gear },
+              { label: "Team", icon: UsersThree },
+            ].map(({ label, icon: Icon }) => (
+              <div key={label} className="flex items-center gap-2 rounded-[6px] px-2 py-1.5 text-[12px] text-ink-2 transition-colors hover:bg-black/[0.03]">
+                <Icon size={13} />
+                {label}
+              </div>
+            ))}
+          </div>
+          <div className="mt-auto rounded-[10px] border border-line bg-surface p-3 text-[11px]">
+            <p className="font-medium text-ink">Next scan</p>
+            <p className="mt-0.5 text-muted">Monday 06:00, 48 prompts</p>
+            <div className="mt-2.5 flex gap-1.5">
+              {(["chatgpt", "perplexity", "gemini", "google"] as Engine[]).map((e) => (
+                <span key={e} className="grid size-6 place-items-center rounded-full border border-line">
+                  <EngineIcon engine={e} size={11} />
+                </span>
+              ))}
+            </div>
+          </div>
         </aside>
 
         <div className="min-w-0">
@@ -188,6 +246,61 @@ export function AppFrame() {
                 <p className="text-[11px] text-muted">Click Visibility to re-sort</p>
               </div>
               <CompetitorTable />
+            </div>
+          </div>
+
+          {/* Lower half of the dashboard: what to do next, and the raw answers behind the numbers. */}
+          <div className="grid border-t border-line md:grid-cols-2">
+            <div className="border-line p-4 md:border-r">
+              <p className="text-[12px] font-medium">Top opportunities</p>
+              <ul className="mt-3 space-y-2">
+                {opportunities.map((o) => (
+                  <li
+                    key={o.title}
+                    className="flex items-start gap-3 rounded-[10px] border border-line p-3 transition-colors hover:bg-[#fbfbfb]"
+                  >
+                    <span
+                      className={cx(
+                        "mt-px shrink-0 rounded-full px-1.5 py-px text-[10px] font-medium",
+                        o.impact === "High" ? "bg-[#fdf2f2] text-[#b91c1c]" : "bg-[#fdf6dd] text-[#a16207]",
+                      )}
+                    >
+                      {o.impact}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-[12px] font-medium text-ink">{o.title}</span>
+                      <span className="block text-[11px] text-muted">{o.evidence}</span>
+                    </span>
+                    <span className="ml-auto shrink-0 text-[11px] whitespace-nowrap text-faint">{o.prompts} prompts</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="p-4">
+              <p className="text-[12px] font-medium">Recent AI answers</p>
+              <ul className="mt-1.5 divide-y divide-line">
+                {recentAnswers.map((r) => (
+                  <li key={r.prompt} className="flex items-center gap-3 py-2.5">
+                    <span className="grid size-7 shrink-0 place-items-center rounded-full border border-line">
+                      <EngineIcon engine={r.engine} size={13} />
+                    </span>
+                    <span className="min-w-0 flex-1 truncate text-[12px] text-ink-2">{r.prompt}</span>
+                    <span
+                      className={cx(
+                        "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium",
+                        r.verdict === "Recommended"
+                          ? "bg-ink text-white"
+                          : r.verdict === "Mentioned"
+                            ? "bg-sunken text-ink-2"
+                            : "bg-[#fdf2f2] text-[#b91c1c]",
+                      )}
+                    >
+                      {r.verdict}
+                    </span>
+                    <span className="w-12 shrink-0 text-right text-[11px] text-faint">{r.when}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>
