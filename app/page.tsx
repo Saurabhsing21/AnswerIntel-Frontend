@@ -8,7 +8,6 @@ import { Nav } from "@/components/marketing/sections/nav";
 import { PromptLibrary } from "@/components/marketing/sections/prompt-library";
 import { Scan } from "@/components/marketing/sections/scan";
 import { WaitlistCta } from "@/components/marketing/sections/waitlist-cta";
-import { WhyLosing } from "@/components/marketing/sections/why-losing";
 
 export default function Home() {
   return (
@@ -19,7 +18,6 @@ export default function Home() {
         <Scan />
         <FeaturesBento />
         <HeadToHead />
-        <WhyLosing />
         <PromptLibrary />
         <Experiments />
         <WaitlistCta />

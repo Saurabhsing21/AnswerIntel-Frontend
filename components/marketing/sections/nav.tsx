@@ -21,7 +21,7 @@ const product = [
   { icon: Eye, title: "AI visibility", body: "Mentions, recommendations, and position", href: "#scan" },
   { icon: Users, title: "Competitor intelligence", body: "Why AI picks them over you", href: "#competitors" },
   { icon: Link, title: "Source analysis", body: "The sites AI cites in your category", href: "#how-it-works" },
-  { icon: Lightbulb, title: "Opportunities", body: "Gaps turned into a to-do list", href: "#gaps" },
+  { icon: Lightbulb, title: "Opportunities", body: "Gaps turned into a to-do list", href: "#how-it-works" },
   { icon: Flask, title: "Experiments", body: "Prove a change moved the numbers", href: "#experiments" },
 ];
 
