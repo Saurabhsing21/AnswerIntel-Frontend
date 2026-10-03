@@ -50,7 +50,7 @@ function ReportPreview() {
 
 export function WaitlistCta() {
   return (
-    <section id="waitlist" className="mx-auto max-w-[1200px] px-5 py-12 md:px-8 md:py-20">
+    <section id="waitlist" className="mx-auto max-w-[1200px] px-5 py-6 md:px-8 md:py-8">
       <div className="grid items-center gap-12 overflow-hidden rounded-[32px] border border-line-strong bg-surface px-6 py-14 md:px-14 md:py-20 lg:grid-cols-[1.1fr_1fr]">
         <Reveal>
           <h2 className="font-display text-[38px] font-semibold leading-[1.02] tracking-[-0.04em] text-balance md:text-[54px]">

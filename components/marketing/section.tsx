@@ -13,7 +13,7 @@ export function Section({
 }) {
   return (
     <section id={id} className={className}>
-      <div className={cx("mx-auto max-w-[1200px] px-5 py-20 md:px-8 md:py-28", innerClassName)}>
+      <div className={cx("mx-auto max-w-[1200px] px-5 py-12 md:px-8 md:py-14", innerClassName)}>
         {children}
       </div>
     </section>

@@ -335,7 +335,7 @@ function ActOnInsights() {
 
 export function FeaturesBento() {
   return (
-    <Section id="how-it-works" innerClassName="py-20 md:py-28">
+    <Section id="how-it-works">
       <span className="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-surface px-3 py-1 text-[13px] text-ink-2">
         <span className="grid size-5 place-items-center rounded-full bg-mark"><Sparkle size={11} /></span>
         How it works
