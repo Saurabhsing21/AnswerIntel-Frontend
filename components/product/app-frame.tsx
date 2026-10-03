@@ -103,7 +103,7 @@ export function AppFrame() {
                   className={cx(
                     "flex items-center gap-2 rounded-[6px] px-2 py-1.5 text-[12px]",
                     "active" in rest
-                      ? "bg-sunken font-medium text-ink"
+                      ? "bg-mark-soft font-medium text-ink"
                       : "text-ink-2 transition-colors hover:bg-black/[0.03]",
                   )}
                 >
@@ -209,7 +209,7 @@ export function AppFrame() {
                   {selected && (
                     <motion.span
                       layoutId="metric-pill"
-                      className="absolute inset-0 rounded-[10px] border border-line-strong bg-surface shadow-[0_1px_3px_rgb(0_0_0/0.06)]"
+                      className="absolute inset-0 rounded-[10px] border border-[#c5e35c] bg-mark-soft"
                       transition={{ type: "spring", stiffness: 400, damping: 34 }}
                     />
                   )}
@@ -290,8 +290,7 @@ export function AppFrame() {
                         "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium",
                         r.verdict === "Recommended"
                           ? "bg-ink text-white"
-                          : r.verdict === "Mentioned"
-                            ? "bg-sunken text-ink-2"
+                          : r.verdict === "Mentioned"                            ? "bg-mark-soft text-ink"
                             : "bg-[#fdf2f2] text-[#b91c1c]",
                       )}
                     >

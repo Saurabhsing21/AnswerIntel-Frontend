@@ -1,9 +1,9 @@
 import { Logo } from "@/components/ui/logo";
 
 const links = [
-  { label: "Engine sweep", href: "#top" },
-  { label: "Dashboard", href: "#dashboard" },
-  { label: "Signals", href: "#signals" },
+  { label: "Live scan", href: "#scan" },
+  { label: "Dashboard", href: "#top" },
+  { label: "How it works", href: "#how-it-works" },
   { label: "Competitors", href: "#competitors" },
   { label: "Experiments", href: "#experiments" },
   { label: "FAQ", href: "#faq" },
@@ -23,7 +23,7 @@ export function Footer() {
           <ul className="grid grid-cols-2 gap-x-10 gap-y-3 sm:grid-cols-3">
             {links.map((l) => (
               <li key={l.label}>
-                <a href={l.href} className="text-[14px] text-ink-2 transition-colors hover:text-ink">
+                <a href={l.href} className="text-[14px] text-ink-2 decoration-mark decoration-2 underline-offset-4 transition-colors hover:text-ink hover:underline">
                   {l.label}
                 </a>
               </li>

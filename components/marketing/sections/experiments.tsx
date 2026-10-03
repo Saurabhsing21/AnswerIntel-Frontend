@@ -66,7 +66,7 @@ export function Experiments() {
               initial={reduce ? false : { opacity: 0, y: 6 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.4, delay: 1.1, ease }}
-              className="mb-2 ml-auto rounded-[6px] bg-[#e9f7ee] px-2 py-1 font-mono text-[13px] text-[#15803d]"
+              className="mb-2 ml-auto rounded-full bg-mark px-2.5 py-1 font-mono text-[13px] text-ink"
             >
               +{after - before} pts
             </motion.span>
@@ -84,10 +84,10 @@ export function Experiments() {
               />
             ))}
             <span
-              className="absolute -top-2 bottom-0 border-l border-dashed border-ink/40"
+              className="absolute -top-2 bottom-0 border-l-2 border-dashed border-[#b9d84f]"
               style={{ left: `calc(${(SHIP_AFTER / weeks.length) * 100}% - 4px)` }}
             >
-              <span className="absolute -top-4 left-1 text-[10px] whitespace-nowrap text-muted">Change shipped</span>
+              <span className="absolute -top-5 left-1.5 rounded-full bg-mark px-1.5 text-[10px] whitespace-nowrap text-ink">Change shipped</span>
             </span>
           </div>
           <p className="mt-2 text-[11px] text-muted">Weekly recommendation rate</p>
@@ -102,7 +102,7 @@ export function Experiments() {
         <ul className="mt-8 space-y-5">
           {steps.map(({ icon: Icon, title, body }) => (
             <li key={title} className="flex gap-3">
-              <span className="grid size-8 shrink-0 place-items-center rounded-[8px] border border-line-strong bg-surface text-ink-2">
+              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-mark-soft text-ink">
                 <Icon size={15} />
               </span>
               <span>

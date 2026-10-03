@@ -42,7 +42,7 @@ function Verdict({ r }: { r: EngineResult }) {
       <span
         className={cx(
           "rounded-full px-2 py-0.5 text-[11px] font-medium",
-          r.recommended ? "bg-ink text-white" : "bg-sunken text-ink-2",
+          r.recommended ? "bg-ink text-white" : "bg-mark-soft text-ink",
         )}
       >
         {r.recommended ? "Recommended" : "Mentioned"}

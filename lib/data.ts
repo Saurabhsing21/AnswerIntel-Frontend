@@ -226,25 +226,25 @@ export const citedSources: Record<string, number> = {
   pellucid: 1,
 };
 
-export const rivalWins: Record<string, { prompt: string; engine: Engine }[]> = {
+export const rivalWins: Record<string, { prompt: string; engine: Engine; why: string }[]> = {
   kiteline: [
-    { prompt: "Which CRM should a 10-person startup use?", engine: "chatgpt" },
-    { prompt: "CRM with the best free plan", engine: "google" },
-    { prompt: "Easiest CRM to set up for a small team", engine: "gemini" },
+    { prompt: "Which CRM should a 10-person startup use?", engine: "chatgpt", why: "Cited by 3 startup comparison articles you are missing from." },
+    { prompt: "CRM with the best free plan", engine: "google", why: "Their pricing page answers this directly. Yours renders client-side." },
+    { prompt: "Easiest CRM to set up for a small team", engine: "gemini", why: "Strong G2 reviews mention setup time in the first sentence." },
   ],
   vantor: [
-    { prompt: "CRM with strong automation for startups", engine: "perplexity" },
-    { prompt: "Which CRM has the best reporting for SaaS?", engine: "chatgpt" },
-    { prompt: "CRM for a growing B2B sales team", engine: "gemini" },
+    { prompt: "CRM with strong automation for startups", engine: "perplexity", why: "A detailed automation guide is quoted almost word for word." },
+    { prompt: "Which CRM has the best reporting for SaaS?", engine: "chatgpt", why: "Reddit threads repeatedly praise their reporting." },
+    { prompt: "CRM for a growing B2B sales team", engine: "gemini", why: "Their homepage names B2B sales teams. Yours says business software." },
   ],
   norrow: [
-    { prompt: "CRM for agencies managing many clients", engine: "google" },
-    { prompt: "Simple CRM with built-in invoicing", engine: "perplexity" },
-    { prompt: "CRM with the best client portal", engine: "chatgpt" },
+    { prompt: "CRM for agencies managing many clients", engine: "google", why: "They publish an agency use-case page. You have none." },
+    { prompt: "Simple CRM with built-in invoicing", engine: "perplexity", why: "Invoicing is a feature you do not offer, so this one is fine to lose." },
+    { prompt: "CRM with the best client portal", engine: "chatgpt", why: "A comparison site ranks their client portal first." },
   ],
   pellucid: [
-    { prompt: "Open-source CRM options for startups", engine: "chatgpt" },
-    { prompt: "Self-hosted CRM for privacy-focused teams", engine: "perplexity" },
-    { prompt: "CRM with unlimited free users", engine: "google" },
+    { prompt: "Open-source CRM options for startups", engine: "chatgpt", why: "Their GitHub repository is cited as the source." },
+    { prompt: "Self-hosted CRM for privacy-focused teams", engine: "perplexity", why: "Privacy positioning on every page matches the question." },
+    { prompt: "CRM with unlimited free users", engine: "google", why: "Their pricing table states it clearly in plain HTML." },
   ],
 };

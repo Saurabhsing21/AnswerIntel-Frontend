@@ -51,7 +51,7 @@ export function CompetitorTable({ interactive = true }: { interactive?: boolean 
             key={row.brand.id}
             layout={!reduce}
             transition={{ duration: 0.35, ease }}
-            className={cx("border-b border-line last:border-0", row.brand.you && "bg-[#f6f8ff]")}
+            className={cx("border-b border-line last:border-0", row.brand.you && "bg-mark-soft/70")}
           >
             <td className="py-2.5 pl-3 font-mono text-faint">{i + 1}</td>
             <td className="py-2.5">
@@ -59,7 +59,7 @@ export function CompetitorTable({ interactive = true }: { interactive?: boolean 
                 <BrandMark brand={row.brand} size={16} />
                 {row.brand.name}
                 {row.brand.you && (
-                  <span className="rounded-[4px] bg-ink px-1 py-px text-[9px] font-medium text-white">
+                  <span className="rounded-[4px] bg-mark px-1 py-px text-[9px] font-semibold text-ink">
                     You
                   </span>
                 )}

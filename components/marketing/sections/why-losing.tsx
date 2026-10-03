@@ -62,14 +62,14 @@ export function WhyLosing() {
             tabIndex={0}
             className="group p-6 outline-none transition-colors hover:bg-[#fbfbfb] focus-visible:bg-[#fbfbfb] md:p-8"
           >
-            <span className="grid size-9 place-items-center rounded-[9px] border border-line-strong text-ink-2 transition-[transform,color] duration-300 group-hover:-rotate-6 group-hover:text-ink">
+            <span className="grid size-9 place-items-center rounded-full bg-mark-soft text-ink transition-[transform,background-color] duration-300 group-hover:-rotate-6 group-hover:bg-mark group-focus-visible:bg-mark">
               <Icon size={18} />
             </span>
             <h3 className="mt-5 text-[17px] font-medium tracking-[-0.02em]">{title}</h3>
             <p className="mt-1.5 text-[15px] leading-relaxed text-muted">{body}</p>
             <div className="grid grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-out md:grid-rows-[0fr] md:group-hover:grid-rows-[1fr] md:group-focus-visible:grid-rows-[1fr]">
               <div className="overflow-hidden">
-                <p className="mt-4 border-l-2 border-ink pl-3 text-[13px] leading-relaxed text-ink-2">{example}</p>
+                <p className="mt-4 border-l-[3px] border-mark pl-3 text-[13px] leading-relaxed text-ink-2">{example}</p>
               </div>
             </div>
           </article>

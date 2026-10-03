@@ -18,7 +18,7 @@ import { cx } from "@/lib/cx";
 import { ease } from "@/lib/motion";
 
 const product = [
-  { icon: Eye, title: "AI visibility", body: "Mentions, recommendations, and position", href: "#signals" },
+  { icon: Eye, title: "AI visibility", body: "Mentions, recommendations, and position", href: "#scan" },
   { icon: Users, title: "Competitor intelligence", body: "Why AI picks them over you", href: "#competitors" },
   { icon: Link, title: "Source analysis", body: "The sites AI cites in your category", href: "#how-it-works" },
   { icon: Lightbulb, title: "Opportunities", body: "Gaps turned into a to-do list", href: "#gaps" },
@@ -100,7 +100,7 @@ export function Nav() {
                               onClick={() => setOpen(false)}
                               className="group flex items-start gap-3 rounded-[10px] p-2.5 transition-colors hover:bg-sunken"
                             >
-                              <span className="mt-0.5 grid size-7 place-items-center rounded-[7px] border border-line-strong bg-surface text-ink-2 transition-colors group-hover:text-ink">
+                              <span className="mt-0.5 grid size-7 place-items-center rounded-full bg-sunken text-ink-2 transition-colors group-hover:bg-mark group-hover:text-ink">
                                 <Icon size={15} />
                               </span>
                               <span>
@@ -127,7 +127,7 @@ export function Nav() {
                               key={i}
                               className={cx(
                                 "w-full rounded-[3px] transition-[height] duration-300",
-                                i === 6 ? "bg-ink" : "bg-[#d4d4d4] group-hover:bg-[#bdbdbd]",
+                                i === 6 ? "bg-mark" : "bg-[#d4d4d4] group-hover:bg-[#bdbdbd]",
                               )}
                               style={{ height: h * 0.5 }}
                             />

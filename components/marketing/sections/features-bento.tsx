@@ -70,7 +70,7 @@ function DiscoverPrompts() {
   return (
     <MiniPanel className="group-hover:-translate-y-1">
       <div className="flex items-center gap-2 border-b border-line px-3.5 py-2.5 font-medium">
-        <Sparkle size={13} weight="fill" className="text-ink" />
+        <span className="grid size-5 place-items-center rounded-full bg-mark"><Sparkle size={11} weight="fill" className="text-ink" /></span>
         Prompt discovery
         <span className="ml-auto font-normal text-muted">CRM software · US · 4 competitors</span>
       </div>
@@ -105,7 +105,7 @@ function PickPrompts() {
       <MiniPanel className="absolute inset-x-0 top-0 rotate-[2deg] p-4 group-hover:rotate-[0deg] group-hover:-translate-y-1">
         <p className="font-medium text-ink">What is the best CRM for a 10-person startup?</p>
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
-          <span className="rounded-[5px] bg-[#e9f7ee] px-1.5 py-px text-[10px] font-medium text-[#15803d]">
+          <span className="rounded-[5px] bg-mark px-1.5 py-px text-[10px] font-medium text-ink">
             High value
           </span>
           <span className="rounded-[5px] bg-sunken px-1.5 py-px text-[10px] text-muted">Commercial</span>
@@ -145,7 +145,7 @@ function AddCompetitors() {
                 aria-pressed={on}
                 className={cx(
                   "ml-auto inline-flex items-center gap-1 rounded-[7px] px-2.5 py-1 text-[11px] font-medium transition-colors",
-                  on ? "border border-line-strong bg-surface text-ink" : "bg-ink text-white hover:bg-[#2b2b2b]",
+                  on ? "border border-[#c5e35c] bg-mark-soft text-ink" : "bg-ink text-white hover:bg-[#2b2b2b]",
                 )}
                 transition={{ duration: 0.25, ease }}
               >
@@ -198,7 +198,7 @@ function ChooseEngines() {
                 aria-hidden
                 className={cx(
                   "grid size-4 place-items-center rounded-[4px] border transition-colors peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#0a5fcc]",
-                  on[engine] ? "border-ink bg-ink text-white" : "border-line-strong bg-surface",
+                  on[engine] ? "border-ink bg-mark text-ink" : "border-line-strong bg-surface",
                 )}
               >
                 {on[engine] && <Check size={10} weight="bold" />}
@@ -256,7 +256,7 @@ function KeySources() {
             {[s.you, s.them].map((has, i) => (
               <span key={i} className="text-center">
                 {has ? (
-                  <Check size={13} weight="bold" className="mx-auto text-up" aria-label="Cited" />
+                  <span className="mx-auto grid size-5 place-items-center rounded-full bg-mark" aria-label="Cited"><Check size={11} weight="bold" className="text-ink" /></span>
                 ) : (
                   <span className="text-faint" aria-label="Not cited">-</span>
                 )}
@@ -298,7 +298,7 @@ function ActOnInsights() {
               <span
                 className={cx(
                   "grid size-4 shrink-0 place-items-center rounded-full border transition-colors",
-                  done[i] ? "border-ink bg-ink text-white" : "border-line-strong",
+                  done[i] ? "border-[#b9d84f] bg-mark text-ink" : "border-line-strong",
                 )}
               >
                 {done[i] && <Check size={9} weight="bold" />}
@@ -330,7 +330,7 @@ export function FeaturesBento() {
   return (
     <Section id="how-it-works" innerClassName="py-20 md:py-28">
       <span className="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-surface px-3 py-1 text-[13px] text-ink-2">
-        <Sparkle size={13} />
+        <span className="grid size-5 place-items-center rounded-full bg-mark"><Sparkle size={11} /></span>
         How it works
       </span>
       <SectionHeading className="mt-5 max-w-[640px]" title="From first prompt to a clear plan" />

@@ -1,6 +1,6 @@
 import { Reveal } from "@/components/marketing/effects/reveal";
-import { EngineSweep } from "@/components/marketing/engine-sweep";
 import { WaitlistForm } from "@/components/marketing/waitlist-form";
+import { AppFrame } from "@/components/product/app-frame";
 import { EngineIcon } from "@/components/product/engine-icon";
 import { Mark } from "@/components/ui/mark";
 import type { Engine } from "@/lib/data";
@@ -9,40 +9,43 @@ const tracked: Engine[] = ["chatgpt", "perplexity", "gemini", "google"];
 
 export function Hero() {
   return (
-    <section className="mx-auto grid max-w-[1200px] items-center gap-12 px-5 pt-14 pb-16 md:px-8 md:pt-20 lg:grid-cols-[1fr_1.05fr] lg:gap-16 lg:pb-20">
-      <div className="min-w-0">
+    <section className="mx-auto max-w-[1200px] px-5 pt-14 md:px-8 md:pt-20">
+      <div className="mx-auto flex max-w-[860px] flex-col items-center text-center">
         <Reveal>
-          <p className="flex items-center gap-2 text-[13px] text-muted">
+          <span className="inline-flex items-center gap-2 rounded-full border border-line-strong bg-surface py-1 pr-3.5 pl-1 text-[13px] text-ink-2 shadow-[0_1px_2px_rgb(0_0_0/0.04)]">
             <span className="flex -space-x-1">
               {tracked.map((e) => (
-                <span key={e} className="grid size-6 place-items-center rounded-full border-2 border-page bg-surface">
-                  <EngineIcon engine={e} size={12} />
+                <span key={e} className="grid size-6 place-items-center rounded-full border-2 border-surface bg-mark-soft">
+                  <EngineIcon engine={e} size={11} />
                 </span>
               ))}
             </span>
-            Tracks ChatGPT, Perplexity, Gemini and Google AI
-          </p>
+            Private beta for ChatGPT, Perplexity, Gemini and Google AI
+          </span>
         </Reveal>
 
         <Reveal delay={0.05}>
-          <h1 className="mt-6 font-display text-[38px] font-semibold leading-[1] sm:text-[44px] sm:leading-[0.98] tracking-[-0.045em] text-balance md:text-[64px]">
-            When buyers ask AI, does it <Mark delay={0.5}>recommend you?</Mark>
+          <h1 className="mt-7 font-display text-[40px] font-semibold leading-[1.02] tracking-[-0.045em] text-balance sm:text-[52px] md:text-[68px]">
+            See how AI <Mark delay={0.45}>recommends you,</Mark> and who it picks instead
           </h1>
         </Reveal>
 
         <Reveal delay={0.1}>
-          <p className="mt-6 max-w-[480px] text-[17px] leading-relaxed text-muted md:text-[18px]">
-            AnswerIntel asks AI the questions your buyers ask, then shows where you win, where you lose, and why.
+          <p className="mt-6 max-w-[560px] text-[17px] leading-relaxed text-muted md:text-[18px]">
+            Track your mentions, recommendations, and share of voice across AI search, then learn exactly what to fix.
           </p>
         </Reveal>
 
-        <Reveal delay={0.15} className="mt-8">
+        <Reveal delay={0.15} className="mt-8 w-full max-w-[460px] text-left">
           <WaitlistForm />
         </Reveal>
       </div>
 
-      <Reveal delay={0.2} y={20} className="min-w-0">
-        <EngineSweep />
+      {/* Our frame: a soft lime panel that fades out, instead of a dotted band. */}
+      <Reveal delay={0.2} y={28} className="mt-10 md:mt-14">
+        <div className="rounded-[30px] bg-[linear-gradient(180deg,var(--color-mark-soft)_0%,rgb(240_251_201/0.35)_45%,transparent_100%)] p-2 md:p-3">
+          <AppFrame />
+        </div>
       </Reveal>
     </section>
   );
