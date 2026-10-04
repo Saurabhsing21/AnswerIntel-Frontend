@@ -12,8 +12,9 @@ export function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className={className}>
-      <div className={cx("mx-auto max-w-[1200px] px-5 py-12 md:px-8 md:py-14", innerClassName)}>
+    <section id={id} className={cx("border-t border-line", className)}>
+      {/* Page frame: full-width divider on top, vertical rails on the column edges. */}
+      <div className={cx("mx-auto max-w-[1200px] px-5 py-12 md:border-x md:border-line md:px-8 md:py-14", innerClassName)}>
         {children}
       </div>
     </section>
