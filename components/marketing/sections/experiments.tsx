@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, ArrowsClockwise, ChartBar, Flag } from "@phosphor-icons/react";
+import { ArrowRight, ChartLineUp, ClockClockwise, NotePencil } from "@phosphor-icons/react";
 import {
   AnimatePresence,
   animate,
@@ -14,6 +14,7 @@ import { useEffect, useRef, useState } from "react";
 import { Reveal } from "@/components/marketing/effects/reveal";
 import { Section, SectionHeading } from "@/components/marketing/section";
 import { EngineIcon } from "@/components/product/engine-icon";
+import { IconTile } from "@/components/ui/icon-tile";
 import { Mark } from "@/components/ui/mark";
 import type { Engine } from "@/lib/data";
 import { cx } from "@/lib/cx";
@@ -77,9 +78,9 @@ function Num({ value, start }: { value: number; start: boolean }) {
 }
 
 const steps = [
-  { icon: Flag, title: "Log the change", body: "New page, new positioning, new coverage." },
-  { icon: ArrowsClockwise, title: "Keep scanning", body: "The same prompts run every week." },
-  { icon: ChartBar, title: "Compare", body: "Before and after, on the prompts you targeted." },
+  { icon: NotePencil, title: "Log the change", body: "New page, new positioning, new coverage." },
+  { icon: ClockClockwise, title: "Keep scanning", body: "The same prompts run every week." },
+  { icon: ChartLineUp, title: "Compare", body: "Before and after, on the prompts you targeted." },
 ];
 
 export function Experiments() {
@@ -237,9 +238,7 @@ export function Experiments() {
         <ul className="mt-8 space-y-5">
           {steps.map(({ icon: Icon, title, body }) => (
             <li key={title} className="group flex gap-3.5">
-              <span className="grid size-9 shrink-0 place-items-center rounded-full bg-mark-soft text-ink transition-colors duration-300 group-hover:bg-mark">
-                <Icon size={16} />
-              </span>
+              <IconTile icon={Icon} variant="light" className="group-hover:-translate-y-0.5 group-hover:-rotate-6" />
               <span>
                 <span className="block text-[16px] font-medium">{title}</span>
                 <span className="block text-[15px] leading-relaxed text-muted">{body}</span>

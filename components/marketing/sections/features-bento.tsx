@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Section, SectionHeading } from "@/components/marketing/section";
 import { BrandMark } from "@/components/product/brand-mark";
 import { EngineIcon, engineNames } from "@/components/product/engine-icon";
+import { IconTile } from "@/components/ui/icon-tile";
 import { brands, type Engine } from "@/lib/data";
 import { cx } from "@/lib/cx";
 import { ease } from "@/lib/motion";
@@ -77,7 +78,7 @@ function DiscoverPrompts() {
   return (
     <MiniPanel className="group-hover:-translate-y-1">
       <div className="flex items-center gap-2 border-b border-line px-3.5 py-2.5 font-medium">
-        <span className="grid size-5 place-items-center rounded-full bg-mark"><Sparkle size={11} weight="fill" className="text-ink" /></span>
+        <IconTile icon={Sparkle} variant="mark" size="xs" />
         Prompt discovery
         <span className="ml-auto font-normal text-muted">CRM software · US · 4 competitors</span>
       </div>
@@ -337,7 +338,7 @@ export function FeaturesBento() {
   return (
     <Section id="how-it-works">
       <span className="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-surface px-3 py-1 text-[13px] text-ink-2">
-        <span className="grid size-5 place-items-center rounded-full bg-mark"><Sparkle size={11} /></span>
+        <IconTile icon={Sparkle} variant="mark" size="xs" />
         How it works
       </span>
       <SectionHeading className="mt-5 max-w-[640px]" title="From first prompt to a clear plan" />

@@ -13,6 +13,7 @@ import {
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useRef, useState } from "react";
 import { buttonClass } from "@/components/ui/button";
+import { IconTile } from "@/components/ui/icon-tile";
 import { Logo } from "@/components/ui/logo";
 import { cx } from "@/lib/cx";
 import { ease } from "@/lib/motion";
@@ -100,9 +101,7 @@ export function Nav() {
                               onClick={() => setOpen(false)}
                               className="group flex items-start gap-3 rounded-[10px] p-2.5 transition-colors hover:bg-sunken"
                             >
-                              <span className="mt-0.5 grid size-7 place-items-center rounded-full bg-sunken text-ink-2 transition-colors group-hover:bg-mark group-hover:text-ink">
-                                <Icon size={15} />
-                              </span>
+                              <IconTile icon={Icon} variant="light" size="sm" className="mt-0.5 group-hover:-translate-y-0.5" />
                               <span>
                                 <span className="block text-[14px] font-medium text-ink">{title}</span>
                                 <span className="block text-[13px] text-muted">{body}</span>
