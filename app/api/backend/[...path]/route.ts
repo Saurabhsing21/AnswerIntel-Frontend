@@ -22,7 +22,16 @@ async function forward(request: Request, ctx: RouteContext<"/api/backend/[...pat
       cache: "no-store",
     });
     if (res.status === 401) (await cookies()).delete(TOKEN_COOKIE);
-    return new Response(res.body, { status: res.status, headers: { "Content-Type": "application/json" } });
+    // Pass through what the API says it is (JSON, but also PDF and HTML report exports) and its safety headers.
+    const headers = new Headers({
+      "Content-Type": res.headers.get("content-type") ?? "application/json",
+      "X-Content-Type-Options": "nosniff",
+    });
+    for (const name of ["content-disposition", "content-security-policy"]) {
+      const value = res.headers.get(name);
+      if (value) headers.set(name, value);
+    }
+    return new Response(res.body, { status: res.status, headers });
   } catch {
     return Response.json(errorBody("API_UNAVAILABLE", "The AnswerIntel API is not reachable."), { status: 502 });
   }

@@ -1,7 +1,13 @@
 export type Engine = "chatgpt" | "perplexity" | "gemini";
 export type Verdict = "recommended" | "mentioned" | "absent";
 
-export type Project = { id: string; brand_name: string; website: string; description: string | null; category: string; country: string };
+export type Project = { id: string; workspace_id: string; brand_name: string; website: string; description: string | null; category: string; country: string };
+
+export type Role = "owner" | "admin" | "member";
+export type Workspace = { id: string; name: string; role: Role };
+export type Member = { user_id: number; email: string; role: Role };
+
+export type Schedule = { enabled: boolean; frequency: string; day_of_week: number; hour: number; last_run_at: string | null };
 export type Competitor = { id: number; name: string; website: string };
 
 export type Prompt = {
@@ -40,8 +46,53 @@ export type Opportunity = {
   recommended_action: string;
   impact: "high" | "medium" | "low";
   confidence: number;
-  evidence: { prompts?: string[]; domains?: { domain: string; citations: number }[]; competitor?: string; category?: string };
+  evidence: {
+    prompts?: string[];
+    domains?: { domain: string; citations: number }[];
+    competitor?: string;
+    category?: string;
+    findings?: { code: string; impact: string; message: string; action: string }[];
+    discovery_rate?: number;
+    branded_rate?: number;
+    expected_objective?: string;
+  };
   status: "open" | "in_progress" | "completed" | "dismissed";
+  area: "content" | "third_party" | "positioning" | "technical" | null;
+  expected_objective: string | null;
+  related_prompts: string[];
+};
+
+export type ReportType = "weekly" | "monthly" | "manual";
+export type ReportSummary = {
+  id: number;
+  type: ReportType;
+  status: string;
+  period_start: string;
+  period_end: string;
+  scan_id: number;
+  created_at: string;
+  emailed_at: string | null;
+  shared: boolean;
+};
+
+export type Experiment = {
+  id: number;
+  name: string;
+  description: string | null;
+  status: "running" | "completed";
+  started_at: string;
+  ended_at: string | null;
+  baseline: ExperimentSnapshot;
+  after: ExperimentSnapshot | null;
+  comparison: Record<"mention_rate" | "recommendation_rate" | "share_of_voice" | "average_position", { before: number | null; after: number | null; delta: number | null }> | null;
+};
+export type ExperimentSnapshot = {
+  scan_id: number;
+  created_at: string;
+  mention_rate: number;
+  recommendation_rate: number;
+  share_of_voice: number;
+  average_position: number | null;
 };
 
 export type Dashboard = {
@@ -53,7 +104,14 @@ export type Dashboard = {
   visibility: (Record<MetricKey, number | null> & { total_responses: number; deltas: Record<MetricKey, number | null> }) | null;
   engines: { key: Engine; name: string; responses: number; mention_rate: number; recommendation_rate: number }[];
   competitors: { id: number | null; name: string; is_you: boolean; mention_rate: number; recommendation_rate: number; share_of_voice: number; average_position: number | null; citation_count: number }[];
-  trend: { scan_id: number; date: string; mention_rate: number; recommendation_rate: number; share_of_voice: number }[];
+  trend: {
+    scan_id: number;
+    date: string;
+    mention_rate: number;
+    recommendation_rate: number;
+    share_of_voice: number;
+    competitors: Record<string, { mention_rate: number; recommendation_rate: number; share_of_voice: number }>;
+  }[];
   top_opportunities: Opportunity[];
   recent_answers: { id: number; engine: Engine; engine_name: string; prompt: string; verdict: Verdict; position: number | null; created_at: string }[];
 };
@@ -104,3 +162,16 @@ export type CompetitorAnalysis = {
   total_prompts?: number;
   competitors: (Competitor & { mention_rate: number; recommendation_rate: number; share_of_voice: number; average_position: number | null; you_win: number; they_win: number; both: number; losing_prompts: string[]; winning_prompts: string[] })[];
 };
+
+export type ReportContent = {
+  brand: string;
+  website: string;
+  category: string;
+  visibility: NonNullable<Dashboard["visibility"]>;
+  engines: Dashboard["engines"];
+  competitors: Dashboard["competitors"];
+  top_opportunities: Pick<Opportunity, "type" | "title" | "description" | "recommended_action" | "impact">[];
+  trend: Dashboard["trend"];
+  summary: string[];
+};
+export type Report = ReportSummary & { content: ReportContent };

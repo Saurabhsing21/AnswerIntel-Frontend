@@ -1,41 +1,18 @@
 "use client";
 
-import {
-  ChartLine,
-  Hash,
-  Lightbulb,
-  Link as LinkIcon,
-  Plus,
-  SignOut,
-  Users,
-} from "@phosphor-icons/react";
-import Link from "next/link";
-import { useParams, usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { api, UNAUTHORIZED_EVENT, useApi } from "@/lib/api/client";
-import type { Project } from "@/lib/api/types";
-import { Logo } from "@/components/ui/logo";
-import { cx } from "@/lib/cx";
-
-const sections = [
-  { href: "", label: "Overview", icon: ChartLine },
-  { href: "/prompts", label: "Prompts", icon: Hash },
-  { href: "/competitors", label: "Competitors", icon: Users },
-  { href: "/sources", label: "Sources", icon: LinkIcon },
-  { href: "/opportunities", label: "Opportunities", icon: Lightbulb },
-];
+import { X } from "@phosphor-icons/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { UNAUTHORIZED_EVENT } from "@/lib/api/client";
+import { CommandPalette } from "@/components/app/command-palette";
+import { ProjectProvider } from "@/components/app/project-context";
+import { Sidebar } from "@/components/app/sidebar";
+import { ToastProvider } from "@/components/app/toast";
+import { Topbar } from "@/components/app/topbar";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
   const router = useRouter();
-  const params = useParams<{ id?: string }>();
-  const { data: projects, reload: reloadProjects } = useApi<Project[]>("/projects");
-  const current = projects?.find((p) => p.id === params.id);
-
-  // Refresh the project list on navigation so new projects appear immediately.
-  useEffect(() => {
-    reloadProjects();
-  }, [pathname, reloadProjects]);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const toLogin = () => router.push("/login");
@@ -43,100 +20,47 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener(UNAUTHORIZED_EVENT, toLogin);
   }, [router]);
 
-  async function logout() {
-    await api("/api/auth/logout", { method: "POST" });
-    router.push("/login");
-  }
-
-  const nav = params.id
-    ? sections.map((s) => {
-        const href = `/projects/${params.id}${s.href}`;
-        const active = s.href === "" ? pathname === href : pathname.startsWith(href);
-        return { ...s, href, active };
-      })
-    : [];
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMenuOpen(false);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [menuOpen]);
 
   return (
-    <div className="min-h-dvh bg-page lg:grid lg:grid-cols-[240px_1fr]">
-      <aside className="border-b border-line bg-[#fbfbfa] lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col lg:border-r lg:border-b-0">
-        <div className="flex items-center gap-2 px-4 py-3 lg:px-5 lg:py-5">
-          <Link href="/projects" aria-label="All projects">
-            <Logo />
-          </Link>
-          <button
-            type="button"
-            onClick={logout}
-            className="ml-auto grid size-8 place-items-center rounded-full text-muted transition-colors hover:bg-sunken hover:text-ink lg:hidden"
-            aria-label="Log out"
-          >
-            <SignOut size={16} />
-          </button>
-        </div>
+    <ToastProvider>
+      <ProjectProvider>
+        <div className="min-h-dvh bg-page lg:grid lg:grid-cols-[248px_1fr]">
+          <aside className="hidden border-r border-line lg:sticky lg:top-0 lg:block lg:h-dvh">
+            <Sidebar />
+          </aside>
 
-        <div className="px-3 lg:px-4">
-          <p className="hidden px-2 pb-1.5 text-[11px] text-faint lg:block">Projects</p>
-          <div className="flex gap-1 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible">
-            {projects?.map((p) => (
-              <Link
-                key={p.id}
-                href={`/projects/${p.id}`}
-                className={cx(
-                  "flex shrink-0 items-center gap-2 rounded-[8px] px-2 py-1.5 text-[13px] transition-colors",
-                  p.id === params.id ? "bg-sunken font-medium text-ink" : "text-ink-2 hover:bg-black/[0.03]",
-                )}
-              >
-                <span className="grid size-5 place-items-center rounded-[5px] bg-ink text-[10px] font-semibold text-white">
-                  {p.brand_name[0]?.toUpperCase()}
-                </span>
-                <span className="truncate">{p.brand_name}</span>
-              </Link>
-            ))}
-            <Link
-              href="/projects/new"
-              className={cx(
-                "flex shrink-0 items-center gap-2 rounded-[8px] px-2 py-1.5 text-[13px] text-muted transition-colors hover:bg-black/[0.03] hover:text-ink",
-                pathname === "/projects/new" && "bg-sunken text-ink",
-              )}
-            >
-              <Plus size={14} /> New project
-            </Link>
+          {menuOpen && (
+            <div className="fixed inset-0 z-50 lg:hidden">
+              <div className="absolute inset-0 bg-black/30" onClick={() => setMenuOpen(false)} aria-hidden />
+              <div className="absolute inset-y-0 left-0 w-[284px] max-w-[85vw] border-r border-line shadow-[0_24px_60px_-20px_rgb(0_0_0/0.35)]" role="dialog" aria-modal="true" aria-label="Menu">
+                <Sidebar onNavigate={() => setMenuOpen(false)} />
+                <button
+                  type="button"
+                  onClick={() => setMenuOpen(false)}
+                  className="absolute top-3 right-3 grid size-8 place-items-center rounded-full text-muted transition-colors hover:bg-sunken hover:text-ink"
+                  aria-label="Close menu"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="flex min-w-0 flex-col">
+            <Topbar onMenu={() => setMenuOpen(true)} />
+            <main className="flex-1 px-4 py-5 md:px-6 md:py-6">
+              <div className="mx-auto max-w-[1280px]">{children}</div>
+            </main>
           </div>
         </div>
-
-        {current && (
-          <nav aria-label="Project" className="border-t border-line px-3 py-2 lg:mt-3 lg:px-4 lg:pt-4">
-            <p className="hidden truncate px-2 pb-1.5 text-[11px] text-faint lg:block">{current.brand_name}</p>
-            <div className="flex gap-1 overflow-x-auto lg:flex-col">
-              {nav.map(({ href, label, icon: Icon, active }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  aria-current={active ? "page" : undefined}
-                  className={cx(
-                    "flex shrink-0 items-center gap-2 rounded-[8px] px-2 py-1.5 text-[13px] transition-colors",
-                    active ? "bg-ink text-white" : "text-ink-2 hover:bg-black/[0.03]",
-                  )}
-                >
-                  <Icon size={15} />
-                  {label}
-                </Link>
-              ))}
-            </div>
-          </nav>
-        )}
-
-        <button
-          type="button"
-          onClick={logout}
-          className="mt-auto hidden items-center gap-2 border-t border-line px-6 py-4 text-[13px] text-muted transition-colors hover:text-ink lg:flex"
-        >
-          <SignOut size={15} /> Log out
-        </button>
-      </aside>
-
-      <main className="min-w-0 px-4 py-6 md:px-8 md:py-8">
-        <div className="mx-auto max-w-[1180px]">{children}</div>
-      </main>
-    </div>
+        <CommandPalette />
+      </ProjectProvider>
+    </ToastProvider>
   );
 }
