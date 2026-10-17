@@ -31,12 +31,12 @@ export function Footer() {
           </ul>
         </nav>
       </div>
-      <div className="mx-auto max-w-[1200px] px-5 pt-10 text-[13px] text-muted md:px-8">© 2026 AnswerIntel</div>
+      <div className="mx-auto max-w-[1200px] px-5 pt-10 text-[13px] text-muted md:px-8">© 2026 SeenLens</div>
       <p
         aria-hidden
         className="mt-2 text-center font-display text-[19vw] leading-[0.8] font-semibold tracking-[-0.06em] text-ink/[0.05] select-none"
       >
-        AnswerIntel
+        SeenLens
       </p>
     </footer>
   );

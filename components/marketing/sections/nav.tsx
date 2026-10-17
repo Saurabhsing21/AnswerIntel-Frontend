@@ -50,7 +50,7 @@ export function Nav() {
   return (
     <header className="sticky top-3 z-40 px-3 md:top-4">
       <div className="relative mx-auto flex h-14 max-w-[1100px] items-center rounded-full border border-line-strong bg-surface/80 pr-2 pl-5 shadow-[0_8px_30px_-12px_rgb(0_0_0/0.15)] backdrop-blur-md">
-        <a href="#top" aria-label="AnswerIntel home" className="rounded-[6px]">
+        <a href="#top" aria-label="SeenLens home" className="rounded-[6px]">
           <Logo />
         </a>
 

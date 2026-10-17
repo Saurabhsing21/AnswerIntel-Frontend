@@ -18,7 +18,7 @@ const bricolage = Bricolage_Grotesque({
 });
 
 export const metadata: Metadata = {
-  title: "AnswerIntel - AI visibility intelligence for founders",
+  title: "SeenLens - AI visibility intelligence for founders",
   description:
     "See how ChatGPT, Perplexity, Gemini and Google AI recommend your brand, why competitors win, and what to fix next.",
 };

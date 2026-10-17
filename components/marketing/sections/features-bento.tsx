@@ -343,7 +343,7 @@ export function FeaturesBento() {
       </span>
       <SectionHeading className="mt-5 max-w-[640px]" title="From first prompt to a clear plan" />
       <p className="mt-4 max-w-[560px] text-[17px] leading-relaxed text-muted">
-        Set up once in minutes. AnswerIntel keeps asking, measuring, and telling you what to fix.
+        Set up once in minutes. SeenLens keeps asking, measuring, and telling you what to fix.
       </p>
 
       <div className="mt-12 grid gap-3 lg:grid-cols-12">

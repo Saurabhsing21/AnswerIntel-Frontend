@@ -24,7 +24,7 @@ export function buttonClass(variant: Variant = "primary", size: Size = "md") {
   );
 }
 
-/** Arrow that nudges right on hover; part of every AnswerIntel action. */
+/** Arrow that nudges right on hover; part of every SeenLens action. */
 export function ButtonArrow() {
   return (
     <ArrowRight

@@ -5,7 +5,7 @@ import { cx } from "@/lib/cx";
 import { ease } from "@/lib/motion";
 
 /**
- * The AnswerIntel highlighter: a lime stroke drawn behind text, left to right.
+ * The SeenLens highlighter: a lime stroke drawn behind text, left to right.
  * Used for headline emphasis and to mark your brand inside AI answers.
  */
 export function Mark({

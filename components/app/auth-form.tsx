@@ -63,7 +63,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
             </form>
           </div>
           <p className="mt-5 text-center text-[13px] text-muted lg:text-left">
-            {isLogin ? "New to AnswerIntel? " : "Already have an account? "}
+            {isLogin ? "New to SeenLens? " : "Already have an account? "}
             <Link href={isLogin ? "/register" : "/login"} className="font-medium text-ink underline-offset-2 hover:underline">
               {isLogin ? "Create an account" : "Log in"}
             </Link>
@@ -71,7 +71,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         </div>
       </div>
 
-      <aside className="hidden flex-col justify-between bg-night p-12 text-white lg:flex" aria-label="What AnswerIntel does">
+      <aside className="hidden flex-col justify-between bg-night p-12 text-white lg:flex" aria-label="What SeenLens does">
         <div className="flex items-center gap-2" aria-hidden>
           {(["chatgpt", "perplexity", "gemini"] as const).map((engine) => (
             <span key={engine} className="grid size-9 place-items-center rounded-full bg-white/10">

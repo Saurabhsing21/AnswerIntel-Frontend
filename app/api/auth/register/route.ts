@@ -16,6 +16,6 @@ export async function POST(request: Request) {
     }
     return await login(String(email), String(password));
   } catch {
-    return Response.json(errorBody("API_UNAVAILABLE", "The AnswerIntel API is not reachable."), { status: 502 });
+    return Response.json(errorBody("API_UNAVAILABLE", "The SeenLens API is not reachable."), { status: 502 });
   }
 }

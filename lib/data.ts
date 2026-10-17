@@ -101,7 +101,7 @@ export const competitorRows: CompetitorRow[] = brands.map((brand) => {
 
 export const faqs = [
   {
-    q: "What does AnswerIntel do?",
+    q: "What does SeenLens do?",
     a: "It asks AI assistants the questions your buyers ask, records every answer, and shows how often you are mentioned, recommended, and cited compared to your competitors. Then it explains the gaps and suggests what to fix.",
   },
   {

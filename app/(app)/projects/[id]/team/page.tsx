@@ -63,7 +63,7 @@ export default function TeamPage() {
       members.reload();
     } catch (err) {
       const apiErr = err as ApiError;
-      setError(apiErr.code === "USER_NOT_FOUND" ? "That person needs an AnswerIntel account first. Ask them to sign up, then add them here." : apiErr.message);
+      setError(apiErr.code === "USER_NOT_FOUND" ? "That person needs a SeenLens account first. Ask them to sign up, then add them here." : apiErr.message);
     } finally {
       setAdding(false);
     }
@@ -135,7 +135,7 @@ export default function TeamPage() {
           <Card title="Add someone" subtitle="They get access to every project here">
             {manager ? (
               <form onSubmit={add} className="space-y-4 p-5">
-                <Field label="Email" hint="They need an AnswerIntel account. Email invitations are coming soon.">
+                <Field label="Email" hint="They need a SeenLens account. Email invitations are coming soon.">
                   <input className={inputClass} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="cofounder@company.com" required />
                 </Field>
                 <Field label="Role">

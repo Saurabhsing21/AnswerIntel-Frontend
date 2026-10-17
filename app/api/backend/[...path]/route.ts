@@ -49,7 +49,7 @@ async function forward(request: Request, ctx: RouteContext<"/api/backend/[...pat
     }
     return new Response(res.body, { status: res.status, headers });
   } catch {
-    return Response.json(errorBody("API_UNAVAILABLE", "The AnswerIntel API is not reachable."), { status: 502 });
+    return Response.json(errorBody("API_UNAVAILABLE", "The SeenLens API is not reachable."), { status: 502 });
   }
 }
 
