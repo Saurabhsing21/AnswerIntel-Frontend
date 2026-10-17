@@ -85,8 +85,8 @@ export default function TeamPage() {
   return (
     <>
       <PageHeader title="Team" description={workspace ? `People with access to every project in ${workspace.name}.` : "Who can see and work on your projects."} />
-      <div className="grid items-start gap-4 lg:grid-cols-[1.3fr_1fr]">
-        <div className="space-y-4">
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1.3fr_1fr]">
+        <div className="min-w-0 space-y-4">
         <Card title="Members" subtitle={members.data ? `${members.data.length} ${members.data.length === 1 ? "person" : "people"}` : undefined}>
           {projectsLoading || members.loading ? (
             <div className="space-y-2 p-5">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-12" />)}</div>
@@ -131,7 +131,7 @@ export default function TeamPage() {
         <Roles />
         </div>
 
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           <Card title="Add someone" subtitle="They get access to every project here">
             {manager ? (
               <form onSubmit={add} className="space-y-4 p-5">
