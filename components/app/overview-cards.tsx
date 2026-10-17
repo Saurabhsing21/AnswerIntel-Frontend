@@ -133,7 +133,7 @@ export function EnginesCard({ engines, averagePosition }: { engines: Dashboard["
 
 /* ---------- Top opportunities ---------- */
 
-const AREA_ICON = { content: FileText, third_party: Handshake, positioning: Target, technical: Wrench } as const;
+export const AREA_ICON = { content: FileText, third_party: Handshake, positioning: Target, technical: Wrench } as const;
 export const AREA_LABEL = { content: "Content", third_party: "Third-party presence", positioning: "Positioning", technical: "Technical" } as const;
 
 export function OpportunitiesCard({ items, projectId }: { items: Opportunity[]; projectId: string }) {

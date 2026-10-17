@@ -6,13 +6,69 @@ import { cx } from "@/lib/cx";
 
 export function PageHeader({ title, description, actions }: { title: string; description?: string; actions?: React.ReactNode }) {
   return (
-    <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end">
+    <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center">
       <div className="min-w-0">
-        <h1 className="font-display text-[28px] font-semibold tracking-[-0.03em] md:text-[32px]">{title}</h1>
-        {description && <p className="mt-1 max-w-[640px] text-[14px] text-muted">{description}</p>}
+        <h1 className="font-display text-[24px] font-semibold tracking-[-0.03em] md:text-[26px]">{title}</h1>
+        {description && <p className="mt-0.5 max-w-[680px] text-[13px] text-muted">{description}</p>}
       </div>
-      {actions && <div className="flex shrink-0 flex-wrap gap-2 sm:ml-auto">{actions}</div>}
+      {actions && <div className="flex shrink-0 flex-wrap items-center gap-2 sm:ml-auto">{actions}</div>}
     </div>
+  );
+}
+
+/** Pill-style tabs for filtering a list. */
+export function Segmented<T extends string>({
+  value,
+  onChange,
+  options,
+  label,
+}: {
+  value: T;
+  onChange: (value: T) => void;
+  label: string;
+  options: { key: T; label: string; count?: number; icon?: React.ReactNode }[];
+}) {
+  return (
+    <div role="tablist" aria-label={label} className="inline-flex max-w-full flex-wrap gap-1 rounded-[12px] bg-sunken p-1">
+      {options.map((o) => {
+        const on = o.key === value;
+        return (
+          <button
+            key={o.key}
+            type="button"
+            role="tab"
+            aria-selected={on}
+            onClick={() => onChange(o.key)}
+            className={cx(
+              "inline-flex items-center gap-1.5 rounded-[8px] px-3 py-1.5 text-[12px] font-medium transition-colors",
+              on ? "bg-surface text-ink shadow-[0_1px_2px_rgb(0_0_0/0.08)]" : "text-muted hover:text-ink",
+            )}
+          >
+            {o.icon}
+            {o.label}
+            {o.count != null && <span className="font-mono text-[11px] text-faint">{o.count}</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/** A row of headline numbers that sits above a list, so the page opens with the answer. */
+export function StatStrip({ stats }: { stats: { label: string; value: string | number; hint?: string; icon?: React.ReactNode }[] }) {
+  return (
+    <dl className="mb-4 grid grid-cols-2 overflow-hidden rounded-[16px] border border-line-strong bg-surface lg:grid-cols-4">
+      {stats.map((s, i) => (
+        <div key={s.label} className={cx("flex items-center gap-3 px-5 py-4", i % 2 === 1 && "border-l border-line", i > 1 && "border-t border-line lg:border-t-0", i > 0 && "lg:border-l lg:border-line")}>
+          {s.icon && <span className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-sunken text-ink-2">{s.icon}</span>}
+          <div className="min-w-0">
+            <dt className="text-[12px] text-muted">{s.label}</dt>
+            <dd className="font-mono text-[22px] leading-tight tabular-nums text-ink">{s.value}</dd>
+            {s.hint && <dd className="truncate text-[11px] text-faint">{s.hint}</dd>}
+          </div>
+        </div>
+      ))}
+    </dl>
   );
 }
 
