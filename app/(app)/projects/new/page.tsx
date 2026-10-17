@@ -1,8 +1,8 @@
 "use client";
 
 import { Check, Plus, Sparkle, Trash, X } from "@phosphor-icons/react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import { api, ApiError } from "@/lib/api/client";
 import type { Competitor, Project, Prompt } from "@/lib/api/types";
 import { CATEGORY_LABELS } from "@/lib/format";
@@ -13,7 +13,17 @@ import { cx } from "@/lib/cx";
 const STEPS = ["Business", "Competitors", "Prompts", "First scan"];
 
 export default function NewProjectPage() {
+  // useSearchParams needs a Suspense boundary in the App Router.
+  return (
+    <Suspense fallback={null}>
+      <NewProjectWizard />
+    </Suspense>
+  );
+}
+
+function NewProjectWizard() {
   const router = useRouter();
+  const workspaceId = useSearchParams().get("workspace");
   const [step, setStep] = useState(0);
   const [project, setProject] = useState<Project | null>(null);
   const [competitors, setCompetitors] = useState<Competitor[]>([]);
@@ -39,7 +49,7 @@ export default function NewProjectPage() {
     let website = f.website.trim();
     if (website && !/^https?:\/\//.test(website)) website = `https://${website}`;
     const created = await run(() =>
-      api<Project>("/projects", { method: "POST", json: { ...f, website, description: f.description || null } }),
+      api<Project>("/projects", { method: "POST", json: { ...f, website, description: f.description || null, workspace_id: workspaceId || undefined } }),
     );
     if (created) {
       setProject(created);
