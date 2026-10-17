@@ -4,6 +4,7 @@ import { ArrowRight, Check, CircleNotch, Hash, ListChecks, Play, Target, Trophy,
 import Link from "next/link";
 import { isScanActive } from "@/components/app/project-context";
 import { Card } from "@/components/app/ui";
+import { AppFrame } from "@/components/product/app-frame";
 import { EngineIcon } from "@/components/product/engine-icon";
 import { buttonClass } from "@/components/ui/button";
 import type { Scan } from "@/lib/api/types";
@@ -35,6 +36,7 @@ export function GetStarted({
   const current = steps.findIndex((s) => !s.done);
 
   return (
+    <div className="space-y-6">
     <div className="grid gap-4 lg:grid-cols-[1.45fr_1fr]">
       <Card title="Get your first AI visibility report" subtitle={`${doneCount} of ${steps.length} steps done`}>
         <div className="h-1 bg-sunken" role="progressbar" aria-label="Setup progress" aria-valuenow={doneCount} aria-valuemax={steps.length}>
@@ -113,6 +115,15 @@ export function GetStarted({
           Asks ChatGPT, Perplexity and Gemini
         </div>
       </Card>
+    </div>
+
+    <section aria-label="Dashboard preview">
+      <div className="mb-3 flex flex-wrap items-center gap-2 text-[13px]">
+        <span className="font-medium text-ink">This is what your dashboard will look like</span>
+        <span className="rounded-[6px] border border-dashed border-line-strong px-2 py-0.5 text-[11px] text-muted">Sample data</span>
+      </div>
+      <AppFrame />
+    </section>
     </div>
   );
 }

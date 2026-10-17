@@ -93,21 +93,26 @@ function NextScanCard() {
   const next = schedule?.enabled ? nextRun(schedule.day_of_week, schedule.hour) : null;
   return (
     <div className="mx-3 mb-3 rounded-[12px] border border-line bg-surface p-3 text-[11px]">
-      <p className="font-medium text-ink">{next ? "Next scan" : "Weekly scan is off"}</p>
-      <p className="mt-0.5 text-muted">
-        {next ? `${WEEKDAYS[schedule!.day_of_week]} ${formatHour(schedule!.hour)}, ${relativeDay(next)}` : "Track changes automatically every week."}
-      </p>
-      <div className="mt-2.5 flex items-center gap-1.5">
+      <div className="flex items-start gap-2">
+        <div className="min-w-0 flex-1">
+          <p className="font-medium text-ink">{next ? "Next scan" : "Weekly scan is off"}</p>
+          <p className="mt-0.5 text-muted">
+            {next ? `${WEEKDAYS[schedule!.day_of_week]} ${formatHour(schedule!.hour)}, ${relativeDay(next)}` : "Track changes automatically."}
+          </p>
+        </div>
+        {!next && (
+          <Link href={`/projects/${projectId}/settings`} className="shrink-0 rounded-full bg-ink px-2.5 py-1 font-medium text-white transition-colors hover:bg-[#2b2b2b]">
+            Turn on
+          </Link>
+        )}
+      </div>
+      {/* Decorative: dropped on short screens so the navigation above it stays reachable. */}
+      <div className="mt-2.5 flex items-center gap-1.5 [@media(max-height:820px)]:hidden">
         {(["chatgpt", "perplexity", "gemini"] as const).map((engine) => (
           <span key={engine} className="grid size-6 place-items-center rounded-full border border-line">
             <EngineIcon engine={engine} size={11} />
           </span>
         ))}
-        {!next && (
-          <Link href={`/projects/${projectId}/settings`} className="ml-auto rounded-full bg-ink px-2.5 py-1 font-medium text-white transition-colors hover:bg-[#2b2b2b]">
-            Turn on
-          </Link>
-        )}
       </div>
     </div>
   );
@@ -165,12 +170,12 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                 {group.label === "Track" && scans.length > 0 && (
                   <div className="mt-3">
                     <p className="px-2 pb-1 text-[11px] text-faint">Recent scans</p>
-                    {scans.slice(0, 3).map((scan) => (
+                    {scans.slice(0, 3).map((scan, i) => (
                       <Link
                         key={scan.id}
                         href={`${base}/scans/${scan.id}`}
                         onClick={onNavigate}
-                        className="flex items-center gap-2.5 rounded-[8px] px-2 py-1.5 text-[12px] text-ink-2 transition-colors hover:bg-black/[0.04] hover:text-ink"
+                        className={cx("flex items-center gap-2.5 rounded-[8px] px-2 py-1.5 text-[12px] text-ink-2 transition-colors hover:bg-black/[0.04] hover:text-ink", i === 2 && "[@media(max-height:820px)]:hidden")}
                       >
                         <span className={cx("size-1.5 shrink-0 rounded-full", STATUS_COLOR[scan.status], scan.status === "running" && "animate-pulse")} aria-label={scan.status} />
                         {new Date(scan.completed_at ?? scan.created_at).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}
