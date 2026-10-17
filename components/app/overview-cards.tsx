@@ -194,9 +194,9 @@ export function AnswersCard({ answers, projectId, onOpen }: { answers: Dashboard
       className="flex flex-col"
     >
       {/* Two columns on wide screens, so a full-width card never has a long empty right side. */}
-      <div className="grid md:grid-cols-2 md:divide-x md:divide-line">
+      <div className="grid grid-cols-1 md:grid-cols-2 md:divide-x md:divide-line">
         {[answers.slice(0, Math.ceil(answers.length / 2)), answers.slice(Math.ceil(answers.length / 2))].map((column, c) => (
-          <ul key={c} className="divide-y divide-line">
+          <ul key={c} className="min-w-0 divide-y divide-line">
             {column.map((a) => (
               <li key={a.id}>
                 <button type="button" onClick={() => onOpen(a.id)} className="flex w-full items-center gap-3 px-5 py-3 text-left transition-colors hover:bg-[#fbfbfa]">
