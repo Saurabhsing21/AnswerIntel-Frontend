@@ -2,11 +2,12 @@
 
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { Card, EmptyState, PageHeader, Skeleton } from "@/components/app/ui";
+import { Globe, House, LinkSimple, Users } from "@phosphor-icons/react";
+import { useRefreshOnScan } from "@/components/app/project-context";
+import { Card, EmptyState, PageHeader, Segmented, Skeleton, StatStrip } from "@/components/app/ui";
 import { useApi } from "@/lib/api/client";
 import type { Source } from "@/lib/api/types";
 import { SOURCE_LABELS } from "@/lib/format";
-import { cx } from "@/lib/cx";
 
 const GROUPS = [
   { key: "all", label: "All sources" },
@@ -17,23 +18,29 @@ const GROUPS = [
 
 export default function SourcesPage() {
   const { id } = useParams<{ id: string }>();
-  const { data, loading } = useApi<{ scan_id: number | null; sources: Source[] }>(`/projects/${id}/citations`);
+  const { data, loading, reload } = useApi<{ scan_id: number | null; sources: Source[] }>(`/projects/${id}/citations`);
+  useRefreshOnScan(reload);
   const [group, setGroup] = useState<(typeof GROUPS)[number]["key"]>("all");
-  const sources = (data?.sources ?? []).filter((s) => group === "all" || s.group === group);
-  const counts = Object.fromEntries(GROUPS.map((g) => [g.key, g.key === "all" ? data?.sources.length ?? 0 : (data?.sources ?? []).filter((s) => s.group === g.key).length]));
+  const all = data?.sources ?? [];
+  const sources = all.filter((s) => group === "all" || s.group === group);
+  const counts = Object.fromEntries(GROUPS.map((g) => [g.key, g.key === "all" ? all.length : all.filter((s) => s.group === g.key).length]));
+  const maxCitations = Math.max(1, ...all.map((s) => s.citations));
+  const totalCitations = all.reduce((sum, s) => sum + s.citations, 0);
 
   return (
     <>
       <PageHeader title="Sources" description="The sites AI cites when it answers your buyers, and whether they show up next to you or your competitors." />
+      <StatStrip
+        stats={[
+          { label: "Sources cited", value: all.length, hint: `${totalCitations} citations in total`, icon: <Globe size={18} /> },
+          { label: "Only with rivals", value: counts.competitors, hint: "where you are missing", icon: <Users size={18} /> },
+          { label: "With you and rivals", value: counts.both, hint: "contested ground", icon: <LinkSimple size={18} /> },
+          { label: "Only with you", value: counts.you, hint: "your own stronghold", icon: <House size={18} /> },
+        ]}
+      />
       <Card>
-        <div className="flex gap-1 overflow-x-auto border-b border-line p-3" role="tablist" aria-label="Source group">
-          {GROUPS.map((g) => (
-            <button key={g.key} type="button" role="tab" aria-selected={group === g.key} onClick={() => setGroup(g.key)}
-              className={cx("flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-[12px] transition-colors", group === g.key ? "bg-ink text-white" : "text-ink-2 hover:bg-sunken")}>
-              {g.label}
-              <span className={cx("font-mono text-[11px]", group === g.key ? "text-white/60" : "text-faint")}>{counts[g.key]}</span>
-            </button>
-          ))}
+        <div className="overflow-x-auto border-b border-line p-3">
+          <Segmented label="Source group" value={group} onChange={setGroup} options={GROUPS.map((g) => ({ key: g.key, label: g.label, count: counts[g.key] }))} />
         </div>
         {loading ? (
           <div className="space-y-2 p-4">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-10" />)}</div>
@@ -59,7 +66,14 @@ export default function SourcesPage() {
                       {s.owner && <span className="ml-2 text-[11px] text-muted">{s.is_brand_owned ? "your site" : s.owner}</span>}
                     </td>
                     <td className="py-2.5"><span className="rounded-full bg-sunken px-2 py-0.5 text-[11px] text-ink-2">{SOURCE_LABELS[s.source_type] ?? s.source_type}</span></td>
-                    <td className="py-2.5 font-mono tabular-nums">{s.citations}</td>
+                    <td className="py-2.5">
+                      <span className="flex items-center gap-2">
+                        <span className="w-8 font-mono tabular-nums">{s.citations}</span>
+                        <span className="h-1.5 w-20 overflow-hidden rounded-full bg-sunken">
+                          <span className="block h-full rounded-full bg-ink" style={{ width: `${Math.max(4, (s.citations / maxCitations) * 100)}%` }} />
+                        </span>
+                      </span>
+                    </td>
                     <td className="py-2.5 font-mono tabular-nums">{s.with_you || <span className="text-faint">0</span>}</td>
                     <td className="py-2.5 pr-5">
                       <span className="flex flex-wrap gap-1">

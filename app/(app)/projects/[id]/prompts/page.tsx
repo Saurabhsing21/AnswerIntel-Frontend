@@ -1,12 +1,13 @@
 "use client";
 
-import { CaretDown, MagnifyingGlass, PencilSimple, Plus, Sparkle, Trash } from "@phosphor-icons/react";
+import { CaretDown, Hash, ListChecks, MagnifyingGlass, PencilSimple, Plus, Prohibit, Sparkle, Trash, Trophy } from "@phosphor-icons/react";
 import { useParams } from "next/navigation";
 import { Fragment, useMemo, useState } from "react";
 import { EngineIcon } from "@/components/product/engine-icon";
 import { useLatestResults } from "@/components/app/latest-results";
 import { ResponseDrawer } from "@/components/app/response-drawer";
-import { Card, EmptyState, ErrorBanner, PageHeader, Skeleton, VerdictPill, inputClass } from "@/components/app/ui";
+import { useToast } from "@/components/app/toast";
+import { Card, EmptyState, ErrorBanner, PageHeader, Segmented, Skeleton, StatStrip, VerdictPill, inputClass } from "@/components/app/ui";
 import { buttonClass } from "@/components/ui/button";
 import { api, ApiError, useApi } from "@/lib/api/client";
 import type { EngineResult, Prompt } from "@/lib/api/types";
@@ -32,6 +33,7 @@ function Cell({ result }: { result?: EngineResult }) {
 
 export default function PromptsPage() {
   const { id } = useParams<{ id: string }>();
+  const toast = useToast();
   const { data: prompts, setData: setPrompts, loading, error: loadError } = useApi<Prompt[]>(`/projects/${id}/prompts`);
   const { results, scan } = useLatestResults(id);
   const [query, setQuery] = useState("");
@@ -88,20 +90,32 @@ export default function PromptsPage() {
   }
   async function generate() {
     const result = await act(() => api<{ prompts: Prompt[]; created: number }>(`/projects/${id}/prompts/generate`, { method: "POST" }));
-    if (result) setPrompts(result.prompts);
+    if (result) {
+      setPrompts(result.prompts);
+      toast.push(result.created ? `${result.created} new prompts added.` : "No new prompts to add. You already cover the ground.", "success");
+    }
   }
 
   const activeCount = prompts?.filter((p) => p.is_active).length ?? 0;
+  const scanned = results?.prompts ?? [];
   return (
     <>
       <PageHeader
         title="Prompts"
         description={`${activeCount} active questions are asked to every engine on each scan. Results show the latest scan${scan ? ` (#${scan.id})` : ""}.`}
         actions={
-          <button type="button" onClick={generate} disabled={busy} className={buttonClass("secondary", "sm")}>
+          <button type="button" onClick={generate} disabled={busy} className={buttonClass("primary", "sm")}>
             <Sparkle size={14} weight="fill" /> Generate more
           </button>
         }
+      />
+      <StatStrip
+        stats={[
+          { label: "Active", value: activeCount, hint: "asked on every scan", icon: <ListChecks size={18} /> },
+          { label: "Total prompts", value: prompts?.length ?? 0, hint: `${(prompts?.length ?? 0) - activeCount} switched off`, icon: <Hash size={18} /> },
+          { label: "Recommend you", value: scanned.filter((p) => p.recommended_on > 0).length, hint: "on at least one engine", icon: <Trophy size={18} /> },
+          { label: "Never mention you", value: scanned.filter((p) => p.seen_on === 0).length, hint: "your biggest gaps", icon: <Prohibit size={18} /> },
+        ]}
       />
       {(error || loadError) && <div className="mb-4"><ErrorBanner message={error || loadError!.message} /></div>}
       <Card>
@@ -111,13 +125,17 @@ export default function PromptsPage() {
             <span className="sr-only">Search prompts</span>
             <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search prompts" className="min-w-0 flex-1 bg-transparent text-[13px] outline-none" />
           </label>
-          <div className="flex gap-1 overflow-x-auto" role="tablist" aria-label="Category">
-            {categories.map((c) => (
-              <button key={c} type="button" role="tab" aria-selected={category === c} onClick={() => setCategory(c)}
-                className={cx("shrink-0 rounded-full px-3 py-1 text-[12px] transition-colors", category === c ? "bg-ink text-white" : "text-ink-2 hover:bg-sunken")}>
-                {c === "ALL" ? "All" : CATEGORY_LABELS[c] ?? c}
-              </button>
-            ))}
+          <div className="min-w-0 overflow-x-auto">
+            <Segmented
+              label="Category"
+              value={category}
+              onChange={setCategory}
+              options={categories.map((c) => ({
+                key: c,
+                label: c === "ALL" ? "All" : CATEGORY_LABELS[c] ?? c,
+                count: c === "ALL" ? prompts?.length : prompts?.filter((p) => p.category === c).length,
+              }))}
+            />
           </div>
         </div>
         {engines.length > 0 && (
