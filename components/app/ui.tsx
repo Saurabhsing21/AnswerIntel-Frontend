@@ -52,11 +52,11 @@ export function VerdictPill({ verdict, position }: { verdict: Verdict; position?
 
 export function Delta({ value, suffix = "pts" }: { value: number | null | undefined; suffix?: string }) {
   if (value == null) return null;
-  if (value === 0) return <span className="font-mono text-[11px] text-faint">no change</span>;
+  if (value === 0) return <span className="whitespace-nowrap font-mono text-[11px] text-faint">no change</span>;
   const up = value > 0;
   const Icon = up ? ArrowUpRight : ArrowDownRight;
   return (
-    <span className={cx("inline-flex items-center gap-0.5 font-mono text-[11px]", up ? "text-up" : "text-down")}>
+    <span className={cx("inline-flex items-center gap-0.5 whitespace-nowrap font-mono text-[11px]", up ? "text-up" : "text-down")}>
       <Icon size={11} weight="bold" />
       {Math.abs(Math.round(value * 1000) / 10)} {suffix}
     </span>
