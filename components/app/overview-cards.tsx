@@ -5,7 +5,7 @@ import Link from "next/link";
 import { BrandTile } from "@/components/app/brand-tile";
 import { Sparkline } from "@/components/app/charts";
 import { useProject } from "@/components/app/project-context";
-import { Card, Delta, EmptyState, ImpactPill, VerdictPill } from "@/components/app/ui";
+import { Card, Delta, EmptyState, ImpactPill, TONE_TILE, VerdictPill, type Tone } from "@/components/app/ui";
 import { EngineIcon } from "@/components/product/engine-icon";
 import { PositionChip } from "@/components/product/delta";
 import { useApi } from "@/lib/api/client";
@@ -18,6 +18,9 @@ const seeAll = "text-[12px] font-medium text-muted transition-colors hover:text-
 
 /* ---------- KPI tabs: the three headline numbers, also the chart's metric switch ---------- */
 
+/** Each headline metric keeps one colour everywhere it appears: tabs, sparklines and the engine bars. */
+export const METRIC_COLOR: Partial<Record<MetricKey, string>> = { mention_rate: "#2f6bff", recommendation_rate: "#16a34a", share_of_voice: "#7a5af8" };
+
 export type KpiTab = { key: MetricKey; label: string; value: number; delta: number | null; spark: number[] };
 
 export function KpiTabs({ tabs, selected, onSelect }: { tabs: KpiTab[]; selected: MetricKey; onSelect: (key: MetricKey) => void }) {
@@ -25,6 +28,7 @@ export function KpiTabs({ tabs, selected, onSelect }: { tabs: KpiTab[]; selected
     <div role="tablist" aria-label="Metric" className="grid overflow-hidden rounded-[16px] border border-line-strong bg-surface sm:grid-cols-3">
       {tabs.map((t, i) => {
         const on = t.key === selected;
+        const color = METRIC_COLOR[t.key] ?? "#171717";
         return (
           <button
             key={t.key}
@@ -35,17 +39,21 @@ export function KpiTabs({ tabs, selected, onSelect }: { tabs: KpiTab[]; selected
             className={cx(
               "flex items-center justify-between gap-3 px-5 py-4 text-left transition-colors",
               i > 0 && "border-t border-line sm:border-t-0 sm:border-l",
-              on ? "bg-[#fafaf9] shadow-[inset_0_-2px_0_#171717]" : "hover:bg-[#fbfbfa]",
+              on ? "bg-[#fafaf9]" : "hover:bg-[#fbfbfa]",
             )}
+            style={on ? { boxShadow: `inset 0 -2px 0 ${color}` } : undefined}
           >
             <span className="min-w-0">
-              <span className="block text-[12px] text-muted">{t.label}</span>
+              <span className="flex items-center gap-1.5 text-[12px] text-muted">
+                <span className="size-2 rounded-full" style={{ background: color }} />
+                {t.label}
+              </span>
               <span className="mt-1.5 flex items-baseline gap-2">
                 <span className="font-mono text-[30px] leading-none tracking-tight tabular-nums">{pct(t.value)}</span>
                 <Delta value={t.delta} />
               </span>
             </span>
-            <Sparkline values={t.spark} color={on ? "#171717" : "#a3a3a3"} />
+            <Sparkline values={t.spark} color={on ? color : "#a3a3a3"} />
           </button>
         );
       })}
@@ -85,7 +93,7 @@ export function RankTable({ rows, metricLabel, projectId }: { rows: RankRow[]; m
             <span className="flex min-w-0 items-center gap-2.5">
               <BrandTile name={r.name} color={r.color} size={22} />
               <span className="truncate text-[13px] font-medium text-ink">{r.name}</span>
-              {r.isYou && <span className="rounded-[4px] bg-ink px-1.5 py-px text-[10px] font-medium text-white">You</span>}
+              {r.isYou && <span className="rounded-[4px] bg-mark px-1.5 py-px text-[10px] font-semibold text-ink">You</span>}
             </span>
             <span className="flex items-baseline justify-end gap-2 font-mono tabular-nums">
               <span className="text-[13px] text-ink">{pct(r.value)}</span>
@@ -118,11 +126,11 @@ export function EnginesCard({ engines, averagePosition }: { engines: Dashboard["
               <span className="w-12 text-right text-[11px] text-faint">seen</span>
             </div>
             <div className="mt-2.5 space-y-1.5">
-              <div className="h-1.5 rounded-full bg-[#d9d9d6]" style={{ width: `${Math.max(2, e.mention_rate * 100)}%` }} />
-              <div className="h-1.5 rounded-full bg-ink" style={{ width: `${Math.max(2, e.recommendation_rate * 100)}%` }} />
+              <div className="h-1.5 rounded-full bg-blue" style={{ width: `${Math.max(2, e.mention_rate * 100)}%` }} />
+              <div className="h-1.5 rounded-full bg-up" style={{ width: `${Math.max(2, e.recommendation_rate * 100)}%` }} />
             </div>
             <p className="mt-1.5 text-[11px] text-faint">
-              {pct(e.recommendation_rate)} recommended · {e.responses} answers
+              <span className="text-blue-ink">{pct(e.mention_rate)} seen</span> · <span className="text-up-ink">{pct(e.recommendation_rate)} recommended</span> · {e.responses} answers
             </p>
           </li>
         ))}
@@ -134,6 +142,7 @@ export function EnginesCard({ engines, averagePosition }: { engines: Dashboard["
 /* ---------- Top opportunities ---------- */
 
 export const AREA_ICON = { content: FileText, third_party: Handshake, positioning: Target, technical: Wrench } as const;
+export const AREA_TONE: Record<keyof typeof AREA_ICON, Tone> = { content: "blue", third_party: "violet", positioning: "amber", technical: "green" };
 export const AREA_LABEL = { content: "Content", third_party: "Third-party presence", positioning: "Positioning", technical: "Technical" } as const;
 
 export function OpportunitiesCard({ items, projectId }: { items: Opportunity[]; projectId: string }) {
@@ -155,7 +164,7 @@ export function OpportunitiesCard({ items, projectId }: { items: Opportunity[]; 
             return (
               <li key={o.id} className="flex flex-1">
                 <Link href={`/projects/${projectId}/opportunities#opp-${o.id}`} className="group flex w-full items-center gap-3.5 px-5 py-3 transition-colors hover:bg-[#fbfbfa]">
-                  <span className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-sunken text-ink-2">
+                  <span className={cx("grid size-9 shrink-0 place-items-center rounded-[10px]", o.area ? TONE_TILE[AREA_TONE[o.area]] : "bg-sunken text-ink-2")}>
                     <Icon size={18} />
                   </span>
                   <span className="min-w-0 flex-1">
@@ -222,11 +231,11 @@ export function AnswersCard({ answers, projectId, onOpen }: { answers: Dashboard
 
 /* ---------- Activity: tracking and reporting at a glance ---------- */
 
-function ActivityRow({ icon: Icon, title, meta, href, action }: { icon: typeof Flask; title: string; meta: string; href: string; action: string }) {
+function ActivityRow({ icon: Icon, title, meta, href, action, tone }: { icon: typeof Flask; title: string; meta: string; href: string; action: string; tone: Tone }) {
   return (
     <li className="flex flex-1">
       <Link href={href} className="group flex w-full items-center gap-3.5 px-5 py-3 transition-colors hover:bg-[#fbfbfa]">
-        <span className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-sunken text-ink-2">
+        <span className={cx("grid size-9 shrink-0 place-items-center rounded-[10px]", TONE_TILE[tone])}>
           <Icon size={18} />
         </span>
         <span className="min-w-0 flex-1">
@@ -270,19 +279,19 @@ export function ActivityCard({ projectId, visibility }: { projectId: string; vis
       </div>
       <ul className="flex flex-1 flex-col divide-y divide-line">
         {running ? (
-          <ActivityRow icon={Flask} title={running.name} meta={`Running since ${new Date(running.started_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}, baseline ${pct(running.baseline.mention_rate)} mentions`} href={`${base}/experiments`} action="Open" />
+          <ActivityRow icon={Flask} tone="violet" title={running.name} meta={`Running since ${new Date(running.started_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}, baseline ${pct(running.baseline.mention_rate)} mentions`} href={`${base}/experiments`} action="Open" />
         ) : (
-          <ActivityRow icon={Flask} title="Test a change" meta="Save a baseline, change your site, then re-scan to see the impact." href={`${base}/experiments?new=1`} action="Start" />
+          <ActivityRow icon={Flask} tone="violet" title="Test a change" meta="Save a baseline, change your site, then re-scan to see the impact." href={`${base}/experiments?new=1`} action="Start" />
         )}
         {latestReport ? (
-          <ActivityRow icon={ChartLine} title={`Latest ${latestReport.type} report`} meta={`${timeAgo(latestReport.created_at)}${latestReport.emailed_at ? ", emailed" : ""}`} href={`${base}/reports`} action="Open" />
+          <ActivityRow icon={ChartLine} tone="blue" title={`Latest ${latestReport.type} report`} meta={`${timeAgo(latestReport.created_at)}${latestReport.emailed_at ? ", emailed" : ""}`} href={`${base}/reports`} action="Open" />
         ) : (
-          <ActivityRow icon={ChartLine} title="Create your first report" meta="A shareable summary for your team, as a PDF or a link." href={`${base}/reports?new=weekly`} action="Create" />
+          <ActivityRow icon={ChartLine} tone="blue" title="Create your first report" meta="A shareable summary for your team, as a PDF or a link." href={`${base}/reports?new=weekly`} action="Create" />
         )}
         {schedule?.enabled ? (
-          <ActivityRow icon={CalendarCheck} title="Weekly scan is on" meta={`Every ${WEEKDAYS[schedule.day_of_week]} at ${formatHour(schedule.hour)}`} href={`${base}/settings`} action="Edit" />
+          <ActivityRow icon={CalendarCheck} tone="amber" title="Weekly scan is on" meta={`Every ${WEEKDAYS[schedule.day_of_week]} at ${formatHour(schedule.hour)}`} href={`${base}/settings`} action="Edit" />
         ) : (
-          <ActivityRow icon={CalendarCheck} title="Weekly scan is off" meta="Turn it on to track changes without lifting a finger." href={`${base}/settings`} action="Turn on" />
+          <ActivityRow icon={CalendarCheck} tone="amber" title="Weekly scan is off" meta="Turn it on to track changes without lifting a finger." href={`${base}/settings`} action="Turn on" />
         )}
       </ul>
     </Card>

@@ -46,10 +46,10 @@ export default function ScanDetailPage() {
 
       <StatStrip
         stats={[
-          { label: "Prompts asked", value: prompts.length, hint: "each to 3 engines", icon: <ListMagnifyingGlass size={18} /> },
-          { label: "Recommended you", value: won.length, hint: "on at least one engine", icon: <Trophy size={18} /> },
-          { label: "Never mentioned", value: missed.length, hint: "on any engine", icon: <Prohibit size={18} /> },
-          { label: "Answers", value: data.scan.completed_runs, hint: data.scan.failed_runs ? `${data.scan.failed_runs} failed` : "all succeeded", icon: <CheckCircle size={18} /> },
+          { label: "Prompts asked", value: prompts.length, hint: "each to 3 engines", icon: <ListMagnifyingGlass size={18} />, tone: "blue" },
+          { label: "Recommended you", value: won.length, hint: "on at least one engine", icon: <Trophy size={18} />, tone: "green" },
+          { label: "Never mentioned", value: missed.length, hint: "on any engine", icon: <Prohibit size={18} />, tone: "red" },
+          { label: "Answers", value: data.scan.completed_runs, hint: data.scan.failed_runs ? `${data.scan.failed_runs} failed` : "all succeeded", icon: <CheckCircle size={18} />, tone: "violet" },
         ]}
       />
 

@@ -21,8 +21,8 @@ function Cell({ result }: { result?: EngineResult }) {
       title={`${result.engine_name}: ${result.verdict}${result.position ? ` #${result.position}` : ""}`}
       className={cx(
         "grid size-6 place-items-center rounded-[6px]",
-        result.verdict === "recommended" && "bg-ink text-white",
-        result.verdict === "mentioned" && "bg-[#d9d9d6] text-ink",
+        result.verdict === "recommended" && "bg-up text-white",
+        result.verdict === "mentioned" && "bg-blue-soft text-blue-ink",
         result.verdict === "absent" && "border border-line-strong text-faint",
       )}
     >
@@ -111,10 +111,10 @@ export default function PromptsPage() {
       />
       <StatStrip
         stats={[
-          { label: "Active", value: activeCount, hint: "asked on every scan", icon: <ListChecks size={18} /> },
-          { label: "Total prompts", value: prompts?.length ?? 0, hint: `${(prompts?.length ?? 0) - activeCount} switched off`, icon: <Hash size={18} /> },
-          { label: "Recommend you", value: scanned.filter((p) => p.recommended_on > 0).length, hint: "on at least one engine", icon: <Trophy size={18} /> },
-          { label: "Never mention you", value: scanned.filter((p) => p.seen_on === 0).length, hint: "your biggest gaps", icon: <Prohibit size={18} /> },
+          { label: "Active", value: activeCount, hint: "asked on every scan", icon: <ListChecks size={18} />, tone: "blue" },
+          { label: "Total prompts", value: prompts?.length ?? 0, hint: `${(prompts?.length ?? 0) - activeCount} switched off`, icon: <Hash size={18} />, tone: "violet" },
+          { label: "Recommend you", value: scanned.filter((p) => p.recommended_on > 0).length, hint: "on at least one engine", icon: <Trophy size={18} />, tone: "green" },
+          { label: "Never mention you", value: scanned.filter((p) => p.seen_on === 0).length, hint: "your biggest gaps", icon: <Prohibit size={18} />, tone: "red" },
         ]}
       />
       {(error || loadError) && <div className="mb-4"><ErrorBanner message={error || loadError!.message} /></div>}
@@ -141,8 +141,8 @@ export default function PromptsPage() {
         {engines.length > 0 && (
           <div className="hidden items-center gap-4 border-b border-line px-4 py-2 text-[11px] text-muted md:flex">
             <span>Latest scan, per engine:</span>
-              <span className="flex items-center gap-1"><span className="size-3 rounded-[3px] bg-ink" />Recommended</span>
-              <span className="flex items-center gap-1"><span className="size-3 rounded-[3px] bg-[#d9d9d6]" />Mentioned</span>
+              <span className="flex items-center gap-1"><span className="size-3 rounded-[3px] bg-up" />Recommended</span>
+              <span className="flex items-center gap-1"><span className="size-3 rounded-[3px] bg-blue-soft ring-1 ring-blue/30" />Mentioned</span>
               <span className="flex items-center gap-1"><span className="size-3 rounded-[3px] border border-line-strong" />Absent</span>
           </div>
         )}

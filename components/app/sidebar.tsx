@@ -18,7 +18,7 @@ import { formatHour, nextRun, relativeDay, WEEKDAYS } from "@/lib/schedule";
 const itemClass = (active: boolean) =>
   cx(
     "flex items-center gap-2.5 rounded-[8px] px-2 py-1.5 text-[13px] transition-colors",
-    active ? "bg-sunken font-medium text-ink" : "text-ink-2 hover:bg-black/[0.04] hover:text-ink",
+    active ? "bg-mark-soft font-medium text-ink" : "text-ink-2 hover:bg-black/[0.04] hover:text-ink",
   );
 
 const STATUS_COLOR = { completed: "bg-up", partial: "bg-[#eab308]", failed: "bg-down", queued: "bg-ink", running: "bg-ink" } as const;

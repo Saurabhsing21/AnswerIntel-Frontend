@@ -85,10 +85,10 @@ export default function ScansPage() {
 
       <StatStrip
         stats={[
-          { label: "Scans", value: scans.length, hint: "since you started", icon: <Stack size={18} /> },
-          { label: "Answers collected", value: answers.toLocaleString(), hint: "across all engines", icon: <CheckCircle size={18} /> },
-          { label: "Completed cleanly", value: `${healthy}%`, hint: "no failed calls", icon: <ClockCounterClockwise size={18} /> },
-          { label: "Latest", value: latestScan ? `#${latestScan.id}` : "none", hint: latestScan ? timeAgo(latestScan.completed_at ?? latestScan.created_at) : "run your first scan", icon: <ArrowRight size={18} /> },
+          { label: "Scans", value: scans.length, hint: "since you started", icon: <Stack size={18} />, tone: "blue" },
+          { label: "Answers collected", value: answers.toLocaleString(), hint: "across all engines", icon: <CheckCircle size={18} />, tone: "violet" },
+          { label: "Completed cleanly", value: `${healthy}%`, hint: "no failed calls", icon: <ClockCounterClockwise size={18} />, tone: "green" },
+          { label: "Latest", value: latestScan ? `#${latestScan.id}` : "none", hint: latestScan ? timeAgo(latestScan.completed_at ?? latestScan.created_at) : "run your first scan", icon: <ArrowRight size={18} />, tone: "amber" },
         ]}
       />
 

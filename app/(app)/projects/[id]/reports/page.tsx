@@ -138,10 +138,10 @@ function ReportsInner() {
 
       <StatStrip
         stats={[
-          { label: "Reports", value: reports.length, hint: "kept as a frozen snapshot", icon: <ChartLine size={18} /> },
-          { label: "Shared links", value: reports.filter((r) => r.shared).length, hint: "readable without an account", icon: <ShareNetwork size={18} /> },
-          { label: "Emailed", value: reports.filter((r) => r.emailed_at).length, hint: "sent to you", icon: <EnvelopeSimple size={18} /> },
-          { label: "Weekly email", value: schedule?.enabled ? "On" : "Off", hint: schedule?.enabled ? `${WEEKDAYS[schedule.day_of_week]} ${formatHour(schedule.hour)}` : "turn on in Settings", icon: <CalendarCheck size={18} /> },
+          { label: "Reports", value: reports.length, hint: "kept as a frozen snapshot", icon: <ChartLine size={18} />, tone: "blue" },
+          { label: "Shared links", value: reports.filter((r) => r.shared).length, hint: "readable without an account", icon: <ShareNetwork size={18} />, tone: "violet" },
+          { label: "Emailed", value: reports.filter((r) => r.emailed_at).length, hint: "sent to you", icon: <EnvelopeSimple size={18} />, tone: "green" },
+          { label: "Weekly email", value: schedule?.enabled ? "On" : "Off", hint: schedule?.enabled ? `${WEEKDAYS[schedule.day_of_week]} ${formatHour(schedule.hour)}` : "turn on in Settings", icon: <CalendarCheck size={18} />, tone: "amber" },
         ]}
       />
 

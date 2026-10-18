@@ -32,10 +32,10 @@ export default function SourcesPage() {
       <PageHeader title="Sources" description="The sites AI cites when it answers your buyers, and whether they show up next to you or your competitors." />
       <StatStrip
         stats={[
-          { label: "Sources cited", value: all.length, hint: `${totalCitations} citations in total`, icon: <Globe size={18} /> },
-          { label: "Only with rivals", value: counts.competitors, hint: "where you are missing", icon: <Users size={18} /> },
-          { label: "With you and rivals", value: counts.both, hint: "contested ground", icon: <LinkSimple size={18} /> },
-          { label: "Only with you", value: counts.you, hint: "your own stronghold", icon: <House size={18} /> },
+          { label: "Sources cited", value: all.length, hint: `${totalCitations} citations in total`, icon: <Globe size={18} />, tone: "blue" },
+          { label: "Only with rivals", value: counts.competitors, hint: "where you are missing", icon: <Users size={18} />, tone: "red" },
+          { label: "With you and rivals", value: counts.both, hint: "contested ground", icon: <LinkSimple size={18} />, tone: "amber" },
+          { label: "Only with you", value: counts.you, hint: "your own stronghold", icon: <House size={18} />, tone: "green" },
         ]}
       />
       <Card>

@@ -4,9 +4,9 @@ import { ArrowCounterClockwise, Check, CheckCircle, Flag, Lightbulb, Play, Prohi
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { useRefreshOnScan } from "@/components/app/project-context";
-import { AREA_ICON, AREA_LABEL } from "@/components/app/overview-cards";
+import { AREA_ICON, AREA_LABEL, AREA_TONE } from "@/components/app/overview-cards";
 import { useToast } from "@/components/app/toast";
-import { Card, EmptyState, ErrorBanner, ImpactPill, PageHeader, Segmented, Skeleton, StatStrip } from "@/components/app/ui";
+import { Card, EmptyState, ErrorBanner, ImpactPill, PageHeader, Segmented, Skeleton, StatStrip, TONE_TILE } from "@/components/app/ui";
 import { buttonClass } from "@/components/ui/button";
 import { api, ApiError, useApi } from "@/lib/api/client";
 import type { Opportunity } from "@/lib/api/types";
@@ -111,10 +111,10 @@ export default function OpportunitiesPage() {
 
       <StatStrip
         stats={[
-          { label: "To do", value: todo.length, hint: "open or in progress", icon: <Lightbulb size={18} /> },
-          { label: "High impact", value: todo.filter((o) => o.impact === "high").length, hint: "fix these first", icon: <Flag size={18} /> },
-          { label: "In progress", value: all.filter((o) => o.status === "in_progress").length, hint: "you are on it", icon: <Play size={18} /> },
-          { label: "Done", value: all.filter((o) => o.status === "completed").length, hint: "this scan", icon: <CheckCircle size={18} /> },
+          { label: "To do", value: todo.length, hint: "open or in progress", icon: <Lightbulb size={18} />, tone: "blue" },
+          { label: "High impact", value: todo.filter((o) => o.impact === "high").length, hint: "fix these first", icon: <Flag size={18} />, tone: "red" },
+          { label: "In progress", value: all.filter((o) => o.status === "in_progress").length, hint: "you are on it", icon: <Play size={18} />, tone: "amber" },
+          { label: "Done", value: all.filter((o) => o.status === "completed").length, hint: "this scan", icon: <CheckCircle size={18} />, tone: "green" },
         ]}
       />
 
@@ -164,7 +164,7 @@ export default function OpportunitiesPage() {
                 <div id={`opp-${o.id}`} className="grid scroll-mt-24 lg:grid-cols-[1.5fr_1fr]">
                   <div className="p-5">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="grid size-8 place-items-center rounded-[10px] bg-sunken text-ink-2">
+                      <span className={cx("grid size-8 place-items-center rounded-[10px]", o.area ? TONE_TILE[AREA_TONE[o.area]] : "bg-sunken text-ink-2")}>
                         <Icon size={16} />
                       </span>
                       <ImpactPill impact={o.impact} />

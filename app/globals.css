@@ -22,6 +22,22 @@
   --color-mark: #d7f36b;
   --color-mark-soft: #f0fbc9;
 
+  /* Secondary palette: meaning, not decoration. Each hue has a strong value (icons, bars, lines)
+     and a soft tint with a readable ink for chips and tiles. */
+  --color-blue: #2f6bff;
+  --color-blue-soft: #e8efff;
+  --color-blue-ink: #1d4ed8;
+  --color-violet: #7a5af8;
+  --color-violet-soft: #efebff;
+  --color-violet-ink: #5b3fd6;
+  --color-amber: #e59a0b;
+  --color-amber-soft: #fff1d0;
+  --color-amber-ink: #9a5b00;
+  --color-up-soft: #e2f5e9;
+  --color-up-ink: #137a3a;
+  --color-down-soft: #fdebeb;
+  --color-down-ink: #b42318;
+
   --radius-control: 999px;
   --radius-card: 20px;
 

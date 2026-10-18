@@ -182,10 +182,10 @@ function ExperimentsInner() {
 
       <StatStrip
         stats={[
-          { label: "Running", value: running.length, hint: "waiting for a re-scan", icon: <Flask size={18} /> },
-          { label: "Completed", value: completed.length, hint: "with a before and after", icon: <Check size={18} /> },
-          { label: "Improved mentions", value: improved, hint: `of ${completed.length} completed`, icon: <ArrowUpRight size={18} /> },
-          { label: "Latest scan", value: latestScan ? `#${latestScan.id}` : "none", hint: latestScan ? latestScan.status : "run one to begin", icon: <ArrowRight size={18} /> },
+          { label: "Running", value: running.length, hint: "waiting for a re-scan", icon: <Flask size={18} />, tone: "amber" },
+          { label: "Completed", value: completed.length, hint: "with a before and after", icon: <Check size={18} />, tone: "blue" },
+          { label: "Improved mentions", value: improved, hint: `of ${completed.length} completed`, icon: <ArrowUpRight size={18} />, tone: "green" },
+          { label: "Latest scan", value: latestScan ? `#${latestScan.id}` : "none", hint: latestScan ? latestScan.status : "run one to begin", icon: <ArrowRight size={18} />, tone: "violet" },
         ]}
       />
 

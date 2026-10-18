@@ -95,10 +95,10 @@ function CompetitorsInner() {
 
       <StatStrip
         stats={[
-          { label: "Tracked", value: `${competitors?.length ?? 0}/${MAX}`, hint: "brands you compare against", icon: <UsersThree size={18} /> },
-          { label: "Prompts you win", value: wins, hint: "you are recommended, they are not", icon: <Trophy size={18} /> },
-          { label: "Prompts you lose", value: losses, hint: "they are recommended, you are not", icon: <Sword size={18} /> },
-          { label: "Biggest threat", value: threat && threat.they_win > 0 ? threat.name : "None", hint: threat && threat.they_win > 0 ? `wins ${threat.they_win} prompts` : "nobody is ahead of you", icon: <Crosshair size={18} /> },
+          { label: "Tracked", value: `${competitors?.length ?? 0}/${MAX}`, hint: "brands you compare against", icon: <UsersThree size={18} />, tone: "blue" },
+          { label: "Prompts you win", value: wins, hint: "you are recommended, they are not", icon: <Trophy size={18} />, tone: "green" },
+          { label: "Prompts you lose", value: losses, hint: "they are recommended, you are not", icon: <Sword size={18} />, tone: "red" },
+          { label: "Biggest threat", value: threat && threat.they_win > 0 ? threat.name : "None", hint: threat && threat.they_win > 0 ? `wins ${threat.they_win} prompts` : "nobody is ahead of you", icon: <Crosshair size={18} />, tone: "amber" },
         ]}
       />
 

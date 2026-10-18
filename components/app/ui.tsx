@@ -4,6 +4,17 @@ import { ArrowDownRight, ArrowUpRight, WarningCircle } from "@phosphor-icons/rea
 import type { Verdict } from "@/lib/api/types";
 import { cx } from "@/lib/cx";
 
+/** Secondary colours, used for meaning: blue = volume, violet = reach, amber = in motion, green = winning, red = losing. */
+export type Tone = "blue" | "violet" | "amber" | "green" | "red" | "lime";
+export const TONE_TILE: Record<Tone, string> = {
+  blue: "bg-blue-soft text-blue-ink",
+  violet: "bg-violet-soft text-violet-ink",
+  amber: "bg-amber-soft text-amber-ink",
+  green: "bg-up-soft text-up-ink",
+  red: "bg-down-soft text-down-ink",
+  lime: "bg-mark-soft text-ink",
+};
+
 export function PageHeader({ title, description, actions }: { title: string; description?: string; actions?: React.ReactNode }) {
   return (
     <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -55,12 +66,12 @@ export function Segmented<T extends string>({
 }
 
 /** A row of headline numbers that sits above a list, so the page opens with the answer. */
-export function StatStrip({ stats }: { stats: { label: string; value: string | number; hint?: string; icon?: React.ReactNode }[] }) {
+export function StatStrip({ stats }: { stats: { label: string; value: string | number; hint?: string; icon?: React.ReactNode; tone?: Tone }[] }) {
   return (
     <dl className="mb-4 grid grid-cols-2 overflow-hidden rounded-[16px] border border-line-strong bg-surface lg:grid-cols-4">
       {stats.map((s, i) => (
         <div key={s.label} className={cx("flex items-center gap-3 px-5 py-4", i % 2 === 1 && "border-l border-line", i > 1 && "border-t border-line lg:border-t-0", i > 0 && "lg:border-l lg:border-line")}>
-          {s.icon && <span className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-sunken text-ink-2">{s.icon}</span>}
+          {s.icon && <span className={cx("grid size-9 shrink-0 place-items-center rounded-[10px]", s.tone ? TONE_TILE[s.tone] : "bg-sunken text-ink-2")}>{s.icon}</span>}
           <div className="min-w-0">
             <dt className="text-[12px] text-muted">{s.label}</dt>
             <dd className="font-mono text-[22px] leading-tight tabular-nums text-ink">{s.value}</dd>
@@ -95,8 +106,8 @@ export function VerdictPill({ verdict, position }: { verdict: Verdict; position?
     <span
       className={cx(
         "inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium",
-        verdict === "recommended" && "bg-ink text-white",
-        verdict === "mentioned" && "bg-sunken text-ink",
+        verdict === "recommended" && "bg-up-soft text-up-ink",
+        verdict === "mentioned" && "bg-blue-soft text-blue-ink",
         verdict === "absent" && "border border-dashed border-line-strong text-muted",
       )}
     >
@@ -124,9 +135,9 @@ export function ImpactPill({ impact }: { impact: "high" | "medium" | "low" }) {
     <span
       className={cx(
         "rounded-full px-2 py-0.5 text-[11px] font-medium capitalize",
-        impact === "high" && "bg-[#fdf2f2] text-[#b91c1c]",
-        impact === "medium" && "bg-[#fdf6dd] text-[#a16207]",
-        impact === "low" && "bg-sunken text-ink-2",
+        impact === "high" && "bg-down-soft text-down-ink",
+        impact === "medium" && "bg-amber-soft text-amber-ink",
+        impact === "low" && "bg-blue-soft text-blue-ink",
       )}
     >
       {impact} impact
