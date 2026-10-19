@@ -200,7 +200,7 @@ export function PlanChooser({ billing, returnPath, action = "Continue to payment
 
   return (
     <div>
-      <Segmented label="Billing period" value={period} onChange={setPeriod} options={[{ key: "month", label: "Monthly" }, { key: "year", label: "Yearly · 2 months free" }]} />
+      <Segmented label="Billing period" value={period} onChange={setPeriod} options={[{ key: "month", label: "Monthly" }, { key: "year", label: "Yearly · save 20%" }]} />
       <div role="radiogroup" aria-label="Plan" className="mt-3 grid gap-2 sm:grid-cols-3">
         {PLANS.map((p) => {
           const on = plan === p.key;
@@ -221,7 +221,7 @@ export function PlanChooser({ billing, returnPath, action = "Continue to payment
                 ${period === "month" ? p.monthly : p.yearly}
                 <span className="font-sans text-[12px] text-muted"> / {period}</span>
               </span>
-              <span className="mt-1 block text-[12px] text-muted">{p.limits.slice(0, 3).join(" · ")}</span>
+              <span className="mt-1 block text-[12px] text-muted">{p.includes.slice(0, 2).join(" · ")}</span>
             </button>
           );
         })}

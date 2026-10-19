@@ -18,18 +18,17 @@ export default function PricingPage() {
     <>
       <Nav />
       <main id="top">
-        <Section innerClassName="pt-16 md:pt-24">
-          <Reveal className="mx-auto max-w-[760px] text-center">
-            <p className="text-[14px] font-medium text-muted">Pricing</p>
-            <h1 className="mt-3 text-balance font-display text-[44px] leading-[1] font-semibold tracking-[-0.045em] md:text-[72px]">
-              Know where AI <Mark delay={0.3}>sends your buyers</Mark>
+        {/* Compact on purpose: all three prices should be visible without scrolling. */}
+        <Section innerClassName="md:pt-10">
+          <Reveal className="mx-auto max-w-[720px] text-center">
+            <h1 className="text-balance font-display text-[38px] leading-[1.02] font-semibold tracking-[-0.04em] md:text-[54px]">
+              Pricing for <Mark delay={0.3}>every stage</Mark>
             </h1>
-            <p className="mx-auto mt-6 max-w-[600px] text-[17px] leading-relaxed text-muted md:text-[18px]">
-              Every plan asks real AI engines the questions your buyers ask, measures you against your competitors, and tells you what to fix
-              first. One plan per workspace, shared by your whole team.
+            <p className="mx-auto mt-4 max-w-[560px] text-[16px] leading-relaxed text-muted">
+              See how ChatGPT, Perplexity and Gemini recommend your brand, and what to fix first. One plan per workspace, shared by your team.
             </p>
           </Reveal>
-          <div className="mt-12">
+          <div className="mt-8">
             <PricingCards toggleClassName="justify-center" />
           </div>
         </Section>
