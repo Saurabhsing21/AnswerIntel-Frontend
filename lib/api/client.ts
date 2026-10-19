@@ -3,12 +3,15 @@
 import { useCallback, useEffect, useState } from "react";
 
 export class ApiError extends Error {
-  constructor(public status: number, public code: string, message: string) {
+  /** `limit` names the plan limit that was hit (projects, seats, subscription...), so the UI can offer an upgrade. */
+  constructor(public status: number, public code: string, message: string, public limit?: string) {
     super(message);
   }
 }
 
 export const UNAUTHORIZED_EVENT = "answerintel:unauthorized";
+/** Fired with the ApiError as `detail` whenever a request is refused by the workspace's plan. */
+export const PLAN_LIMIT_EVENT = "seenlens:plan-limit";
 
 export async function api<T>(path: string, init?: RequestInit & { json?: unknown }): Promise<T> {
   const { json, ...rest } = init ?? {};
@@ -22,7 +25,9 @@ export async function api<T>(path: string, init?: RequestInit & { json?: unknown
     if (res.status === 401 && !path.startsWith("/api/auth")) {
       window.dispatchEvent(new Event(UNAUTHORIZED_EVENT)); // AppShell sends the user to /login
     }
-    throw new ApiError(res.status, data?.error?.code ?? "ERROR", data?.error?.message ?? "Something went wrong.");
+    const error = new ApiError(res.status, data?.error?.code ?? "ERROR", data?.error?.message ?? "Something went wrong.", data?.error?.limit);
+    if (error.limit) window.dispatchEvent(new CustomEvent(PLAN_LIMIT_EVENT, { detail: error })); // AppShell offers an upgrade
+    throw error;
   }
   return data as T;
 }

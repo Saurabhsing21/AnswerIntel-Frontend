@@ -4,6 +4,7 @@ import { CaretUpDown, Check, MagnifyingGlass, Plus, SignOut, SquaresFour } from 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { api, useApi } from "@/lib/api/client";
+import { PlanCard } from "@/components/app/billing";
 import { BrandTile } from "@/components/app/brand-tile";
 import { OPEN_PALETTE_EVENT } from "@/components/app/command-palette";
 import { NAV } from "@/components/app/nav";
@@ -202,6 +203,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         )}
       </nav>
 
+      <PlanCard onNavigate={onNavigate} />
       <NextScanCard />
 
       <div className="flex items-center gap-2.5 border-t border-line px-4 py-3">

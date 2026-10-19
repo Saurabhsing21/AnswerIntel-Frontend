@@ -4,6 +4,7 @@ import { X } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { UNAUTHORIZED_EVENT } from "@/lib/api/client";
+import { BillingBanner, UpgradePrompt } from "@/components/app/billing";
 import { CommandPalette } from "@/components/app/command-palette";
 import { ProjectProvider } from "@/components/app/project-context";
 import { Sidebar } from "@/components/app/sidebar";
@@ -55,11 +56,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="flex min-w-0 flex-col">
             <Topbar onMenu={() => setMenuOpen(true)} />
             <main className="flex-1 px-4 py-5 md:px-6 md:py-6">
-              <div className="mx-auto max-w-[1280px]">{children}</div>
+              <div className="mx-auto max-w-[1280px]">
+                <BillingBanner />
+                {children}
+              </div>
             </main>
           </div>
         </div>
         <CommandPalette />
+        <UpgradePrompt />
       </ProjectProvider>
     </ToastProvider>
   );

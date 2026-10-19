@@ -1,4 +1,4 @@
-import { ChartLine, ClockCounterClockwise, Flask, Gear, Hash, House, Lightbulb, Link as LinkIcon, Users, UsersThree } from "@phosphor-icons/react";
+import { ChartLine, ClockCounterClockwise, CreditCard, Flask, Gear, Hash, House, Lightbulb, Link as LinkIcon, Users, UsersThree } from "@phosphor-icons/react";
 
 /** The app's sections. One icon family (Phosphor, regular weight) everywhere. */
 export const NAV = [
@@ -30,6 +30,7 @@ export const NAV = [
     items: [
       { href: "/settings", label: "Settings", icon: Gear },
       { href: "/team", label: "Team", icon: UsersThree },
+      { href: "/billing", label: "Billing", icon: CreditCard },
     ],
   },
 ] as const;

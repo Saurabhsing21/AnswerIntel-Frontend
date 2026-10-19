@@ -7,6 +7,44 @@ export type Role = "owner" | "admin" | "member";
 export type Workspace = { id: string; name: string; role: Role };
 export type Member = { user_id: number; email: string; role: Role };
 
+export type PlanKey = "trial" | "starter" | "pro";
+export type BillingState = "trialing" | "active" | "past_due" | "lapsed";
+export type PlanLimits = {
+  projects: number;
+  active_prompts: number;
+  competitors: number;
+  engines: number | null;
+  scans_per_day: number;
+  seats: number;
+  retention_days: number;
+  schedules: boolean;
+  experiments: boolean;
+};
+export type Billing = {
+  workspace_id: string;
+  plan: PlanKey;
+  plan_name: string;
+  state: BillingState;
+  status: string | null;
+  interval: "month" | "year" | null;
+  can_write: boolean;
+  can_manage: boolean;
+  billing_enabled: boolean;
+  has_billing_account: boolean;
+  trial_ends_at: string | null;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
+  grace_ends_at: string | null;
+  limits: PlanLimits;
+  usage: {
+    projects: number;
+    seats: number;
+    scans_today: number;
+    per_project: { id: string; brand_name: string; active_prompts: number; competitors: number }[];
+  };
+  plans: (PlanLimits & { key: "starter" | "pro"; name: string; price_monthly: number; price_yearly: number })[];
+};
+
 export type Schedule = { enabled: boolean; frequency: string; day_of_week: number; hour: number; last_run_at: string | null };
 export type Competitor = { id: number; name: string; website: string };
 

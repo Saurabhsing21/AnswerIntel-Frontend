@@ -4,7 +4,7 @@ import { CheckCircle, Crosshair, Plus, Sword, Trash, Trophy, UsersThree, XCircle
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { BrandTile } from "@/components/app/brand-tile";
-import { useRefreshOnScan } from "@/components/app/project-context";
+import { useProject, useRefreshOnScan } from "@/components/app/project-context";
 import { useToast } from "@/components/app/toast";
 import { Card, EmptyState, ErrorBanner, Field, inputClass, PageHeader, Skeleton, StatStrip } from "@/components/app/ui";
 import { buttonClass } from "@/components/ui/button";
@@ -13,7 +13,6 @@ import type { Competitor, CompetitorAnalysis } from "@/lib/api/types";
 import { brandColor } from "@/lib/brand";
 import { pct, pos } from "@/lib/format";
 
-const MAX = 5;
 const host = (url: string) => url.replace(/^https?:\/\//, "").replace(/\/$/, "");
 
 function PromptList({ title, tone, prompts }: { title: string; tone: "win" | "lose"; prompts: string[] }) {
@@ -50,6 +49,7 @@ function CompetitorsInner() {
   useRefreshOnScan(reload);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const max = useProject().billing?.limits.competitors; // set by the workspace's plan
 
   async function add(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -95,7 +95,7 @@ function CompetitorsInner() {
 
       <StatStrip
         stats={[
-          { label: "Tracked", value: `${competitors?.length ?? 0}/${MAX}`, hint: "brands you compare against", icon: <UsersThree size={18} />, tone: "blue" },
+          { label: "Tracked", value: `${competitors?.length ?? 0}/${max ?? "–"}`, hint: "brands you compare against", icon: <UsersThree size={18} />, tone: "blue" },
           { label: "Prompts you win", value: wins, hint: "you are recommended, they are not", icon: <Trophy size={18} />, tone: "green" },
           { label: "Prompts you lose", value: losses, hint: "they are recommended, you are not", icon: <Sword size={18} />, tone: "red" },
           { label: "Biggest threat", value: threat && threat.they_win > 0 ? threat.name : "None", hint: threat && threat.they_win > 0 ? `wins ${threat.they_win} prompts` : "nobody is ahead of you", icon: <Crosshair size={18} />, tone: "amber" },
@@ -165,7 +165,7 @@ function CompetitorsInner() {
         </div>
 
         <div className="space-y-4 lg:sticky lg:top-[76px]">
-          <Card title="Tracked competitors" subtitle={`${competitors?.length ?? 0} of ${MAX}`}>
+          <Card title="Tracked competitors" subtitle={`${competitors?.length ?? 0} of ${max ?? "–"}`}>
             <ul className="divide-y divide-line">
               {(competitors ?? []).map((c) => (
                 <li key={c.id} className="flex items-center gap-3 px-5 py-2.5">
@@ -180,7 +180,7 @@ function CompetitorsInner() {
                 </li>
               ))}
             </ul>
-            {(competitors?.length ?? 0) < MAX ? (
+            {(competitors?.length ?? 0) < (max ?? Infinity) ? (
               <form onSubmit={add} className="space-y-3 border-t border-line p-5">
                 <Field label="Name">
                   <input name="name" required autoFocus={params.get("add") === "1"} className={inputClass} placeholder="Competitor" />
@@ -194,7 +194,7 @@ function CompetitorsInner() {
                 </button>
               </form>
             ) : (
-              <p className="border-t border-line px-5 py-3 text-[12px] text-muted">You are tracking the maximum of {MAX}. Remove one to add another.</p>
+              <p className="border-t border-line px-5 py-3 text-[12px] text-muted">You are tracking your plan&apos;s maximum of {max}. Remove one, or upgrade your plan to track more.</p>
             )}
           </Card>
 
