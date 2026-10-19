@@ -11,6 +11,7 @@ import {
   X,
 } from "@phosphor-icons/react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import NextLink from "next/link";
 import { useRef, useState } from "react";
 import { buttonClass } from "@/components/ui/button";
 import { IconTile } from "@/components/ui/icon-tile";
@@ -19,17 +20,17 @@ import { cx } from "@/lib/cx";
 import { ease } from "@/lib/motion";
 
 const product = [
-  { icon: Eye, title: "AI visibility", body: "Mentions, recommendations, and position", href: "#scan" },
-  { icon: Users, title: "Competitor intelligence", body: "Why AI picks them over you", href: "#competitors" },
-  { icon: Link, title: "Source analysis", body: "The sites AI cites in your category", href: "#how-it-works" },
-  { icon: Lightbulb, title: "Opportunities", body: "Gaps turned into a to-do list", href: "#how-it-works" },
-  { icon: Flask, title: "Experiments", body: "Prove a change moved the numbers", href: "#experiments" },
+  { icon: Eye, title: "AI visibility", body: "Mentions, recommendations, and position", href: "/#scan" },
+  { icon: Users, title: "Competitor intelligence", body: "Why AI picks them over you", href: "/#competitors" },
+  { icon: Link, title: "Source analysis", body: "The sites AI cites in your category", href: "/#how-it-works" },
+  { icon: Lightbulb, title: "Opportunities", body: "Gaps turned into a to-do list", href: "/#how-it-works" },
+  { icon: Flask, title: "Experiments", body: "Prove a change moved the numbers", href: "/#experiments" },
 ];
 
 const links = [
-  { label: "How it works", href: "#how-it-works" },
-  { label: "Pricing", href: "#pricing" },
-  { label: "FAQ", href: "#faq" },
+  { label: "How it works", href: "/#how-it-works" },
+  { label: "Pricing", href: "/pricing" },
+  { label: "FAQ", href: "/#faq" },
 ];
 
 export function Nav() {
@@ -51,9 +52,9 @@ export function Nav() {
   return (
     <header className="sticky top-3 z-40 px-3 md:top-4">
       <div className="relative mx-auto flex h-14 max-w-[1100px] items-center rounded-full border border-line-strong bg-surface/80 pr-2 pl-5 shadow-[0_8px_30px_-12px_rgb(0_0_0/0.15)] backdrop-blur-md">
-        <a href="#top" aria-label="SeenLens home" className="rounded-[6px]">
+        <NextLink href="/#top" aria-label="SeenLens home" className="rounded-[6px]">
           <Logo />
-        </a>
+        </NextLink>
 
         <nav aria-label="Main" className="absolute left-1/2 hidden -translate-x-1/2 md:block">
           <ul className="flex items-center gap-1 text-[14px]">
@@ -111,8 +112,8 @@ export function Nav() {
                           </motion.li>
                         ))}
                       </ul>
-                      <a
-                        href="#waitlist"
+                      <NextLink
+                        href="/#waitlist"
                         onClick={() => setOpen(false)}
                         className="group m-2 flex flex-col rounded-[10px] bg-sunken p-4 transition-colors hover:bg-[#ececec]"
                       >
@@ -133,13 +134,13 @@ export function Nav() {
                             />
                           ))}
                         </span>
-                      </a>
+                      </NextLink>
                     </div>
                     <div className="flex items-center justify-between border-t border-line bg-[#fbfbfb] px-4 py-2.5 text-[13px]">
                       <span className="text-muted">Launching to the waitlist first</span>
-                      <a href="#waitlist" onClick={() => setOpen(false)} className="font-medium text-ink hover:underline">
+                      <NextLink href="/#waitlist" onClick={() => setOpen(false)} className="font-medium text-ink hover:underline">
                         Join waitlist
-                      </a>
+                      </NextLink>
                     </div>
                   </motion.div>
                 )}
@@ -159,9 +160,9 @@ export function Nav() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
-          <a href="#waitlist" className={cx(buttonClass("primary", "sm"), "hidden sm:inline-flex")}>
+          <NextLink href="/#waitlist" className={cx(buttonClass("primary", "sm"), "hidden sm:inline-flex")}>
             Join waitlist
-          </a>
+          </NextLink>
           <button
             type="button"
             aria-label={mobile ? "Close menu" : "Open menu"}
@@ -197,9 +198,9 @@ export function Nav() {
                 </li>
               ))}
               <li className="pt-2">
-                <a href="#waitlist" onClick={() => setMobile(false)} className={cx(buttonClass(), "w-full")}>
+                <NextLink href="/#waitlist" onClick={() => setMobile(false)} className={cx(buttonClass(), "w-full")}>
                   Join waitlist
-                </a>
+                </NextLink>
               </li>
             </ul>
           </motion.nav>

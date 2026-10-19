@@ -1,12 +1,13 @@
 import { Logo } from "@/components/ui/logo";
 
 const links = [
-  { label: "Live scan", href: "#scan" },
-  { label: "Dashboard", href: "#top" },
-  { label: "How it works", href: "#how-it-works" },
-  { label: "Competitors", href: "#competitors" },
-  { label: "Experiments", href: "#experiments" },
-  { label: "FAQ", href: "#faq" },
+  { label: "Live scan", href: "/#scan" },
+  { label: "Dashboard", href: "/#top" },
+  { label: "How it works", href: "/#how-it-works" },
+  { label: "Competitors", href: "/#competitors" },
+  { label: "Experiments", href: "/#experiments" },
+  { label: "Pricing", href: "/pricing" },
+  { label: "FAQ", href: "/#faq" },
 ];
 
 export function Footer() {

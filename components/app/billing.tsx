@@ -11,7 +11,7 @@ import { Logo } from "@/components/ui/logo";
 import { api, ApiError, PLAN_LIMIT_EVENT } from "@/lib/api/client";
 import type { Billing, BillingState } from "@/lib/api/types";
 import { startCheckout } from "@/lib/billing/checkout";
-import { daysUntil, type Interval, type PaidPlan, PLANS } from "@/lib/billing/plans";
+import { daysUntil, FEATURED, type Interval, type PaidPlan, PLANS } from "@/lib/billing/plans";
 import { cx } from "@/lib/cx";
 
 export const STATE_LABEL: Record<BillingState, string> = {
@@ -182,7 +182,7 @@ export function UpgradePrompt() {
 
 /** Pick Starter or Pro and go to Stripe Checkout. Used by the subscribe step and to renew a lapsed plan. */
 export function PlanChooser({ billing, returnPath, action = "Continue to payment" }: { billing: Billing; returnPath: string; action?: string }) {
-  const [plan, setPlan] = useState<PaidPlan>("pro");
+  const [plan, setPlan] = useState<PaidPlan>(FEATURED);
   const [period, setPeriod] = useState<Interval>("month");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -201,7 +201,7 @@ export function PlanChooser({ billing, returnPath, action = "Continue to payment
   return (
     <div>
       <Segmented label="Billing period" value={period} onChange={setPeriod} options={[{ key: "month", label: "Monthly" }, { key: "year", label: "Yearly · 2 months free" }]} />
-      <div role="radiogroup" aria-label="Plan" className="mt-3 grid gap-2 sm:grid-cols-2">
+      <div role="radiogroup" aria-label="Plan" className="mt-3 grid gap-2 sm:grid-cols-3">
         {PLANS.map((p) => {
           const on = plan === p.key;
           return (
@@ -221,7 +221,7 @@ export function PlanChooser({ billing, returnPath, action = "Continue to payment
                 ${period === "month" ? p.monthly : p.yearly}
                 <span className="font-sans text-[12px] text-muted"> / {period}</span>
               </span>
-              <span className="mt-1 block text-[12px] text-muted">{p.features.slice(0, 3).join(" · ")}</span>
+              <span className="mt-1 block text-[12px] text-muted">{p.limits.slice(0, 3).join(" · ")}</span>
             </button>
           );
         })}
@@ -264,7 +264,7 @@ export function SubscribeGate() {
   if (!billing) return null;
   return (
     <div className="grid min-h-dvh place-items-center bg-page px-4 py-10">
-      <div className="w-full max-w-[520px]">
+      <div className="w-full max-w-[640px]">
         <div className="mb-8 flex items-center justify-between">
           <Logo size="lg" />
           <button type="button" onClick={logout} className="inline-flex items-center gap-1.5 text-[13px] text-muted transition-colors hover:text-ink">

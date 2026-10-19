@@ -7,7 +7,7 @@ export type Role = "owner" | "admin" | "member";
 export type Workspace = { id: string; name: string; role: Role };
 export type Member = { user_id: number; email: string; role: Role };
 
-export type PlanKey = "none" | "trial" | "starter" | "pro";
+export type PlanKey = "none" | "trial" | "starter" | "growth" | "pro";
 /** unsubscribed = never paid; trialing only exists for workspaces that predate billing. */
 export type BillingState = "unsubscribed" | "trialing" | "active" | "past_due" | "lapsed";
 export type PlanLimits = {
