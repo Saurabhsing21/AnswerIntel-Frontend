@@ -31,7 +31,8 @@ const STATE_PILL: Record<BillingState, string> = {
 
 const LIMIT_LABEL: Record<string, string> = {
   projects: "projects",
-  active_prompts: "active prompts per project",
+  active_prompts: "active prompts",
+  answers_per_month: "AI answers for the month",
   competitors: "competitors per project",
   seats: "seats",
   scans_per_day: "scans a day",
@@ -98,13 +99,13 @@ export function BillingBanner() {
   );
 }
 
-/** Sidebar card: the plan and today's scans against it, linking to the usage page. */
+/** Sidebar card: the plan and the month's AI answers against it, linking to the usage page. */
 export function PlanCard({ onNavigate }: { onNavigate?: () => void }) {
   const { billing } = useProject();
   const href = useUsageHref();
   if (!billing || !href || billing.state === "unsubscribed") return null;
-  const used = billing.usage.scans_today;
-  const limit = billing.limits.scans_per_day;
+  const used = billing.usage.answers_30_days;
+  const limit = billing.limits.answers_per_month;
   return (
     <Link href={href} onClick={onNavigate} className="mx-3 mb-2 block rounded-[12px] border border-line bg-surface p-3 text-[11px] transition-colors hover:border-line-strong">
       <div className="flex items-center gap-2">
@@ -113,9 +114,9 @@ export function PlanCard({ onNavigate }: { onNavigate?: () => void }) {
         {billing.state !== "active" && <StatePill state={billing.state} />}
       </div>
       <div className="mt-2.5 flex justify-between text-muted">
-        <span>Scans today</span>
+        <span>AI answers, 30 days</span>
         <span className="font-mono tabular-nums">
-          {used}/{limit}
+          {used.toLocaleString()}/{limit.toLocaleString()}
         </span>
       </div>
       <div className="mt-1 h-1 overflow-hidden rounded-full bg-sunken">

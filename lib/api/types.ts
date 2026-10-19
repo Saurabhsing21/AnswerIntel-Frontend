@@ -12,11 +12,15 @@ export type PlanKey = "none" | "trial" | "starter" | "growth" | "pro";
 export type BillingState = "unsubscribed" | "trialing" | "active" | "past_due" | "lapsed";
 export type PlanLimits = {
   projects: number;
+  /** One pool shared by every project in the workspace. */
   active_prompts: number;
+  /** AI answers (prompt × engine) in any 30 days. */
+  answers_per_month: number;
   competitors: number;
   engines: number | null;
   scans_per_day: number;
-  seats: number;
+  /** null = unlimited */
+  seats: number | null;
   retention_days: number;
   schedules: boolean;
   experiments: boolean;
@@ -42,6 +46,8 @@ export type Billing = {
     seats: number;
     scans_today: number;
     scans_30_days: number;
+    answers_30_days: number;
+    active_prompts: number;
     per_project: { id: string; brand_name: string; active_prompts: number; competitors: number }[];
   };
 };

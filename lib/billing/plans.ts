@@ -23,7 +23,7 @@ export const PLANS: readonly PlanInfo[] = [
     audience: "For founders getting started with AI search visibility.",
     monthly: 20,
     yearly: 192,
-    includes: ["100 prompts per project", "2 projects", "ChatGPT, Perplexity and Gemini", "2 scans a day + weekly auto-scan", "20 competitors per project", "5 seats", "6 months of answer history"],
+    includes: ["100 prompts", "1,300 AI answers a month", "ChatGPT, Perplexity and Gemini", "Weekly automatic tracking", "2 projects", "20 competitors per project", "Unlimited seats", "6 months of answer history"],
   },
   {
     key: "growth",
@@ -31,7 +31,7 @@ export const PLANS: readonly PlanInfo[] = [
     audience: "For growing teams that need deeper tracking and insights.",
     monthly: 50,
     yearly: 480,
-    includes: ["300 prompts per project", "4 projects", "ChatGPT, Perplexity and Gemini", "4 scans a day + weekly auto-scan", "50 competitors per project", "15 seats", "12 months of answer history", "Experiments with before and after"],
+    includes: ["300 prompts", "3,900 AI answers a month", "ChatGPT, Perplexity and Gemini", "Weekly automatic tracking", "4 projects", "50 competitors per project", "Unlimited seats", "Experiments with before and after"],
   },
   {
     key: "pro",
@@ -39,7 +39,7 @@ export const PLANS: readonly PlanInfo[] = [
     audience: "For agencies and brands running several products.",
     monthly: 100,
     yearly: 960,
-    includes: ["700 prompts per project", "10 projects", "ChatGPT, Perplexity and Gemini", "10 scans a day + weekly auto-scan", "100 competitors per project", "50 seats", "24 months of answer history", "Experiments with before and after"],
+    includes: ["700 prompts", "9,000 AI answers a month", "ChatGPT, Perplexity and Gemini", "Weekly automatic tracking", "10 projects", "100 competitors per project", "Unlimited seats", "Experiments with before and after"],
   },
 ];
 
@@ -55,10 +55,10 @@ export const COMPARISON: ComparisonGroup[] = [
     title: "Tracking coverage",
     rows: [
       { label: "AI engines", values: ["ChatGPT, Perplexity, Gemini", "ChatGPT, Perplexity, Gemini", "ChatGPT, Perplexity, Gemini"] },
-      { label: "Tracked prompts", hint: "per project", values: ["100", "300", "700"] },
-      { label: "AI answers per scan", hint: "prompts × engines", values: ["300", "900", "2,100"] },
-      { label: "Scans a day", hint: "on demand, across the workspace", values: ["2", "4", "10"] },
-      { label: "Weekly automatic scans", values: [true, true, true] },
+      { label: "Prompts", hint: "one pool shared by every project", values: ["100", "300", "700"] },
+      { label: "AI answers a month", hint: "prompts × engines × runs", values: ["1,300", "3,900", "9,000"] },
+      { label: "Tracking frequency", values: ["Weekly, automatic", "Weekly, automatic", "Weekly, automatic"] },
+      { label: "On-demand scans a day", hint: "use the same monthly answers", values: ["2", "4", "10"] },
       { label: "Projects (brands)", values: ["2", "4", "10"] },
       { label: "Competitors", hint: "per project", values: ["20", "50", "100"] },
       { label: "Answer history", values: ["6 months", "12 months", "24 months"] },
@@ -103,7 +103,7 @@ export const COMPARISON: ComparisonGroup[] = [
   {
     title: "Team and billing",
     rows: [
-      { label: "Seats", values: ["5", "15", "50"] },
+      { label: "Seats", values: ["Unlimited", "Unlimited", "Unlimited"] },
       { label: "Roles: owner, admin, member", values: [true, true, true] },
       { label: "Invoices and self-serve billing", values: [true, true, true] },
       { label: "Change plan or cancel any time", values: [true, true, true] },
@@ -113,11 +113,12 @@ export const COMPARISON: ComparisonGroup[] = [
 
 export const PRICING_FAQ = [
   { q: "Is there a free trial?", a: "No. Every plan is paid, monthly or yearly, and you can cancel any time. Starter costs $20 a month, so it is a cheap way to try SeenLens." },
-  { q: "What counts as a scan?", a: "One scan asks every active prompt in a project to every AI engine on your plan, then analyses the answers. On Growth that is up to 300 prompts × 3 engines = 900 AI answers per scan." },
+  { q: "What is an AI answer?", a: "One prompt asked to one AI engine. Tracking 100 prompts weekly on 3 engines uses about 1,300 answers a month, which is exactly the Starter allowance. On-demand scans use the same allowance." },
+  { q: "What happens when I run out of AI answers?", a: "New scans wait until older ones are more than 30 days old, so your allowance refills as you go. You can switch off prompts you no longer need, or move to a bigger plan any time." },
   { q: "Can I change plans later?", a: "Yes. Upgrade or downgrade from Manage billing in the app. Stripe prorates the difference automatically." },
   { q: "What happens if I cancel?", a: "Your plan runs until the end of the period you paid for. After that the workspace is read-only: you can still view and export everything, but not run new scans." },
   { q: "What if a payment fails?", a: "You get an email and 7 days to update your card. Everything keeps working during that time." },
-  { q: "Does my whole team share one plan?", a: "Yes. Plans are per workspace: the owner pays and every member shares the limits. Each plan includes a number of seats." },
+  { q: "Does my whole team share one plan?", a: "Yes. Plans are per workspace: the owner pays and every member shares the limits. Seats are unlimited on every plan." },
 ];
 
 export const isPaidPlan = (v: unknown): v is PaidPlan => v === "starter" || v === "growth" || v === "pro";

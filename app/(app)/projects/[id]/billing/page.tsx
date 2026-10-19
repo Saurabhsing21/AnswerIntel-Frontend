@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarBlank, Check, CircleNotch, CreditCard, Lightning, Minus, Receipt, UsersThree } from "@phosphor-icons/react";
+import { Check, ChatsCircle, CircleNotch, CreditCard, Hash, Lightning, Minus, Receipt } from "@phosphor-icons/react";
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { PlanChooser, StatePill } from "@/components/app/billing";
@@ -17,14 +17,15 @@ const date = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString(und
 /** Has a live Stripe subscription, so the Portal can change or cancel it. */
 const subscribed = (b: Billing) => !["none", "trial"].includes(b.plan) && !["canceled", "incomplete_expired"].includes(b.status ?? "");
 
-function Meter({ label, used, limit, hint }: { label: string; used: number; limit: number; hint?: string }) {
-  const share = used / Math.max(1, limit);
+/** `limit` null = unlimited: the count is shown without a bar. */
+function Meter({ label, used, limit, hint }: { label: string; used: number; limit: number | null; hint?: string }) {
+  const share = limit == null ? 0 : used / Math.max(1, limit);
   return (
     <div>
       <div className="flex items-baseline justify-between gap-3 text-[13px]">
         <span className="text-ink-2">{label}</span>
         <span className={cx("font-mono tabular-nums", share >= 1 ? "text-down" : "text-muted")}>
-          {used} / {limit}
+          {used.toLocaleString()} / {limit == null ? "unlimited" : limit.toLocaleString()}
         </span>
       </div>
       <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-sunken">
@@ -108,9 +109,15 @@ function UsageInner() {
 
       <StatStrip
         stats={[
-          { label: "Scans today", value: `${usage.scans_today}/${limits.scans_per_day}`, hint: "rolling 24 hours", icon: <Lightning size={18} />, tone: "amber" },
-          { label: "Scans, last 30 days", value: usage.scans_30_days, hint: "across every project", icon: <CalendarBlank size={18} />, tone: "blue" },
-          { label: "Seats", value: `${usage.seats}/${limits.seats}`, hint: "people in the workspace", icon: <UsersThree size={18} />, tone: "violet" },
+          {
+            label: "AI answers, 30 days",
+            value: `${usage.answers_30_days.toLocaleString()}/${limits.answers_per_month.toLocaleString()}`,
+            hint: `${Math.max(0, limits.answers_per_month - usage.answers_30_days).toLocaleString()} left`,
+            icon: <ChatsCircle size={18} />,
+            tone: "blue",
+          },
+          { label: "Active prompts", value: `${usage.active_prompts}/${limits.active_prompts}`, hint: "shared by every project", icon: <Hash size={18} />, tone: "violet" },
+          { label: "Scans today", value: `${usage.scans_today}/${limits.scans_per_day}`, hint: `${usage.scans_30_days} in the last 30 days`, icon: <Lightning size={18} />, tone: "amber" },
           {
             label: billing.cancel_at_period_end ? "Ends" : billing.state === "trialing" ? "Trial ends" : "Renews",
             value: renewal ? new Date(renewal).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "n/a",
@@ -125,12 +132,19 @@ function UsageInner() {
         <div className="min-w-0 space-y-4">
           <Card title="Workspace" subtitle="Shared by every project and person">
             <div className="space-y-5 p-5">
-              <Meter label="Scans today" used={usage.scans_today} limit={limits.scans_per_day} hint="Scheduled scans count too." />
+              <Meter
+                label="AI answers, last 30 days"
+                used={usage.answers_30_days}
+                limit={limits.answers_per_month}
+                hint="Each scan uses one answer per active prompt per AI engine. Scheduled scans count too."
+              />
+              <Meter label="Active prompts" used={usage.active_prompts} limit={limits.active_prompts} hint="One pool for every project." />
+              <Meter label="Scans today" used={usage.scans_today} limit={limits.scans_per_day} />
               <Meter label="Projects" used={usage.projects} limit={limits.projects} />
               <Meter label="Seats" used={usage.seats} limit={limits.seats} />
             </div>
           </Card>
-          <Card title="By project" subtitle={`Each project can track ${limits.active_prompts} prompts and ${limits.competitors} competitors`}>
+          <Card title="By project" subtitle={`Prompts come from the shared pool. Each project can track ${limits.competitors} competitors.`}>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[420px] text-[13px]">
                 <thead>
@@ -145,7 +159,7 @@ function UsageInner() {
                     <tr key={p.id} className={cx(p.id === id && "bg-mark-soft/40")}>
                       <td className="px-5 py-3 font-medium text-ink">{p.brand_name}</td>
                       <td className="px-5 py-3 font-mono tabular-nums text-ink-2">
-                        {p.active_prompts} <span className="text-faint">/ {limits.active_prompts}</span>
+                        {p.active_prompts}
                       </td>
                       <td className="px-5 py-3 font-mono tabular-nums text-ink-2">
                         {p.competitors} <span className="text-faint">/ {limits.competitors}</span>
