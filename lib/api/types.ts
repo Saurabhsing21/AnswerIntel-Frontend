@@ -7,8 +7,9 @@ export type Role = "owner" | "admin" | "member";
 export type Workspace = { id: string; name: string; role: Role };
 export type Member = { user_id: number; email: string; role: Role };
 
-export type PlanKey = "trial" | "starter" | "pro";
-export type BillingState = "trialing" | "active" | "past_due" | "lapsed";
+export type PlanKey = "none" | "trial" | "starter" | "pro";
+/** unsubscribed = never paid; trialing only exists for workspaces that predate billing. */
+export type BillingState = "unsubscribed" | "trialing" | "active" | "past_due" | "lapsed";
 export type PlanLimits = {
   projects: number;
   active_prompts: number;
@@ -40,9 +41,9 @@ export type Billing = {
     projects: number;
     seats: number;
     scans_today: number;
+    scans_30_days: number;
     per_project: { id: string; brand_name: string; active_prompts: number; competitors: number }[];
   };
-  plans: (PlanLimits & { key: "starter" | "pro"; name: string; price_monthly: number; price_yearly: number })[];
 };
 
 export type Schedule = { enabled: boolean; frequency: string; day_of_week: number; hour: number; last_run_at: string | null };

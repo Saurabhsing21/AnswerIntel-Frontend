@@ -5,6 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api, ApiError } from "@/lib/api/client";
+import type { Workspace } from "@/lib/api/types";
+import { startCheckout } from "@/lib/billing/checkout";
+import { type Interval, type PaidPlan, PLANS } from "@/lib/billing/plans";
 import { ButtonArrow, buttonClass } from "@/components/ui/button";
 import { ErrorBanner, Field, inputClass } from "@/components/app/ui";
 import { EngineIcon } from "@/components/product/engine-icon";
@@ -17,11 +20,12 @@ const POINTS = [
   { icon: ListChecks, title: "Know what to fix first", body: "A ranked list of actions, then a before and after to prove what worked." },
 ];
 
-export function AuthForm({ mode }: { mode: "login" | "register" }) {
+export function AuthForm({ mode, plan, interval = "month" }: { mode: "login" | "register"; plan?: PaidPlan; interval?: Interval }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const isLogin = mode === "login";
+  const chosen = PLANS.find((p) => p.key === plan);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -30,6 +34,16 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
     setError("");
     try {
       await api(`/api/auth/${mode}`, { method: "POST", json: { email: form.get("email"), password: form.get("password") } });
+      if (chosen) {
+        // Came from the pricing section: pay straight away. If Checkout can't start, the app asks again.
+        try {
+          const [workspace] = await api<Workspace[]>("/workspaces");
+          await startCheckout(workspace.id, chosen.key, interval, "/projects/new");
+          return;
+        } catch {
+          // fall through to the app, which shows the subscribe step
+        }
+      }
       router.push("/projects");
       router.refresh();
     } catch (err) {
@@ -48,6 +62,15 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           <div className="rounded-[20px] border border-line-strong bg-surface p-6 shadow-[0_24px_60px_-30px_rgb(0_0_0/0.2)] md:p-8">
             <h1 className="font-display text-[24px] font-semibold tracking-[-0.03em]">{isLogin ? "Welcome back" : "Create your account"}</h1>
             <p className="mt-1 text-[14px] text-muted">{isLogin ? "Log in to see how AI talks about your brand." : "Start measuring your AI visibility."}</p>
+            {chosen && (
+              <div className="mt-4 flex items-center justify-between rounded-[12px] bg-sunken px-3.5 py-2.5 text-[13px]">
+                <span>
+                  <span className="font-medium text-ink">{chosen.name}</span>
+                  <span className="text-muted"> · ${interval === "year" ? `${chosen.yearly} a year` : `${chosen.monthly} a month`}</span>
+                </span>
+                <span className="text-[12px] text-muted">You pay on the next step</span>
+              </div>
+            )}
             <form onSubmit={onSubmit} className="mt-6 space-y-4" noValidate>
               <Field label="Work email">
                 <input name="email" type="email" required autoComplete="email" className={inputClass} placeholder="you@company.com" />
@@ -57,7 +80,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
               </Field>
               {error && <ErrorBanner message={error} />}
               <button type="submit" disabled={busy} className={cx(buttonClass("primary"), "w-full")}>
-                {busy ? "Please wait..." : isLogin ? "Log in" : "Create account"}
+                {busy ? "Please wait..." : isLogin ? "Log in" : chosen ? "Create account and pay" : "Create account"}
                 <ButtonArrow />
               </button>
             </form>

@@ -93,7 +93,8 @@ function ScopedProvider({
   const toast = useToast();
   const scansQ = useApi<Scan[]>(projectId ? `/projects/${projectId}/scans` : null, (d) => (d?.some(isScanActive) ? 2000 : undefined));
   const scheduleQ = useApi<Schedule>(projectId ? `/projects/${projectId}/schedule` : null);
-  const workspaceId = projects.find((p) => p.id === projectId)?.workspace_id;
+  // Outside a project, use the workspace whose projects the user sees (else their own), so an unpaid account is caught.
+  const workspaceId = projects.find((p) => p.id === projectId)?.workspace_id ?? projects[0]?.workspace_id ?? workspaces[0]?.id;
   const billingQ = useApi<Billing>(workspaceId ? `/workspaces/${workspaceId}/billing` : null);
   const [starting, setStarting] = useState(false);
   const { reload: reloadScans } = scansQ;
