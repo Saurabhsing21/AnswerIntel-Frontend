@@ -20,22 +20,26 @@ const METRICS = [
 
 const day = (iso: string) => new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 
-function ChangeBadge({ delta, lowerIsBetter }: { delta: number | null; lowerIsBetter?: boolean }) {
+/** `noise`: the change is within normal run-to-run variation, so it is shown grey instead of as a win or loss. */
+function ChangeBadge({ delta, lowerIsBetter, noise }: { delta: number | null; lowerIsBetter?: boolean; noise?: boolean }) {
   if (delta == null) return <span className="text-faint">-</span>;
   if (delta === 0) return <span className="inline-flex items-center gap-1 font-mono text-[12px] text-faint"><Minus size={11} /> no change</span>;
   const good = lowerIsBetter ? delta < 0 : delta > 0;
   const Icon = delta > 0 ? ArrowUpRight : ArrowDownRight;
   return (
-    <span className={cx("inline-flex items-center gap-0.5 whitespace-nowrap font-mono text-[12px]", good ? "text-up" : "text-down")}>
-      <Icon size={12} weight="bold" />
-      {lowerIsBetter ? Math.abs(delta).toFixed(1) : `${Math.abs(Math.round(delta * 1000) / 10)} pts`}
+    <span className="inline-flex flex-col items-end">
+      <span className={cx("inline-flex items-center gap-0.5 whitespace-nowrap font-mono text-[12px]", noise ? "text-faint" : good ? "text-up" : "text-down")}>
+        <Icon size={12} weight="bold" />
+        {lowerIsBetter ? Math.abs(delta).toFixed(1) : `${Math.abs(Math.round(delta * 1000) / 10)} pts`}
+      </span>
+      {noise && <span className="text-[10px] text-faint">within noise</span>}
     </span>
   );
 }
 
 function Compare({ e }: { e: Experiment }) {
   const rows = [
-    ...METRICS.map((m) => ({ label: m.label, before: pct(e.baseline[m.key]), after: e.after ? pct(e.after[m.key]) : null, delta: e.comparison?.[m.key].delta ?? null })),
+    ...METRICS.map((m) => ({ label: m.label, before: pct(e.baseline[m.key]), after: e.after ? pct(e.after[m.key]) : null, delta: e.comparison?.[m.key].delta ?? null, noise: e.comparison?.[m.key].significant === false })),
     { label: "Average position", before: pos(e.baseline.average_position), after: e.after ? pos(e.after.average_position) : null, delta: e.comparison?.average_position.delta ?? null, lowerIsBetter: true },
   ];
   return (
@@ -51,7 +55,7 @@ function Compare({ e }: { e: Experiment }) {
           <span className="text-ink-2">{r.label}</span>
           <span className="font-mono tabular-nums">{r.before}</span>
           <span className="font-mono tabular-nums">{r.after ?? <span className="text-faint">waiting</span>}</span>
-          <span className="flex justify-end">{e.after ? <ChangeBadge delta={r.delta} lowerIsBetter={"lowerIsBetter" in r} /> : <span className="text-faint">-</span>}</span>
+          <span className="flex justify-end">{e.after ? <ChangeBadge delta={r.delta} lowerIsBetter={"lowerIsBetter" in r} noise={"noise" in r && r.noise} /> : <span className="text-faint">-</span>}</span>
         </div>
       ))}
     </div>
@@ -148,7 +152,8 @@ function ExperimentsInner() {
   const running = all.filter((e) => e.status === "running");
   const completed = all.filter((e) => e.status === "completed");
   const rows = filter === "running" ? running : completed;
-  const improved = completed.filter((e) => (e.comparison?.mention_rate.delta ?? 0) > 0).length;
+  // Only count a real lift, not a change within run-to-run noise.
+  const improved = completed.filter((e) => (e.comparison?.mention_rate.delta ?? 0) > 0 && e.comparison?.mention_rate.significant !== false).length;
 
   async function complete(e: Experiment) {
     setCompleting(e.id);

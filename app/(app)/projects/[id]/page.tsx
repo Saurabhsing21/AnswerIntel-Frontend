@@ -106,7 +106,15 @@ export default function OverviewPage() {
       </p>
 
       <KpiTabs
-        tabs={TABS.map((t) => ({ key: t.key, label: t.label, value: v[t.key] ?? 0, delta: v.deltas[t.key], spark: data.trend.map((p) => p[t.key]) }))}
+        tabs={TABS.map((t) => ({
+          key: t.key,
+          label: t.label,
+          value: v[t.key] ?? 0,
+          delta: v.deltas[t.key],
+          spark: data.trend.map((p) => p[t.key]),
+          margin: v.margins?.[t.key],
+          noise: v.significant?.[t.key] === false && (v.deltas[t.key] ?? 0) !== 0,
+        }))}
         selected={metric}
         onSelect={(key) => setMetric(key as TabKey)}
       />

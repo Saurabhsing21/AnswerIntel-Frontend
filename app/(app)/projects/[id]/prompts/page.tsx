@@ -31,6 +31,18 @@ function Cell({ result }: { result?: EngineResult }) {
   );
 }
 
+/** Commercial importance 0-1 as a 1-5 meter: how close the question is to a buying decision. */
+function Priority({ value }: { value: number }) {
+  const level = Math.min(5, Math.max(1, Math.round(value * 4) + 1));
+  return (
+    <span className="hidden shrink-0 items-end gap-[2px] md:flex" title={`Priority ${level} of 5: how close this question is to a purchase`} aria-label={`Priority ${level} of 5`}>
+      {[1, 2, 3, 4, 5].map((i) => (
+        <span key={i} className={cx("w-[3px] rounded-full", i <= level ? "bg-ink" : "bg-line-strong")} style={{ height: 4 + i * 2 }} />
+      ))}
+    </span>
+  );
+}
+
 export default function PromptsPage() {
   const { id } = useParams<{ id: string }>();
   const toast = useToast();
@@ -46,9 +58,10 @@ export default function PromptsPage() {
 
   const byPrompt = useMemo(() => new Map((results?.prompts ?? []).map((r) => [r.prompt_id, r])), [results]);
   const engines = useMemo(() => [...new Map((results?.prompts ?? []).flatMap((p) => p.engines.map((e) => [e.engine, e.engine_name]))).entries()], [results]);
-  const rows = (prompts ?? []).filter(
-    (p) => (category === "ALL" || p.category === category) && p.text.toLowerCase().includes(query.trim().toLowerCase()),
-  );
+  // Most commercially important questions first (scored when prompts are generated); unscored keep their order.
+  const rows = (prompts ?? [])
+    .filter((p) => (category === "ALL" || p.category === category) && p.text.toLowerCase().includes(query.trim().toLowerCase()))
+    .sort((a, b) => (b.importance ?? -1) - (a.importance ?? -1));
   const categories = ["ALL", ...new Set((prompts ?? []).map((p) => p.category))];
 
   async function act<T>(fn: () => Promise<T>) {
@@ -182,6 +195,7 @@ export default function PromptsPage() {
                         <span className={cx("truncate text-[14px]", !p.is_active && "text-faint")}>{p.text}</span>
                       </button>
                     )}
+                    {p.importance != null && <Priority value={p.importance} />}
                     <span className="hidden shrink-0 rounded-full bg-sunken px-2 py-0.5 text-[11px] text-ink-2 md:inline">{CATEGORY_LABELS[p.category] ?? p.category}</span>
                     <span className="hidden shrink-0 gap-1 sm:flex">
                       {engines.map(([key]) => <Cell key={key} result={result?.engines.find((e) => e.engine === key)} />)}

@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowClockwise, Calendar, CircleNotch, Export, FileHtml, FilePdf, List, Play, Plus, SquaresFour } from "@phosphor-icons/react";
+import { ArrowClockwise, Calendar, CircleNotch, Export, FileCsv, FileHtml, FilePdf, List, Play, Plus, SquaresFour } from "@phosphor-icons/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -77,6 +77,19 @@ function ExportMenu() {
           </MenuItem>
           <MenuItem onClick={() => { close(); void exportLatest("html"); }}>
             <FileHtml size={16} /> Open as web page
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              close();
+              const finished = scans.find((s) => s.status === "completed" || s.status === "partial");
+              if (!finished) return toast.push("Run a scan first, so there is something to export.", "error");
+              const link = document.createElement("a"); // a file download, not a page navigation
+              link.href = `/api/backend/projects/${projectId}/scans/${finished.id}/export.csv`;
+              link.download = "";
+              link.click();
+            }}
+          >
+            <FileCsv size={16} /> Every answer (CSV)
           </MenuItem>
           <div className="mt-1 border-t border-line pt-1">
             <MenuItem href={`/projects/${projectId}/reports`} onClick={close}>

@@ -25,6 +25,26 @@ function Highlighted({ text, brand, competitors }: { text: string; brand: string
   );
 }
 
+/** The answer with the sentences behind each verdict underlaid, so you can see why AI picked a brand. */
+function WithEvidence({ text, evidence, brand, competitors }: { text: string; evidence: string[]; brand: string; competitors: string[] }) {
+  const quotes = [...new Set(evidence.filter((e) => e && text.includes(e)))].sort((a, b) => b.length - a.length);
+  if (!quotes.length) return <Highlighted text={text} brand={brand} competitors={competitors} />;
+  const pattern = new RegExp(`(${quotes.map((q) => q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`, "g");
+  return (
+    <>
+      {text.split(pattern).map((part, i) =>
+        quotes.includes(part) ? (
+          <span key={i} className="rounded-[3px] bg-mark-soft box-decoration-clone px-0.5">
+            <Highlighted text={part} brand={brand} competitors={competitors} />
+          </span>
+        ) : (
+          <Highlighted key={i} text={part} brand={brand} competitors={competitors} />
+        ),
+      )}
+    </>
+  );
+}
+
 const verdictOf = (b: { mentioned: boolean; recommended: boolean }) =>
   b.recommended ? "recommended" : b.mentioned ? "mentioned" : "absent";
 
@@ -77,21 +97,29 @@ export function ResponseDrawer({ projectId, responseId, onClose }: { projectId: 
                     </div>
                   )}
                   {data.competitors.map((c) => (
-                    <div key={c.id} className="flex items-center gap-3 border-b border-line px-3.5 py-2 text-[13px] last:border-0">
-                      <span>{c.name}</span>
-                      <span className="ml-auto">
+                    <div key={c.id} className="flex items-start gap-3 border-b border-line px-3.5 py-2 text-[13px] last:border-0">
+                      <span className="min-w-0">
+                        <span className="block">{c.name}</span>
+                        {c.mentioned && c.reason && <span className="block text-[12px] text-muted">{c.reason}</span>}
+                      </span>
+                      <span className="ml-auto shrink-0">
                         <VerdictPill verdict={verdictOf(c)} position={c.position} />
                       </span>
                     </div>
                   ))}
                 </div>
-                {data.brand?.reason && <p className="mt-2 text-[12px] text-muted">{data.brand.reason}</p>}
+                {data.brand?.reason && <p className="mt-2 text-[12px] text-muted">Why: {data.brand.reason}</p>}
               </div>
 
               <div>
-                <p className="mb-2 text-[12px] text-muted">What {data.engine_name} said</p>
+                <p className="mb-2 text-[12px] text-muted">What {data.engine_name} said <span className="text-faint">· highlighted: the sentences behind each verdict</span></p>
                 <div className="whitespace-pre-wrap rounded-[12px] bg-page px-4 py-3.5 text-[13px] leading-relaxed text-ink-2">
-                  <Highlighted text={data.text} brand={data.brand?.name ?? ""} competitors={data.competitors.map((c) => c.name)} />
+                  <WithEvidence
+                    text={data.text}
+                    evidence={[data.brand?.evidence ?? "", ...data.competitors.map((c) => c.evidence ?? "")]}
+                    brand={data.brand?.name ?? ""}
+                    competitors={data.competitors.map((c) => c.name)}
+                  />
                 </div>
               </div>
 

@@ -25,8 +25,11 @@ export default function PricingPage() {
               Pricing for <Mark delay={0.3}>every stage</Mark>
             </h1>
             <p className="mx-auto mt-4 max-w-[560px] text-[16px] leading-relaxed text-muted">
-              See how ChatGPT, Perplexity and Gemini recommend your brand, and what to fix first. One plan per workspace, shared by your team.
+              See how ChatGPT, Perplexity, Gemini and Google AI recommend your brand, and what to fix first. One plan per workspace, shared by your team.
             </p>
+            <a href="/check" className="mt-3 inline-block text-[14px] font-medium text-ink underline decoration-mark decoration-2 underline-offset-4">
+              Not sure yet? Run a free check
+            </a>
           </Reveal>
           <div className="mt-8">
             <PricingCards toggleClassName="justify-center" />

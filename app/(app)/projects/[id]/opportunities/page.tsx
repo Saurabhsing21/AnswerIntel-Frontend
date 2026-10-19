@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowCounterClockwise, Check, CheckCircle, Flag, Lightbulb, Play, Prohibit, Target, Warning } from "@phosphor-icons/react";
+import { ArrowCounterClockwise, Check, CheckCircle, CircleNotch, Copy, Flag, Lightbulb, NotePencil, Play, Prohibit, Target, Warning, X } from "@phosphor-icons/react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { useRefreshOnScan } from "@/components/app/project-context";
@@ -88,6 +88,21 @@ export default function OpportunitiesPage() {
   useRefreshOnScan(reload);
   const [view, setView] = useState<"todo" | "completed" | "dismissed">("todo");
   const [area, setArea] = useState<"all" | Area>("all");
+
+  const [draft, setDraft] = useState<{ id: number; markdown: string; generated: boolean } | null>(null);
+  const [drafting, setDrafting] = useState<number | null>(null);
+
+  async function makeDraft(o: Opportunity) {
+    setDrafting(o.id);
+    try {
+      const result = await api<{ markdown: string; generated: boolean }>(`/projects/${id}/opportunities/${o.id}/draft`, { method: "POST" });
+      setDraft({ id: o.id, ...result });
+    } catch (e) {
+      if (!(e as ApiError).limit) toast.push((e as ApiError).message, "error");
+    } finally {
+      setDrafting(null);
+    }
+  }
 
   async function setStatus(o: Opportunity, status: Status) {
     try {
@@ -212,7 +227,30 @@ export default function OpportunitiesPage() {
                           <ArrowCounterClockwise size={14} /> Reopen
                         </button>
                       )}
+                      {o.status !== "dismissed" && (
+                        <button type="button" onClick={() => makeDraft(o)} disabled={drafting !== null} className={buttonClass("secondary", "sm")}>
+                          {drafting === o.id ? <CircleNotch size={14} className="animate-spin" /> : <NotePencil size={14} />} Draft this
+                        </button>
+                      )}
                     </div>
+                    {draft?.id === o.id && (
+                      <div className="mt-4 overflow-hidden rounded-[12px] border border-line-strong">
+                        <div className="flex items-center gap-2 border-b border-line bg-[#fafaf9] px-3.5 py-2 text-[12px] text-muted">
+                          {draft.generated ? "First draft, written by AI. Fill in the [placeholders] and edit before publishing." : "Outline to fill in (connect an AI key for full drafts)."}
+                          <button
+                            type="button"
+                            onClick={() => navigator.clipboard.writeText(draft.markdown).then(() => toast.push("Draft copied.", "success"))}
+                            className="ml-auto inline-flex items-center gap-1 font-medium text-ink hover:underline"
+                          >
+                            <Copy size={13} /> Copy
+                          </button>
+                          <button type="button" onClick={() => setDraft(null)} aria-label="Close draft" className="grid size-6 place-items-center rounded-full hover:bg-sunken">
+                            <X size={12} />
+                          </button>
+                        </div>
+                        <pre className="max-h-[420px] overflow-auto whitespace-pre-wrap px-4 py-3 font-sans text-[13px] leading-relaxed text-ink-2">{draft.markdown}</pre>
+                      </div>
+                    )}
                   </div>
                   <div className="border-t border-line bg-[#fafaf9] p-5 lg:border-t-0 lg:border-l">
                     <Evidence o={o} />

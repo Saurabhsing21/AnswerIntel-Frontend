@@ -21,7 +21,8 @@ const seeAll = "text-[12px] font-medium text-muted transition-colors hover:text-
 /** Each headline metric keeps one colour everywhere it appears: tabs, sparklines and the engine bars. */
 export const METRIC_COLOR: Partial<Record<MetricKey, string>> = { mention_rate: "#2f6bff", recommendation_rate: "#16a34a", share_of_voice: "#7a5af8" };
 
-export type KpiTab = { key: MetricKey; label: string; value: number; delta: number | null; spark: number[] };
+/** margin: ± how much the rate can move by chance; noise: the change since last scan is within that. */
+export type KpiTab = { key: MetricKey; label: string; value: number; delta: number | null; spark: number[]; margin?: number | null; noise?: boolean };
 
 export function KpiTabs({ tabs, selected, onSelect }: { tabs: KpiTab[]; selected: MetricKey; onSelect: (key: MetricKey) => void }) {
   return (
@@ -50,8 +51,14 @@ export function KpiTabs({ tabs, selected, onSelect }: { tabs: KpiTab[]; selected
               </span>
               <span className="mt-1.5 flex items-baseline gap-2">
                 <span className="font-mono text-[30px] leading-none tracking-tight tabular-nums">{pct(t.value)}</span>
+                {t.margin != null && (
+                  <span className="font-mono text-[11px] text-faint" title="How much this can move between scans by chance (95%)">
+                    ±{Math.round(t.margin * 100)}
+                  </span>
+                )}
                 <Delta value={t.delta} />
               </span>
+              {t.noise && <span className="mt-1 block text-[11px] text-faint">Within normal variation</span>}
             </span>
             <Sparkline values={t.spark} color={on ? color : "#a3a3a3"} />
           </button>

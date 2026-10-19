@@ -1,4 +1,4 @@
-export type Engine = "chatgpt" | "perplexity" | "gemini";
+export type Engine = "chatgpt" | "perplexity" | "gemini" | "google";
 export type Verdict = "recommended" | "mentioned" | "absent";
 
 export type Project = { id: string; workspace_id: string; brand_name: string; website: string; description: string | null; category: string; country: string };
@@ -129,7 +129,8 @@ export type Experiment = {
   ended_at: string | null;
   baseline: ExperimentSnapshot;
   after: ExperimentSnapshot | null;
-  comparison: Record<"mention_rate" | "recommendation_rate" | "share_of_voice" | "average_position", { before: number | null; after: number | null; delta: number | null }> | null;
+  /** significant: is the change bigger than run-to-run noise (null = cannot tell, e.g. for position) */
+  comparison: Record<"mention_rate" | "recommendation_rate" | "share_of_voice" | "average_position", { before: number | null; after: number | null; delta: number | null; significant: boolean | null }> | null;
 };
 export type ExperimentSnapshot = {
   scan_id: number;
@@ -146,7 +147,14 @@ export type Dashboard = {
   latest_scan: Scan | null;
   has_data: boolean;
   metrics_scan?: Scan;
-  visibility: (Record<MetricKey, number | null> & { total_responses: number; deltas: Record<MetricKey, number | null> }) | null;
+  visibility: (Record<MetricKey, number | null> & {
+    total_responses: number;
+    deltas: Record<MetricKey, number | null>;
+    /** ± how much each rate can move by chance (95%) */
+    margins?: Partial<Record<MetricKey, number | null>>;
+    /** whether the change since the previous scan is bigger than that noise */
+    significant?: Partial<Record<MetricKey, boolean | null>>;
+  }) | null;
   engines: { key: Engine; name: string; responses: number; mention_rate: number; recommendation_rate: number }[];
   competitors: { id: number | null; name: string; is_you: boolean; mention_rate: number; recommendation_rate: number; share_of_voice: number; average_position: number | null; citation_count: number }[];
   trend: {
@@ -185,8 +193,9 @@ export type ResponseDetail = {
   provider: string;
   prompt: string;
   text: string;
-  brand: { name: string; mentioned: boolean; recommended: boolean; position: number | null; sentiment: string | null; reason: string | null; method: string } | null;
-  competitors: { id: number; name: string; mentioned: boolean; recommended: boolean; position: number | null; sentiment: string | null }[];
+  /** evidence: the sentence in the answer behind the verdict */
+  brand: { name: string; mentioned: boolean; recommended: boolean; position: number | null; sentiment: string | null; reason: string | null; evidence: string | null; method: string } | null;
+  competitors: { id: number; name: string; mentioned: boolean; recommended: boolean; position: number | null; sentiment: string | null; reason: string | null; evidence: string | null }[];
   citations: { url: string; domain: string; source_type: string; is_brand_owned: boolean; competitor: string | null }[];
 };
 
@@ -220,3 +229,18 @@ export type ReportContent = {
   summary: string[];
 };
 export type Report = ReportSummary & { content: ReportContent };
+
+export type FreeCheck = {
+  id: string;
+  status: "queued" | "running" | "done" | "failed";
+  brand_name: string;
+  website: string;
+  category: string;
+  country: string;
+  result: {
+    prompts: { text: string; answers: { engine: Engine; engine_name: string; mentioned: boolean; recommended: boolean; position: number | null; evidence: string | null }[] }[];
+    summary: { answers: number; mentioned: number; recommended: number; engines: string[] };
+    top_sources: { domain: string; count: number }[];
+    simulated: boolean;
+  } | null;
+};
