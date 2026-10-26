@@ -5,7 +5,9 @@ import { useState } from "react";
 import { Reveal } from "@/components/marketing/effects/reveal";
 import { ButtonArrow, buttonClass } from "@/components/ui/button";
 import { FEATURED, type Interval, PLANS } from "@/lib/billing/plans";
+import { WAITLIST_ONLY } from "@/lib/flags";
 import { cx } from "@/lib/cx";
+import { appHref } from "@/lib/urls";
 
 export function PeriodToggle({ value, onChange }: { value: Interval; onChange: (v: Interval) => void }) {
   return (
@@ -64,7 +66,7 @@ export function PricingCards({ toggleClassName }: { toggleClassName?: string }) 
 
                 <p className={cx("relative mt-5 border-t pt-5 text-[14px] leading-snug", dark ? "border-white/10 text-white/65" : "border-line text-muted")}>{plan.audience}</p>
                 <a
-                  href={`/register?plan=${plan.key}&interval=${period}`}
+                  href={WAITLIST_ONLY ? "/#waitlist" : appHref(`/subscribe?plan=${plan.key}&interval=${period}`)}
                   className={cx(
                     "relative mt-5 w-full",
                     dark
@@ -72,7 +74,7 @@ export function PricingCards({ toggleClassName }: { toggleClassName?: string }) 
                       : buttonClass("secondary"),
                   )}
                 >
-                  Get started
+                  {WAITLIST_ONLY ? "Join waitlist" : "Get started"}
                   <ButtonArrow />
                 </a>
 

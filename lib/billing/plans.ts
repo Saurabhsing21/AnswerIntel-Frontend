@@ -93,6 +93,7 @@ export const COMPARISON: ComparisonGroup[] = [
     title: "Act",
     rows: [
       { label: "Ranked opportunities", values: [true, true, true] },
+      { label: "Why you're missing", hint: "the cause behind each lost answer, with the fix", values: [true, true, true] },
       { label: "Website audit for AI readability", values: [true, true, true] },
       { label: "Draft the fix", hint: "a first draft for each opportunity", values: [true, true, true] },
       { label: "Experiments with before and after", values: [false, true, true] },
@@ -120,7 +121,7 @@ export const COMPARISON: ComparisonGroup[] = [
 ];
 
 export const PRICING_FAQ = [
-  { q: "Is there a free trial?", a: "No, but you can run a free one-off check from our website to see whether ChatGPT and Perplexity mention you. Plans are monthly or yearly and you can cancel any time." },
+  { q: "Is there a free trial?", a: "Yes. Every new account gets one free scan of one brand: up to 10 buyer questions across the AI engines, with the full results. No card needed. After that, plans start at $20 a month and you can cancel any time." },
   { q: "Do your answers match what I see in ChatGPT?", a: "As closely as we can: ChatGPT and Gemini answer with their own live web search, Perplexity always searches, and Google AI answers come straight from Google search results. Answers still vary from run to run, so every rate shows how much it can move by chance." },
   { q: "What is an AI answer?", a: "One prompt asked to one AI engine. Tracking 30 prompts weekly on 4 engines uses about 520 answers a month, which is exactly the Starter allowance. On-demand scans use the same allowance." },
   { q: "What happens when I run out of AI answers?", a: "New scans wait until older ones are more than 30 days old, so your allowance refills as you go. You can switch off prompts you no longer need, or move to a bigger plan any time." },

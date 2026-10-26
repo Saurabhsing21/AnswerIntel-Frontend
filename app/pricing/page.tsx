@@ -7,13 +7,15 @@ import { Section, SectionHeading } from "@/components/marketing/section";
 import { Footer } from "@/components/marketing/sections/footer";
 import { Nav } from "@/components/marketing/sections/nav";
 import { Mark } from "@/components/ui/mark";
+import { FREE_CHECK } from "@/lib/flags";
 
 export const metadata: Metadata = {
   title: "Pricing - SeenLens",
   description: "SeenLens plans from $20 a month: track how ChatGPT, Perplexity and Gemini recommend your brand against competitors.",
 };
 
-export default function PricingPage() {
+export default async function PricingPage({ searchParams }: PageProps<"/pricing">) {
+  const { subscribe } = await searchParams; // sent here by the app when the workspace has no plan yet
   return (
     <>
       <Nav />
@@ -21,15 +23,22 @@ export default function PricingPage() {
         {/* Compact on purpose: all three prices should be visible without scrolling. */}
         <Section innerClassName="md:pt-10">
           <Reveal className="mx-auto max-w-[720px] text-center">
+            {subscribe && (
+              <p role="status" className="mx-auto mb-6 w-fit rounded-full border border-line-strong bg-surface px-4 py-2 text-[14px] text-ink-2">
+                You&apos;re signed in. Choose a plan to open your dashboard.
+              </p>
+            )}
             <h1 className="text-balance font-display text-[38px] leading-[1.02] font-semibold tracking-[-0.04em] md:text-[54px]">
               Pricing for <Mark delay={0.3}>every stage</Mark>
             </h1>
             <p className="mx-auto mt-4 max-w-[560px] text-[16px] leading-relaxed text-muted">
               See how ChatGPT, Perplexity, Gemini and Google AI recommend your brand, and what to fix first. One plan per workspace, shared by your team.
             </p>
-            <a href="/check" className="mt-3 inline-block text-[14px] font-medium text-ink underline decoration-mark decoration-2 underline-offset-4">
-              Not sure yet? Run a free check
-            </a>
+            {FREE_CHECK && (
+              <a href="/check" className="mt-3 inline-block text-[14px] font-medium text-ink underline decoration-mark decoration-2 underline-offset-4">
+                Not sure yet? Run a free check
+              </a>
+            )}
           </Reveal>
           <div className="mt-8">
             <PricingCards toggleClassName="justify-center" />

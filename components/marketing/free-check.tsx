@@ -8,6 +8,7 @@ import { ButtonArrow, buttonClass } from "@/components/ui/button";
 import { Mark } from "@/components/ui/mark";
 import type { Engine, FreeCheck } from "@/lib/api/types";
 import { cx } from "@/lib/cx";
+import { appHref } from "@/lib/urls";
 import { ease } from "@/lib/motion";
 
 type Result = NonNullable<FreeCheck["result"]>;
@@ -291,10 +292,11 @@ function ResultView({ check, onReset }: { check: FreeCheck; onReset: () => void 
             <p className="mt-1.5 text-[14px] leading-relaxed text-muted">
               SeenLens tracks up to 160 questions on ChatGPT, Perplexity, Gemini and Google AI every week, against your competitors, and tells you what to fix.
             </p>
-            <a href="/pricing" className={cx(buttonClass("primary"), "mt-5 w-full")}>
-              See plans
+            <a href={appHref(`/register?${new URLSearchParams({ brand: check.brand_name, website: check.website, category: check.category, country: check.country })}`)} className={cx(buttonClass("primary"), "mt-5 w-full")}>
+              Run your free full scan
               <ButtonArrow />
             </a>
+            <a href="/pricing" className="mt-3 block text-center text-[13px] font-medium text-muted hover:text-ink">See plans</a>
           </div>
         </motion.div>
 
@@ -340,6 +342,18 @@ function ResultView({ check, onReset }: { check: FreeCheck; onReset: () => void 
               );
             })}
           </ul>
+          {r.why && r.why.length > 0 && (
+            <div className="border-t border-line px-5 py-4">
+              <p className="text-[13px] text-muted">Why AI may be missing you</p>
+              <ul className="mt-2.5 space-y-2.5">
+                {r.why.map((w) => (
+                  <li key={w.code} className="text-[13px]">
+                    <span className="font-medium text-ink">{w.title}.</span> <span className="text-ink-2">{w.action}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           {r.top_sources.length > 0 && (
             <div className="border-t border-line px-5 py-4">
               <p className="text-[13px] text-muted">Sources the AI cited</p>

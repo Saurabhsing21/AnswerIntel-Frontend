@@ -17,6 +17,8 @@ import { buttonClass } from "@/components/ui/button";
 import { IconTile } from "@/components/ui/icon-tile";
 import { Logo } from "@/components/ui/logo";
 import { cx } from "@/lib/cx";
+import { appHref } from "@/lib/urls";
+import { FREE_CHECK, WAITLIST_ONLY } from "@/lib/flags";
 import { ease } from "@/lib/motion";
 
 const product = [
@@ -30,7 +32,7 @@ const product = [
 const links = [
   { label: "How it works", href: "/#how-it-works" },
   { label: "Pricing", href: "/pricing" },
-  { label: "Free check", href: "/check" },
+  ...(FREE_CHECK ? [{ label: "Free check", href: "/check" }] : []),
   { label: "FAQ", href: "/#faq" },
 ];
 
@@ -138,10 +140,10 @@ export function Nav() {
                       </NextLink>
                     </div>
                     <div className="flex items-center justify-between border-t border-line bg-[#fbfbfb] px-4 py-2.5 text-[13px]">
-                      <span className="text-muted">Launching to the waitlist first</span>
-                      <NextLink href="/#waitlist" onClick={() => setOpen(false)} className="font-medium text-ink hover:underline">
-                        Join waitlist
-                      </NextLink>
+                      <span className="text-muted">{WAITLIST_ONLY ? "Launching to the waitlist first" : "One free scan, no card needed"}</span>
+                      <a href={WAITLIST_ONLY ? "/#waitlist" : appHref("/register")} onClick={() => setOpen(false)} className="font-medium text-ink hover:underline">
+                        {WAITLIST_ONLY ? "Join waitlist" : "Run a free scan"}
+                      </a>
                     </div>
                   </motion.div>
                 )}
@@ -161,9 +163,20 @@ export function Nav() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
-          <NextLink href="/#waitlist" className={cx(buttonClass("primary", "sm"), "hidden sm:inline-flex")}>
-            Join waitlist
-          </NextLink>
+          {WAITLIST_ONLY ? (
+            <NextLink href="/#waitlist" className={cx(buttonClass("primary", "sm"), "hidden sm:inline-flex")}>
+              Join waitlist
+            </NextLink>
+          ) : (
+            <>
+              <a href={appHref("/login")} className="hidden rounded-full px-3 py-1.5 text-[14px] text-muted transition-colors hover:bg-black/[0.04] hover:text-ink sm:inline-flex">
+                Log in
+              </a>
+              <a href={appHref("/register")} className={cx(buttonClass("primary", "sm"), "hidden sm:inline-flex")}>
+                Run a free scan
+              </a>
+            </>
+          )}
           <button
             type="button"
             aria-label={mobile ? "Close menu" : "Open menu"}
@@ -199,9 +212,16 @@ export function Nav() {
                 </li>
               ))}
               <li className="pt-2">
-                <NextLink href="/#waitlist" onClick={() => setMobile(false)} className={cx(buttonClass(), "w-full")}>
-                  Join waitlist
-                </NextLink>
+                {WAITLIST_ONLY ? (
+                  <NextLink href="/#waitlist" onClick={() => setMobile(false)} className={cx(buttonClass(), "w-full")}>
+                    Join waitlist
+                  </NextLink>
+                ) : (
+                  <div className="grid gap-2">
+                    <a href={appHref("/register")} className={cx(buttonClass(), "w-full")}>Run a free scan</a>
+                    <a href={appHref("/login")} className={cx(buttonClass("secondary"), "w-full")}>Log in</a>
+                  </div>
+                )}
               </li>
             </ul>
           </motion.nav>

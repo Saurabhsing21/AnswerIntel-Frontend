@@ -1,7 +1,9 @@
 import { ArrowDownRight, ArrowUpRight, Envelope } from "@phosphor-icons/react/ssr";
 import { Reveal } from "@/components/marketing/effects/reveal";
+import { TrialCta } from "@/components/marketing/trial-cta";
 import { WaitlistForm } from "@/components/marketing/waitlist-form";
 import { Mark } from "@/components/ui/mark";
+import { WAITLIST_ONLY } from "@/lib/flags";
 
 const actions = [
   "Publish a CRM for startups comparison page",
@@ -58,9 +60,11 @@ export function WaitlistCta() {
             Get your first <Mark delay={0.4}>AI visibility</Mark> report
           </h2>
           <p className="mt-5 max-w-[440px] text-[17px] leading-relaxed text-muted">
-            We are opening access in small groups. Join the waitlist and your first scan is on us.
+            {WAITLIST_ONLY
+              ? "We are opening access in small groups. Join the waitlist and your first scan is on us."
+              : "See where ChatGPT, Perplexity and Gemini mention you, and who they pick instead. Your first scan is free."}
           </p>
-          <WaitlistForm className="mt-8" />
+          {WAITLIST_ONLY ? <WaitlistForm className="mt-8" /> : <TrialCta className="mt-8" />}
         </Reveal>
         <Reveal delay={0.1} y={24}>
           <ReportPreview />

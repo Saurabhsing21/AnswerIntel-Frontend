@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { FreeCheckFlow } from "@/components/marketing/free-check";
 import { Section } from "@/components/marketing/section";
 import { Footer } from "@/components/marketing/sections/footer";
 import { Nav } from "@/components/marketing/sections/nav";
+import { FREE_CHECK } from "@/lib/flags";
 
 export const metadata: Metadata = {
   title: "Free AI visibility check - SeenLens",
@@ -10,6 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default function CheckPage() {
+  if (!FREE_CHECK) notFound(); // hidden until launch
   return (
     <>
       <Nav />

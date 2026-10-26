@@ -1,9 +1,11 @@
 import { Reveal } from "@/components/marketing/effects/reveal";
+import { TrialCta } from "@/components/marketing/trial-cta";
 import { WaitlistForm } from "@/components/marketing/waitlist-form";
 import { AppFrame } from "@/components/product/app-frame";
 import { EngineIcon } from "@/components/product/engine-icon";
 import { Mark } from "@/components/ui/mark";
 import type { Engine } from "@/lib/data";
+import { WAITLIST_ONLY } from "@/lib/flags";
 
 const tracked: Engine[] = ["chatgpt", "perplexity", "gemini", "google"];
 
@@ -44,8 +46,8 @@ export function Hero() {
           </p>
         </Reveal>
 
-        <Reveal delay={0.15} className="mt-8 w-full max-w-[460px] text-left">
-          <WaitlistForm />
+        <Reveal delay={0.15} className={WAITLIST_ONLY ? "mt-8 w-full max-w-[460px] text-left" : "mt-8"}>
+          {WAITLIST_ONLY ? <WaitlistForm /> : <TrialCta centered />}
         </Reveal>
       </div>
 

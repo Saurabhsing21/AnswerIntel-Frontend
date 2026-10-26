@@ -1,6 +1,8 @@
 import { Check, Minus } from "@phosphor-icons/react/ssr";
 import { COMPARISON, FEATURED, PLANS } from "@/lib/billing/plans";
+import { WAITLIST_ONLY } from "@/lib/flags";
 import { cx } from "@/lib/cx";
+import { appHref } from "@/lib/urls";
 
 const grid = "grid grid-cols-[minmax(220px,1.4fr)_repeat(3,minmax(150px,1fr))]";
 
@@ -25,13 +27,13 @@ export function PricingCompare() {
                 {p.name} <span className="font-normal text-muted">· ${p.monthly}/mo</span>
               </p>
               <a
-                href={`/register?plan=${p.key}&interval=month`}
+                href={WAITLIST_ONLY ? "/#waitlist" : appHref(`/subscribe?plan=${p.key}&interval=month`)}
                 className={cx(
                   "inline-flex h-8 items-center rounded-full px-4 text-[13px] font-medium transition-colors",
                   p.key === FEATURED ? "bg-ink text-white hover:bg-[#2b2b2b]" : "border border-line-strong bg-surface text-ink hover:border-[rgb(0_0_0/0.22)]",
                 )}
               >
-                Get {p.name}
+                {WAITLIST_ONLY ? "Join waitlist" : `Get ${p.name}`}
               </a>
             </div>
           ))}

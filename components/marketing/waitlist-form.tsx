@@ -18,14 +18,16 @@ export function WaitlistForm({ className }: { className?: string }) {
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const email = String(new FormData(e.currentTarget).get("email") ?? "");
+    const form = new FormData(e.currentTarget);
+    const email = String(form.get("email") ?? "");
+    const company = String(form.get("company") ?? ""); // honeypot, see below
     setStatus("loading");
     setError("");
     try {
       const res = await fetch("/api/waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, company }),
       });
       if (!res.ok) {
         const data = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
@@ -39,7 +41,7 @@ export function WaitlistForm({ className }: { className?: string }) {
   }
 
   return (
-    <div className={cx("min-h-[92px] max-w-[460px]", className)}>
+    <div className={cx("min-h-[56px] max-w-[460px]", className)}>
       <AnimatePresence mode="wait" initial={false}>
         {status === "done" ? (
           <motion.p
@@ -48,10 +50,10 @@ export function WaitlistForm({ className }: { className?: string }) {
             initial={reduce ? false : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, ease }}
-            className="flex items-center gap-2.5 rounded-full bg-mark-soft px-4 py-3 text-[15px] text-ink"
+            className="inline-flex items-center gap-2.5 rounded-full bg-mark-soft py-3 pr-5 pl-4 text-[15px] text-ink"
           >
             <CheckCircle size={20} weight="fill" className="shrink-0" />
-            You are on the list. We will email you when your spot opens.
+            You&apos;re on the list. Check your inbox.
           </motion.p>
         ) : (
           <motion.form
@@ -61,8 +63,8 @@ export function WaitlistForm({ className }: { className?: string }) {
             onSubmit={onSubmit}
             noValidate
           >
-            <label htmlFor={`${id}-email`} className="mb-2 block text-[13px] text-muted">
-              Work email
+            <label htmlFor={`${id}-email`} className="sr-only">
+              Email
             </label>
             <div
               className={cx(
@@ -87,6 +89,8 @@ export function WaitlistForm({ className }: { className?: string }) {
                 <ButtonArrow />
               </button>
             </div>
+            {/* Honeypot: hidden from people and screen readers; bots that fill every field get silently ignored. */}
+            <input name="company" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute left-[-9999px] h-0 w-0 opacity-0" />
             {error && (
               <p id={`${id}-error`} className="mt-2 pl-4 text-[13px] text-down">
                 {error}
