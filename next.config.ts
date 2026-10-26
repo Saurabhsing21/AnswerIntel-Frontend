@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Local dev serves the dashboard from app.localhost (see lib/urls.ts).
+  allowedDevOrigins: ["app.localhost"],
 };
 
 export default nextConfig;
