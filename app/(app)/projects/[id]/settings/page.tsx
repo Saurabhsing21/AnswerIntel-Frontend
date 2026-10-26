@@ -1,12 +1,12 @@
 "use client";
 
-import { CalendarCheck, CircleNotch, Database, FloppyDisk, Info, Trash, Warning } from "@phosphor-icons/react";
+import { CalendarCheck, CircleNotch, Database, FloppyDisk, Trash, Warning } from "@phosphor-icons/react";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useProject } from "@/components/app/project-context";
 import { useToast } from "@/components/app/toast";
 import { Card, ErrorBanner, Field, inputClass, PageHeader, Skeleton } from "@/components/app/ui";
-import { EngineIcon } from "@/components/product/engine-icon";
+import { EnginePicker, useEngines } from "@/components/app/engine-picker";
 import { buttonClass } from "@/components/ui/button";
 import { api, ApiError } from "@/lib/api/client";
 import type { Project, Schedule } from "@/lib/api/types";
@@ -21,7 +21,7 @@ function Switch({ on, onChange, label }: { on: boolean; onChange: (v: boolean) =
       aria-checked={on}
       aria-label={label}
       onClick={() => onChange(!on)}
-      className={cx("relative h-6 w-11 shrink-0 rounded-full transition-colors", on ? "bg-ink" : "bg-[#d4d4d1]")}
+      className={cx("relative h-6 w-11 shrink-0 rounded-full transition-colors", on ? "bg-mark ring-1 ring-mark-strong ring-inset" : "bg-[#d4d4d1]")}
     >
       <span className={cx("absolute top-0.5 size-5 rounded-full bg-white shadow transition-[left]", on ? "left-[22px]" : "left-0.5")} />
     </button>
@@ -51,7 +51,7 @@ function ScheduleCard({ projectId, initial, onSaved }: { projectId: string; init
   }
 
   return (
-    <Card title="Weekly scan" subtitle="Track changes without lifting a finger">
+    <Card title="Weekly scan" subtitle="Track changes without lifting a finger" className="h-full">
       <div className="space-y-5 p-5">
         <div className="flex items-center gap-4">
           <span className="grid size-10 shrink-0 place-items-center rounded-[12px] bg-sunken text-ink-2">
@@ -121,7 +121,7 @@ function DetailsCard({ project, onSaved }: { project: Project; onSaved: () => vo
   }
 
   return (
-    <Card title="Project details" subtitle="What we tell the AI engines about your brand">
+    <Card title="Project details" subtitle="What we tell the AI engines about your brand" className="h-full">
       <form onSubmit={save} className="space-y-4 p-5">
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Brand name"><input className={inputClass} value={form.brand_name} onChange={set("brand_name")} required /></Field>
@@ -160,21 +160,63 @@ function DangerCard({ project }: { project: Project }) {
   }
 
   return (
-    <section className="overflow-hidden rounded-[16px] border border-[#f3c4c4] bg-surface">
-      <header className="flex items-center gap-2 border-b border-[#f3c4c4] bg-[#fdf3f3] px-5 py-3.5">
-        <Warning size={16} className="text-down" />
-        <h2 className="text-[14px] font-medium text-[#b42318]">Delete project</h2>
-      </header>
-      <div className="space-y-3 p-5">
-        <p className="text-[13px] text-muted">This permanently removes {project.brand_name}, its competitors, prompts, scans, reports and experiments. It cannot be undone.</p>
-        <Field label={`Type ${project.brand_name} to confirm`}>
-          <input className={inputClass} value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="off" />
-        </Field>
+    <section className="flex flex-col gap-3 rounded-[16px] border border-[#f3c4c4] bg-[#fdf8f8] px-5 py-4 lg:flex-row lg:items-center">
+      <div className="min-w-0 lg:w-[40%]">
+        <h2 className="flex items-center gap-2 text-[14px] font-medium text-[#b42318]">
+          <Warning size={16} className="text-down" /> Delete project
+        </h2>
+        <p className="mt-0.5 text-[12px] text-muted">Removes {project.brand_name}, its competitors, prompts, scans, reports and experiments. It cannot be undone.</p>
+      </div>
+      <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center">
+        <input
+          className={cx(inputClass, "h-9 flex-1 bg-surface")}
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          autoComplete="off"
+          placeholder={`Type ${project.brand_name} to confirm`}
+          aria-label={`Type ${project.brand_name} to confirm`}
+        />
         <button type="button" onClick={remove} disabled={confirm !== project.brand_name || deleting} className="inline-flex h-9 items-center gap-2 rounded-full bg-down px-4 text-sm font-medium text-white transition-opacity disabled:opacity-40">
           {deleting ? <CircleNotch size={14} className="animate-spin" /> : <Trash size={14} />} Delete project
         </button>
       </div>
     </section>
+  );
+}
+
+function EnginesCard({ project, onSaved }: { project: Project; onSaved: () => void }) {
+  const toast = useToast();
+  const { engines: options } = useEngines();
+  const { billing } = useProject();
+  const [value, setValue] = useState<string[]>(project.engines);
+  const [busy, setBusy] = useState(false);
+  const changed = value.join() !== project.engines.join();
+
+  async function save() {
+    setBusy(true);
+    try {
+      await api(`/projects/${project.id}`, { method: "PUT", json: { engines: value } });
+      toast.push("AI engines saved. The next scan uses them.", "success");
+      onSaved();
+    } catch (e) {
+      toast.push((e as ApiError).message, "error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Card title="AI engines" subtitle="Which engines every scan asks">
+      <div className="space-y-4 p-5">
+        {options ? <EnginePicker engines={options} value={value} onChange={setValue} wide locked={billing?.limits.locked_engines} max={billing?.limits.engines} /> : <Skeleton className="h-[220px]" />}
+        <div className="flex items-center gap-3 border-t border-line pt-4">
+          <span className="text-[12px] text-muted">More engines use more of your monthly AI answers.</span>
+          <button type="button" onClick={save} disabled={busy || !changed || value.length === 0} className={cx(buttonClass("primary", "sm"), "ml-auto")}>
+            {busy ? <CircleNotch size={14} className="animate-spin" /> : <FloppyDisk size={14} />} Save
+          </button>
+        </div>
+      </div>
+    </Card>
   );
 }
 
@@ -184,43 +226,23 @@ export default function SettingsPage() {
 
   return (
     <>
-      <PageHeader title="Settings" description="The weekly scan, your brand details, and how your data is collected." />
-      <div className="grid items-start gap-4 lg:grid-cols-2">
-        <div className="space-y-4">
-          {schedule ? <ScheduleCard projectId={id} initial={schedule} onSaved={reloadSchedule} /> : <Skeleton className="h-[420px]" />}
-          <Card title="Data and engines" subtitle="Where the answers come from">
-            <div className="space-y-4 p-5">
-              <div className="flex items-center gap-3">
-                <span className="grid size-10 shrink-0 place-items-center rounded-[12px] bg-sunken text-ink-2">
-                  <Database size={20} />
-                </span>
-                <div className="min-w-0">
-                  <p className="text-[14px] font-medium text-ink">{latestScan?.simulated ? "Sample data" : "Live AI answers"}</p>
-                  <p className="text-[12px] text-muted">{latestScan?.simulated ? "Answers are generated locally so you can explore the product." : "Every prompt is sent to the real engines."}</p>
-                </div>
-              </div>
-              {latestScan?.simulated && (
-                <p className="flex items-start gap-2 rounded-[10px] bg-[#fafaf9] px-3.5 py-2.5 text-[12px] text-muted">
-                  <Info size={14} className="mt-px shrink-0" />
-                  <span>
-                    To scan the real engines, set <code className="rounded bg-sunken px-1 font-mono">OPENROUTER_API_KEY</code> on the API server and run a new scan.
-                  </span>
-                </p>
-              )}
-              <ul className="grid grid-cols-3 gap-2">
-                {(["chatgpt", "perplexity", "gemini"] as const).map((e) => (
-                  <li key={e} className="flex items-center gap-2 rounded-[10px] border border-line px-3 py-2 text-[12px] text-ink-2">
-                    <EngineIcon engine={e} size={14} /> {e === "chatgpt" ? "ChatGPT" : e === "perplexity" ? "Perplexity" : "Gemini"}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </Card>
-        </div>
-        <div className="space-y-4">
+      <PageHeader title="Settings" description="Your brand details, the AI engines we ask, and when we scan." />
+      {latestScan?.simulated && (
+        <p className="mb-4 flex items-start gap-2.5 rounded-[12px] border border-line-strong bg-surface px-4 py-3 text-[13px] text-muted">
+          <Database size={16} className="mt-px shrink-0 text-ink-2" />
+          <span>
+            <span className="font-medium text-ink">Sample data.</span> Answers are generated locally so you can explore the product. To ask the real engines,
+            set <code className="rounded bg-sunken px-1 font-mono text-[12px]">OPENROUTER_API_KEY</code> on the API server and run a new scan.
+          </span>
+        </p>
+      )}
+      <div className="space-y-4">
+        <div className="grid gap-4 lg:grid-cols-[1.25fr_1fr]">
           {project ? <DetailsCard key={project.id + project.brand_name} project={project} onSaved={reloadProjects} /> : <Skeleton className="h-[420px]" />}
-          {project && <DangerCard project={project} />}
+          {schedule ? <ScheduleCard projectId={id} initial={schedule} onSaved={reloadSchedule} /> : <Skeleton className="h-[420px]" />}
         </div>
+        {project ? <EnginesCard key={project.id + project.engines.join()} project={project} onSaved={reloadProjects} /> : <Skeleton className="h-[220px]" />}
+        {project && <DangerCard project={project} />}
       </div>
     </>
   );

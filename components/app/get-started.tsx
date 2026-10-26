@@ -1,16 +1,68 @@
 "use client";
 
-import { ArrowRight, Check, CircleNotch, Hash, ListChecks, Play, Target, Trophy, Users } from "@phosphor-icons/react";
+import { ArrowRight, Check, CircleNotch, Hash, Play, Users } from "@phosphor-icons/react";
 import Link from "next/link";
-import { isScanActive } from "@/components/app/project-context";
+import { isScanActive, useProject } from "@/components/app/project-context";
 import { Card } from "@/components/app/ui";
-import { AppFrame } from "@/components/product/app-frame";
-import { EngineIcon } from "@/components/product/engine-icon";
+import { BrandTile } from "@/components/app/brand-tile";
+import { EngineIcon, engineNames } from "@/components/product/engine-icon";
+import { useApi } from "@/lib/api/client";
+import { YOU_COLOR } from "@/lib/brand";
 import { buttonClass } from "@/components/ui/button";
-import type { Scan } from "@/lib/api/types";
+import type { Competitor, Scan } from "@/lib/api/types";
 import { cx } from "@/lib/cx";
 
 type Step = { key: string; title: string; body: string; icon: typeof Users; done: boolean; href?: string; action: string; onAction?: () => void };
+
+/** What this project is set up to ask, so someone who left setup half-way sees exactly what was saved. */
+function SetupSummary({ projectId, questions }: { projectId: string; questions: number }) {
+  const { project } = useProject();
+  const competitors = useApi<Competitor[]>(`/projects/${projectId}/competitors`);
+  const base = `/projects/${projectId}`;
+  const row = (label: string, href: string, children: React.ReactNode) => (
+    <li className="flex items-start gap-3 px-5 py-3.5">
+      <span className="w-[92px] shrink-0 pt-0.5 text-[12px] text-muted">{label}</span>
+      <span className="min-w-0 flex-1 text-[13px] text-ink">{children}</span>
+      <Link href={href} className="shrink-0 text-[12px] font-medium text-ink-2 underline-offset-2 hover:text-ink hover:underline">Edit</Link>
+    </li>
+  );
+  return (
+    <Card title="Your setup" subtitle="Saved. Change anything before your first scan." className="flex flex-col">
+      <ul className="flex-1 divide-y divide-line">
+        {project &&
+          row("Brand", `${base}/settings`, (
+            <span className="flex items-center gap-2.5">
+              <BrandTile name={project.brand_name} color={YOU_COLOR} size={24} website={project.website} />
+              <span className="min-w-0">
+                <span className="block font-medium">{project.brand_name}</span>
+                <span className="block truncate text-[12px] text-muted">{project.website.replace(/^https?:\/\//, "").replace(/\/$/, "")} · {project.category} · {project.country}</span>
+              </span>
+            </span>
+          ))}
+        {row("Competitors", `${base}/competitors`, competitors.data?.length ? (
+          <span className="flex flex-wrap gap-1.5">
+            {competitors.data.map((c) => (
+              <span key={c.id} className="inline-flex items-center gap-1.5 rounded-full border border-line py-0.5 pr-2 pl-0.5 text-[12px]">
+                <BrandTile name={c.name} color="#a3a3a3" size={18} website={c.website} /> {c.name}
+              </span>
+            ))}
+          </span>
+        ) : <span className="text-muted">None yet. AI answers are still measured for you alone.</span>)}
+        {project &&
+          row("AI engines", `${base}/settings`, (
+            <span className="flex flex-wrap gap-1.5">
+              {project.engines.map((e) => (
+                <span key={e} className="inline-flex items-center gap-1.5 rounded-full border border-line px-2 py-0.5 text-[12px]">
+                  <EngineIcon engine={e} size={12} /> {engineNames[e]}
+                </span>
+              ))}
+            </span>
+          ))}
+        {row("Questions", `${base}/prompts`, questions ? <span><span className="font-medium">{questions}</span> buyer questions, switched on</span> : <span className="text-muted">Not written yet</span>)}
+      </ul>
+    </Card>
+  );
+}
 
 /** Shown until the first scan finishes: three steps, each with its own action. */
 export function GetStarted({
@@ -27,10 +79,12 @@ export function GetStarted({
   onStartScan: () => void;
 }) {
   const scanning = isScanActive(scan);
+  const { project } = useProject();
+  const engineList = (project?.engines ?? []).map((e) => engineNames[e]).join(", ");
   const steps: Step[] = [
     { key: "competitors", title: "Add your competitors", body: "Up to five brands you lose deals to. AI answers are compared against them.", icon: Users, done: counts.competitors > 0, href: `/projects/${projectId}/competitors?add=1`, action: "Add competitors" },
     { key: "prompts", title: "Generate buyer questions", body: "We write the questions your buyers ask AI, then you edit or switch off any of them.", icon: Hash, done: counts.active_prompts > 0, href: `/projects/${projectId}/prompts`, action: "Generate prompts" },
-    { key: "scan", title: "Run your first scan", body: "Every question goes to ChatGPT, Perplexity and Gemini. It takes about a minute.", icon: Play, done: Boolean(scan && !scanning && scan.status !== "failed"), action: "Run first scan", onAction: onStartScan },
+    { key: "scan", title: "Run your first scan", body: `Every question goes to ${engineList || "each AI engine"}. It takes about a minute.`, icon: Play, done: Boolean(scan && !scanning && scan.status !== "failed"), action: "Run first scan", onAction: onStartScan },
   ];
   const doneCount = steps.filter((s) => s.done).length;
   const current = steps.findIndex((s) => !s.done);
@@ -86,44 +140,9 @@ export function GetStarted({
         </ol>
       </Card>
 
-      <Card title="What you will get" subtitle="From one scan of your questions" className="flex flex-col">
-        <ul className="flex flex-1 flex-col divide-y divide-line">
-          {[
-            { icon: Trophy, title: "Your standing against rivals", body: "How often AI mentions you, how often it recommends you, and your share of voice." },
-            { icon: Target, title: "The questions you lose", body: "Every prompt where a competitor wins, and the sources AI trusts when it picks them." },
-            { icon: ListChecks, title: "A ranked list of fixes", body: "Concrete actions with the evidence behind each one, so you know what to do first." },
-          ].map(({ icon: Icon, title, body }) => (
-            <li key={title} className="flex flex-1 items-center gap-3.5 px-5 py-4">
-              <span className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-sunken text-ink-2">
-                <Icon size={18} />
-              </span>
-              <span>
-                <span className="block text-[13px] font-medium text-ink">{title}</span>
-                <span className="block text-[12px] text-muted">{body}</span>
-              </span>
-            </li>
-          ))}
-        </ul>
-        <div className="flex items-center gap-2 border-t border-line px-5 py-3 text-[12px] text-muted">
-          <span className="flex gap-1.5">
-            {(["chatgpt", "perplexity", "gemini"] as const).map((e) => (
-              <span key={e} className="grid size-6 place-items-center rounded-full border border-line">
-                <EngineIcon engine={e} size={11} />
-              </span>
-            ))}
-          </span>
-          Asks ChatGPT, Perplexity and Gemini
-        </div>
-      </Card>
+      <SetupSummary projectId={projectId} questions={counts.active_prompts} />
     </div>
 
-    <section aria-label="Dashboard preview">
-      <div className="mb-3 flex flex-wrap items-center gap-2 text-[13px]">
-        <span className="font-medium text-ink">This is what your dashboard will look like</span>
-        <span className="rounded-[6px] border border-dashed border-line-strong px-2 py-0.5 text-[11px] text-muted">Sample data</span>
-      </div>
-      <AppFrame />
-    </section>
     </div>
   );
 }
