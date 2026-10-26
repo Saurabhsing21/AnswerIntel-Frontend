@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { UNAUTHORIZED_EVENT } from "@/lib/api/client";
 import { BillingBanner, RequireSubscription, UpgradePrompt } from "@/components/app/billing";
+import { VerifyEmailBanner } from "@/components/app/verify-email-banner";
 import { CommandPalette } from "@/components/app/command-palette";
 import { ProjectProvider } from "@/components/app/project-context";
 import { Sidebar } from "@/components/app/sidebar";
@@ -59,6 +60,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <main className="flex-1 px-4 py-5 md:px-6 md:py-6">
                 <div className="mx-auto max-w-[1280px]">
                   <BillingBanner />
+                  <VerifyEmailBanner />
                   {children}
                 </div>
               </main>

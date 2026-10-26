@@ -26,6 +26,21 @@ export const CATEGORY_LABELS: Record<string, string> = {
   COMPETITOR: "Competitor",
 };
 
+/** One colour per source type, used for its pill, bar and tile everywhere sources appear. */
+export const SOURCE_COLORS: Record<string, string> = {
+  brand_website: "#84a52a",
+  competitor_website: "#e5484d",
+  review_site: "#e59a0b",
+  reddit: "#ff5700",
+  news: "#2f6bff",
+  blog: "#7a5af8",
+  directory: "#0e9f9a",
+  social: "#db2777",
+  comparison: "#0891b2",
+  documentation: "#64748b",
+  other: "#a3a3a3",
+};
+
 export const SOURCE_LABELS: Record<string, string> = {
   brand_website: "Your website",
   competitor_website: "Competitor site",

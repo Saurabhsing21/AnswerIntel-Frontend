@@ -2,9 +2,9 @@
 
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { BrandBars, BrandLineChart, type BrandSeries } from "@/components/app/charts";
+import { BrandLineChart, type BrandSeries } from "@/components/app/charts";
 import { GetStarted } from "@/components/app/get-started";
-import { ActivityCard, AnswersCard, EnginesCard, KpiTabs, OpportunitiesCard, RankTable, type RankRow } from "@/components/app/overview-cards";
+import { ActivityCard, AnswersCard, EnginesCard, KpiTabs, RankTable, ThisWeekCard, type RankRow } from "@/components/app/overview-cards";
 import { isScanActive, useProject, useRefreshOnScan } from "@/components/app/project-context";
 import { ResponseDrawer } from "@/components/app/response-drawer";
 import { Card, ErrorBanner, Skeleton } from "@/components/app/ui";
@@ -12,6 +12,8 @@ import { useApi } from "@/lib/api/client";
 import type { Dashboard } from "@/lib/api/types";
 import { brandColor, YOU_COLOR } from "@/lib/brand";
 import { pct } from "@/lib/format";
+import { buttonClass } from "@/components/ui/button";
+import { siteHref } from "@/lib/urls";
 
 type TabKey = "mention_rate" | "recommendation_rate" | "share_of_voice";
 const TABS: { key: TabKey; label: string; noun: string }[] = [
@@ -39,7 +41,7 @@ function OverviewSkeleton() {
 
 export default function OverviewPage() {
   const { id } = useParams<{ id: string }>();
-  const { latestScan, starting, startScan } = useProject();
+  const { latestScan, starting, startScan, billing } = useProject();
   const [metric, setMetric] = useState<TabKey>("mention_rate");
   const [openResponse, setOpenResponse] = useState<number | null>(null);
   const { data, error, loading, reload } = useApi<Dashboard>(`/projects/${id}/dashboard`, (d) => (isScanActive(d?.latest_scan) ? 2000 : undefined));
@@ -68,6 +70,7 @@ export default function OverviewPage() {
   const rows: RankRow[] = data.competitors
     .map((c) => ({
       name: c.name,
+      website: c.website,
       isYou: c.is_you,
       color: brandColor(c.name, c.is_you, rivals),
       value: c[metric],
@@ -100,6 +103,17 @@ export default function OverviewPage() {
 
   return (
     <div className="space-y-4">
+      {billing?.state === "free" && (
+        <div className="flex flex-col gap-3 rounded-[16px] border border-ink bg-mark-soft/60 px-5 py-4 sm:flex-row sm:items-center">
+          <div className="min-w-0 flex-1">
+            <p className="text-[15px] font-semibold text-ink">Your free scan is ready.</p>
+            <p className="mt-0.5 text-[13px] text-ink-2">
+              AI answers change every week. Track {brand} weekly, get an email when a competitor overtakes you, and re-test your fixes. Plans from $20 a month.
+            </p>
+          </div>
+          <a href={siteHref("/pricing")} className={buttonClass("primary", "sm")}>Track weekly</a>
+        </div>
+      )}
       <p className="text-[14px]">
         <span className="font-medium text-ink">Overview</span>
         <span className="text-muted"> · {headline}</span>
@@ -114,6 +128,9 @@ export default function OverviewPage() {
           spark: data.trend.map((p) => p[t.key]),
           margin: v.margins?.[t.key],
           noise: v.significant?.[t.key] === false && (v.deltas[t.key] ?? 0) !== 0,
+          sub: t.key !== "share_of_voice" && v.by_question?.category.responses
+            ? `${pct(v.by_question.category[t.key] ?? 0)} when not asked by name`
+            : undefined,
         }))}
         selected={metric}
         onSelect={(key) => setMetric(key as TabKey)}
@@ -128,17 +145,11 @@ export default function OverviewPage() {
                 <span className={s.isYou ? "font-medium text-ink" : undefined}>{s.name}</span>
               </span>
             ))}
-            {n > 1 && <span className="ml-auto text-faint">Hover the chart</span>}
+            <span className="ml-auto text-faint">Hover the chart</span>
           </div>
           <div className="flex-1 px-3 py-3">
-            {n > 1 ? (
-              <BrandLineChart series={series} dates={data.trend.map((p) => p.date)} metricKey={metric} label={label} />
-            ) : (
-              <div className="px-2 py-3">
-                <BrandBars series={series} label={label} />
-                <p className="mt-4 text-[12px] text-muted">The trend line appears after your second scan. Weekly scans build it automatically.</p>
-              </div>
-            )}
+            <BrandLineChart series={series} dates={data.trend.map((p) => p.date)} metricKey={metric} label={label} />
+            {n === 1 && <p className="px-3 pb-2 text-[12px] text-muted">Your first scan. The lines start moving after the next one; weekly scans build the trend automatically.</p>}
           </div>
           <dl className="grid grid-cols-2 divide-x divide-y divide-line border-t border-line sm:grid-cols-4 sm:divide-y-0">
             {footer.map((f) => (
@@ -154,7 +165,7 @@ export default function OverviewPage() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1.25fr_1fr]">
-        <OpportunitiesCard items={data.top_opportunities} projectId={id} />
+        <ThisWeekCard plan={data.this_week} projectId={id} />
         <div className="grid gap-4">
           <EnginesCard engines={data.engines} averagePosition={v.average_position} />
           <ActivityCard projectId={id} visibility={v} />

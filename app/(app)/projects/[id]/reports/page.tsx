@@ -11,6 +11,8 @@ import { Card, EmptyState, ErrorBanner, PageHeader, Skeleton, StatStrip } from "
 import { buttonClass } from "@/components/ui/button";
 import { api, ApiError, useApi } from "@/lib/api/client";
 import type { Report, ReportSummary, ReportType } from "@/lib/api/types";
+import { cx } from "@/lib/cx";
+import { askUpgrade, ProBadge, usePro } from "@/components/app/pro-lock";
 import { REPORT_LABELS, timeAgo } from "@/lib/format";
 import { formatHour, WEEKDAYS } from "@/lib/schedule";
 
@@ -64,6 +66,7 @@ function ReportExtras({ projectId, weeklyOn }: { projectId: string; weeklyOn: bo
 
 function ReportsInner() {
   const { id } = useParams<{ id: string }>();
+  const pro = usePro();
   const router = useRouter();
   const params = useSearchParams();
   const toast = useToast();
@@ -118,8 +121,14 @@ function ReportsInner() {
             align="right"
             className="w-60"
             trigger={({ open, toggle }) => (
-              <button type="button" onClick={toggle} aria-expanded={open} disabled={!hasData || generating !== null} className={buttonClass("primary", "sm")}>
-                {generating ? <CircleNotch size={14} className="animate-spin" /> : <Plus size={14} weight="bold" />} Generate report
+              <button
+                type="button"
+                onClick={pro ? toggle : () => askUpgrade("Reports are on paid plans: a weekly summary by email, PDF exports and share links.")}
+                aria-expanded={open}
+                disabled={!hasData || generating !== null}
+                className={buttonClass("primary", "sm")}
+              >
+                {generating ? <CircleNotch size={14} className="animate-spin" /> : <Plus size={14} weight="bold" />} Generate report {!pro && <ProBadge />}
               </button>
             )}
           >
@@ -161,8 +170,8 @@ function ReportsInner() {
           <ul className="divide-y divide-line">
             {reports.map((r) => (
               <li key={r.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-4">
-                <span className="grid size-10 shrink-0 place-items-center rounded-[12px] bg-sunken text-ink-2">
-                  <ChartLine size={20} />
+                <span className={cx("grid size-10 shrink-0 place-items-center rounded-[12px]", REPORT_TILE[r.type])}>
+                  {r.type === "weekly" ? <CalendarCheck size={20} /> : <ChartLine size={20} />}
                 </span>
                 <Link href={`/projects/${id}/reports/${r.id}`} className="group min-w-0 flex-1 basis-[220px]">
                   <span className="block text-[14px] font-medium text-ink group-hover:underline">{REPORT_LABELS[r.type]}</span>
@@ -171,8 +180,8 @@ function ReportsInner() {
                   </span>
                 </Link>
                 <div className="flex items-center gap-1.5 text-[11px]">
-                  {r.shared && <span className="inline-flex items-center gap-1 rounded-full bg-sunken px-2 py-0.5 text-ink-2"><ShareNetwork size={11} /> Shared</span>}
-                  {r.emailed_at && <span className="inline-flex items-center gap-1 rounded-full bg-sunken px-2 py-0.5 text-ink-2"><EnvelopeSimple size={11} /> Emailed</span>}
+                  {r.shared && <span className="inline-flex items-center gap-1 rounded-full bg-blue-soft px-2 py-0.5 text-blue-ink"><ShareNetwork size={11} /> Shared</span>}
+                  {r.emailed_at && <span className="inline-flex items-center gap-1 rounded-full bg-up-soft px-2 py-0.5 text-up-ink"><EnvelopeSimple size={11} /> Emailed</span>}
                 </div>
                 <div className="flex items-center gap-1.5">
                   <button type="button" onClick={() => copyLink(r)} className={buttonClass("secondary", "sm")}>
@@ -192,6 +201,8 @@ function ReportsInner() {
     </>
   );
 }
+
+const REPORT_TILE = { weekly: "bg-mark-soft text-ink", monthly: "bg-blue-soft text-blue-ink", manual: "bg-violet-soft text-violet-ink" } as const;
 
 export default function ReportsPage() {
   return (

@@ -1,16 +1,18 @@
 "use client";
 
-import { CheckCircle, Crosshair, Plus, Sword, Trash, Trophy, UsersThree, XCircle } from "@phosphor-icons/react";
+import { CheckCircle, Crosshair, Plus, Sword, Trophy, UsersThree, X, XCircle } from "@phosphor-icons/react";
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { BrandTile } from "@/components/app/brand-tile";
+import { SourcesSection } from "@/components/app/sources-section";
 import { useProject, useRefreshOnScan } from "@/components/app/project-context";
 import { useToast } from "@/components/app/toast";
-import { Card, EmptyState, ErrorBanner, Field, inputClass, PageHeader, Skeleton, StatStrip } from "@/components/app/ui";
+import { Card, EmptyState, ErrorBanner, inputClass, PageHeader, Skeleton, StatStrip } from "@/components/app/ui";
 import { buttonClass } from "@/components/ui/button";
 import { api, ApiError, useApi } from "@/lib/api/client";
 import type { Competitor, CompetitorAnalysis } from "@/lib/api/types";
 import { brandColor } from "@/lib/brand";
+import { cx } from "@/lib/cx";
 import { pct, pos } from "@/lib/format";
 
 const host = (url: string) => url.replace(/^https?:\/\//, "").replace(/\/$/, "");
@@ -86,12 +88,12 @@ function CompetitorsInner() {
   const rows = analysis?.scan_id != null ? analysis.competitors : [];
   const wins = rows.reduce((s, c) => s + c.you_win, 0);
   const losses = rows.reduce((s, c) => s + c.they_win, 0);
+  const lossesBy = new Map(rows.map((r) => [r.id, r.they_win]));
   const threat = [...rows].sort((a, b) => b.they_win - a.they_win)[0];
-  const maxLoss = Math.max(1, ...rows.map((c) => c.they_win));
 
   return (
     <>
-      <PageHeader title="Competitors" description="Where each rival beats you, and on which prompts. New competitors are measured from the next scan." />
+      <PageHeader title="Competitors" description="Where each rival beats you, on which questions, and which sites AI cites for them." />
 
       <StatStrip
         stats={[
@@ -102,121 +104,95 @@ function CompetitorsInner() {
         ]}
       />
 
-      <div className="grid items-start gap-4 lg:grid-cols-[1fr_340px]">
-        <div className="space-y-4">
-          {loading ? (
-            [0, 1].map((i) => <Skeleton key={i} className="h-64" />)
-          ) : rows.length === 0 ? (
-            <Card>
-              <EmptyState icon={<Sword size={30} />} title="No comparison yet" body="Run a scan and every competitor gets a head-to-head result here: where you win, where they win, and by how much." />
-            </Card>
-          ) : (
-            rows.map((c) => {
-              const total = c.you_win + c.they_win + c.both || 1;
-              const color = brandColor(c.name, false, names);
+      <Card title="Tracked competitors" subtitle={`${competitors?.length ?? 0} of ${max ?? "–"}. Ordered by how many prompts each one wins over you.`}>
+        <div className="flex flex-wrap gap-2 px-5 py-4">
+          {(competitors ?? []).length === 0 && <p className="text-[13px] text-muted">No competitors yet. Add the brands buyers compare you with.</p>}
+          {[...(competitors ?? [])]
+            .sort((x, y) => (lossesBy.get(y.id) ?? 0) - (lossesBy.get(x.id) ?? 0))
+            .map((c) => {
+              const lost = lossesBy.get(c.id);
               return (
-                <Card key={c.id}>
-                  <header className="flex items-center gap-3 border-b border-line px-5 py-3.5">
-                    <BrandTile name={c.name} color={color} size={28} />
-                    <div className="min-w-0">
-                      <h2 className="text-[14px] font-medium text-ink">{c.name}</h2>
-                      <p className="truncate text-[12px] text-muted">{host(c.website)}</p>
-                    </div>
-                  </header>
-                  <dl className="grid grid-cols-2 divide-x divide-y divide-line border-b border-line sm:grid-cols-4 sm:divide-y-0">
-                    {[
-                      ["Mentions", pct(c.mention_rate)],
-                      ["Recommendations", pct(c.recommendation_rate)],
-                      ["Share of voice", pct(c.share_of_voice)],
-                      ["Avg. position", pos(c.average_position)],
-                    ].map(([label, value]) => (
-                      <div key={label} className="px-5 py-3.5">
-                        <dt className="text-[12px] text-muted">{label}</dt>
-                        <dd className="font-mono text-[20px] tabular-nums">{value}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                  <div className="border-b border-line px-5 py-4">
-                    <div className="flex justify-between text-[12px] text-muted">
-                      <span>
-                        <span className="font-mono font-medium text-ink">{c.you_win}</span> you win
-                      </span>
-                      <span>
-                        <span className="font-mono font-medium text-ink">{c.both}</span> both recommended
-                      </span>
-                      <span>
-                        <span className="font-mono font-medium text-ink">{c.they_win}</span> {c.name} wins
-                      </span>
-                    </div>
-                    <div className="mt-2 flex h-2 gap-[2px] overflow-hidden rounded-full bg-sunken">
-                      <div className="bg-ink" style={{ width: `${(c.you_win / total) * 100}%` }} />
-                      <div className="bg-[#bdbdb9]" style={{ width: `${(c.both / total) * 100}%` }} />
-                      <div style={{ width: `${(c.they_win / total) * 100}%`, background: color }} />
-                    </div>
-                  </div>
-                  <div className="grid md:grid-cols-2 md:divide-x md:divide-line">
-                    <PromptList title="Where you win" tone="win" prompts={c.winning_prompts} />
-                    <PromptList title={`Where ${c.name} wins`} tone="lose" prompts={c.losing_prompts} />
-                  </div>
-                </Card>
-              );
-            })
-          )}
-        </div>
-
-        <div className="space-y-4 lg:sticky lg:top-[76px]">
-          <Card title="Tracked competitors" subtitle={`${competitors?.length ?? 0} of ${max ?? "–"}`}>
-            <ul className="divide-y divide-line">
-              {(competitors ?? []).map((c) => (
-                <li key={c.id} className="flex items-center gap-3 px-5 py-2.5">
-                  <BrandTile name={c.name} color={brandColor(c.name, false, names)} size={24} />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[13px] font-medium">{c.name}</span>
-                    <span className="block truncate text-[11px] text-muted">{host(c.website)}</span>
-                  </span>
-                  <button type="button" onClick={() => remove(c)} aria-label={`Remove ${c.name}`} className="grid size-8 place-items-center rounded-full text-muted transition-colors hover:bg-sunken hover:text-down">
-                    <Trash size={14} />
+                <span key={c.id} className="inline-flex items-center gap-2 rounded-full border border-line-strong bg-surface py-1 pr-1 pl-1.5 text-[13px]">
+                  <BrandTile name={c.name} color={brandColor(c.name, false, names)} size={22} website={c.website} />
+                  <span className="font-medium text-ink">{c.name}</span>
+                  <span className="text-[12px] text-muted">{host(c.website)}</span>
+                  {lost != null && lost > 0 && <span className="rounded-full bg-down-soft px-2 py-0.5 text-[11px] font-medium text-down-ink">wins {lost}</span>}
+                  <button type="button" onClick={() => remove(c)} aria-label={`Remove ${c.name}`} title="Stop tracking" className="grid size-6 place-items-center rounded-full text-muted transition-colors hover:bg-sunken hover:text-down">
+                    <X size={12} />
                   </button>
-                </li>
-              ))}
-            </ul>
-            {(competitors?.length ?? 0) < (max ?? Infinity) ? (
-              <form onSubmit={add} className="space-y-3 border-t border-line p-5">
-                <Field label="Name">
-                  <input name="name" required autoFocus={params.get("add") === "1"} className={inputClass} placeholder="Competitor" />
-                </Field>
-                <Field label="Website">
-                  <input name="website" required className={inputClass} placeholder="competitor.com" />
-                </Field>
-                {error && <ErrorBanner message={error} />}
-                <button type="submit" disabled={busy} className={buttonClass("primary", "sm")}>
-                  <Plus size={14} weight="bold" /> Add competitor
-                </button>
-              </form>
-            ) : (
-              <p className="border-t border-line px-5 py-3 text-[12px] text-muted">You are tracking your plan&apos;s maximum of {max}. Remove one, or upgrade your plan to track more.</p>
-            )}
-          </Card>
-
-          {rows.length > 0 && (
-            <Card title="Threat ranking" subtitle="Prompts each rival wins">
-              <ul className="space-y-3 p-5">
-                {[...rows]
-                  .sort((a, b) => b.they_win - a.they_win)
-                  .map((c) => (
-                    <li key={c.id} className="grid grid-cols-[80px_1fr_28px] items-center gap-3 text-[12px]">
-                      <span className="truncate text-ink-2">{c.name}</span>
-                      <span className="h-2 overflow-hidden rounded-full bg-sunken">
-                        <span className="block h-full rounded-full" style={{ width: `${Math.max(3, (c.they_win / maxLoss) * 100)}%`, background: brandColor(c.name, false, names) }} />
-                      </span>
-                      <span className="text-right font-mono tabular-nums text-ink">{c.they_win}</span>
-                    </li>
-                  ))}
-              </ul>
-            </Card>
-          )}
+                </span>
+              );
+            })}
         </div>
+        {(competitors?.length ?? 0) < (max ?? Infinity) ? (
+          <form onSubmit={add} className="flex flex-col gap-2 border-t border-line bg-[#fbfbfa] px-5 py-3.5 sm:flex-row sm:items-center">
+            <input name="name" required autoFocus={params.get("add") === "1"} aria-label="Competitor name" className={cx(inputClass, "h-9 bg-surface sm:w-[220px]")} placeholder="Competitor name" />
+            <input name="website" required aria-label="Competitor website" className={cx(inputClass, "h-9 flex-1 bg-surface")} placeholder="competitor.com" />
+            <button type="submit" disabled={busy} className={buttonClass("primary", "sm")}>
+              <Plus size={14} weight="bold" /> Add competitor
+            </button>
+          </form>
+        ) : (
+          <p className="border-t border-line px-5 py-3 text-[12px] text-muted">You are tracking your plan&apos;s maximum of {max}. Remove one, or upgrade your plan to track more.</p>
+        )}
+        {error && <div className="px-5 pb-4"><ErrorBanner message={error} /></div>}
+      </Card>
+
+      <div className="mt-4 grid gap-4 xl:grid-cols-2">
+        {loading ? (
+          [0, 1].map((i) => <Skeleton key={i} className="h-64" />)
+        ) : rows.length === 0 ? (
+          <Card className="xl:col-span-2">
+            <EmptyState icon={<Sword size={30} />} title="No comparison yet" body="Run a scan and every competitor gets a head-to-head result here: where you win, where they win, and by how much." />
+          </Card>
+        ) : (
+          rows.map((c) => {
+            const total = c.you_win + c.they_win + c.both || 1;
+            const color = brandColor(c.name, false, names);
+            return (
+              <Card key={c.id} className={cx("flex h-full flex-col", rows.length === 1 && "xl:col-span-2")}>
+                <header className="flex items-center gap-3 border-b border-line px-5 py-3.5">
+                  <BrandTile name={c.name} color={color} size={28} website={c.website} />
+                  <div className="min-w-0">
+                    <h2 className="text-[14px] font-medium text-ink">{c.name}</h2>
+                    <p className="truncate text-[12px] text-muted">{host(c.website)}</p>
+                  </div>
+                </header>
+                <dl className="grid grid-cols-2 divide-x divide-y divide-line border-b border-line sm:grid-cols-4 sm:divide-y-0">
+                  {[
+                    ["Mentions", pct(c.mention_rate)],
+                    ["Recommendations", pct(c.recommendation_rate)],
+                    ["Share of voice", pct(c.share_of_voice)],
+                    ["Avg. position", pos(c.average_position)],
+                  ].map(([label, value]) => (
+                    <div key={label} className="px-5 py-3.5">
+                      <dt className="truncate text-[12px] text-muted">{label}</dt>
+                      <dd className="font-mono text-[20px] tabular-nums">{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <div className="border-b border-line px-5 py-4">
+                  <div className="flex justify-between text-[12px] text-muted">
+                    <span><span className="font-mono font-medium text-ink">{c.you_win}</span> you win</span>
+                    <span><span className="font-mono font-medium text-ink">{c.both}</span> both recommended</span>
+                    <span><span className="font-mono font-medium text-ink">{c.they_win}</span> {c.name} wins</span>
+                  </div>
+                  <div className="mt-2 flex h-2 gap-[2px] overflow-hidden rounded-full bg-sunken">
+                    <div className="bg-mark-strong" style={{ width: `${(c.you_win / total) * 100}%` }} />
+                    <div className="bg-[#bdbdb9]" style={{ width: `${(c.both / total) * 100}%` }} />
+                    <div style={{ width: `${(c.they_win / total) * 100}%`, background: color }} />
+                  </div>
+                </div>
+                <div className="grid flex-1 md:grid-cols-2 md:divide-x md:divide-line">
+                  <PromptList title="Where you win" tone="win" prompts={c.winning_prompts} />
+                  <PromptList title={`Where ${c.name} wins`} tone="lose" prompts={c.losing_prompts} />
+                </div>
+              </Card>
+            );
+          })
+        )}
       </div>
+      <SourcesSection />
     </>
   );
 }

@@ -21,6 +21,7 @@
   --color-down: #e5484d;
   --color-mark: #d7f36b;
   --color-mark-soft: #f0fbc9;
+  --color-mark-strong: #a8c93a; /* lime that holds up as a bar, ring or border on white */
 
   /* Secondary palette: meaning, not decoration. Each hue has a strong value (icons, bars, lines)
      and a soft tint with a readable ink for chips and tiles. */

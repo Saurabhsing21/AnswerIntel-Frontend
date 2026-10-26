@@ -2,10 +2,16 @@
 
 export type Engine =
   | "chatgpt"
+  | "chatgpt_search"
   | "perplexity"
   | "gemini"
   | "google"
   | "claude"
+  | "grok"
+  | "llama"
+  | "mistral"
+  | "deepseek"
+  | "qwen"
   | "copilot";
 
 export type Brand = {

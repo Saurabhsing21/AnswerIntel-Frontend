@@ -133,7 +133,7 @@ export default function ScansPage() {
                         {scan.failed_runs > 0 && <span className="text-[11px] text-down">{scan.failed_runs} failed</span>}
                       </span>
                       <span className="mt-1.5 block h-1 rounded-full bg-sunken">
-                        <span className="block h-full rounded-full bg-ink" style={{ width: `${scan.total_runs ? Math.max(3, (done / scan.total_runs) * 100) : 0}%` }} />
+                        <span className="block h-full rounded-full bg-mark-strong" style={{ width: `${scan.total_runs ? Math.max(3, (done / scan.total_runs) * 100) : 0}%` }} />
                       </span>
                     </span>
                     <ArrowRight size={14} className="hidden text-faint transition-transform group-hover:translate-x-0.5 group-hover:text-ink md:block" />

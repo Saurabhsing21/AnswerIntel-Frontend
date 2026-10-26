@@ -1,36 +1,24 @@
-import { ChartBar, ChartLine, ClockCounterClockwise, Flask, Gear, Hash, House, Lightbulb, Link as LinkIcon, Users, UsersThree } from "@phosphor-icons/react";
+import { ChartLine, ChatsCircle, ClockCounterClockwise, Gear, House, ListChecks, Users, UsersThree } from "@phosphor-icons/react";
 
-/** The app's sections. One icon family (Phosphor, regular weight) everywhere. */
+/** The app's sections. The first group follows what people want after a scan: how am I doing, what did AI say
+ * (and why), who beats me, and what to do next. One icon family (Phosphor, regular weight) everywhere. */
 export const NAV = [
   {
-    label: "General",
+    label: "Your AI visibility",
     items: [
       { href: "", label: "Overview", icon: House },
-      { href: "/prompts", label: "Prompts", icon: Hash },
+      { href: "/prompts", label: "Answers", icon: ChatsCircle },
       { href: "/competitors", label: "Competitors", icon: Users },
+      { href: "/opportunities", label: "To-do", icon: ListChecks },
     ],
   },
   {
-    label: "Insights",
+    label: "More",
     items: [
-      { href: "/sources", label: "Sources", icon: LinkIcon },
-      { href: "/opportunities", label: "Opportunities", icon: Lightbulb },
-    ],
-  },
-  {
-    label: "Track",
-    items: [
-      { href: "/experiments", label: "Experiments", icon: Flask },
       { href: "/reports", label: "Reports", icon: ChartLine },
       { href: "/scans", label: "Scan history", icon: ClockCounterClockwise },
-    ],
-  },
-  {
-    label: "Workspace",
-    items: [
       { href: "/settings", label: "Settings", icon: Gear },
-      { href: "/team", label: "Team", icon: UsersThree },
-      { href: "/billing", label: "Usage", icon: ChartBar },
+      { href: "/billing", label: "Plan & people", icon: UsersThree },
     ],
   },
 ] as const;

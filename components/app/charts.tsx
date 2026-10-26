@@ -45,15 +45,19 @@ function labelFor(dates: string[], i: number) {
   return sameDay ? date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }) : date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
-/** One line per brand across scans. Hover shows every brand's value for that scan. */
-export function BrandLineChart({ series, dates, metricKey, label }: { series: BrandSeries[]; dates: string[]; metricKey: string; label: string }) {
+/** One line per brand across scans. Hover shows every brand's value for that scan. With a single scan, each brand
+ * is a dashed level line ending in its dot, so the chart reads the same from day one and grows into a trend. */
+export function BrandLineChart({ series: input, dates: inputDates, metricKey, label }: { series: BrandSeries[]; dates: string[]; metricKey: string; label: string }) {
   const [hover, setHover] = useState<number | null>(null);
   const reduce = useReducedMotion();
+  const single = inputDates.length === 1;
+  const dates = single ? [inputDates[0], inputDates[0]] : inputDates;
+  const series = single ? input.map((s) => ({ ...s, values: [s.values[0], s.values[0]] })) : input;
   const n = dates.length;
   const ceiling = Math.max(0.05, ...series.flatMap((s) => s.values.filter((v): v is number => v != null)));
   // Round gridlines (5, 10, 20 or 25 points apart), with room above the highest line.
   const step = [0.05, 0.1, 0.2, 0.25].find((s) => ceiling / s <= 4) ?? 0.25;
-  const top = Math.max(step * 2, Math.ceil((ceiling * 1.04) / step) * step);
+  const top = Math.min(1, Math.max(step * 2, Math.ceil((ceiling * 1.04) / step) * step)); // rates never pass 100%
   const ticks = Array.from({ length: Math.round(top / step) + 1 }, (_, i) => i * step);
   const x = (i: number) => PAD.l + (i / (n - 1)) * (W - PAD.l - PAD.r);
   const y = (v: number) => PAD.t + (1 - v / top) * (H - PAD.t - PAD.b);
@@ -96,6 +100,7 @@ export function BrandLineChart({ series, dates, metricKey, label }: { series: Br
                 stroke={s.color}
                 strokeWidth={s.isYou ? 2.75 : 2}
                 strokeLinecap="round"
+                strokeDasharray={single ? "2 7" : undefined}
                 initial={{ pathLength: reduce ? 1 : 0 }}
                 animate={{ pathLength: 1 }}
                 transition={{ duration: reduce ? 0 : 1.1, ease: [0.16, 1, 0.3, 1] }}
@@ -104,8 +109,13 @@ export function BrandLineChart({ series, dates, metricKey, label }: { series: Br
             </g>
           );
         })}
+        {single && (
+          <text x={x(0)} y={H - 8} textAnchor="start" className="fill-faint text-[11px]">
+            First scan
+          </text>
+        )}
         {dates.map((_, i) =>
-          i % labelEvery === 0 || i === n - 1 ? (
+          (single ? i === n - 1 : i % labelEvery === 0 || i === n - 1) ? (
             <text key={i} x={x(i)} y={H - 8} textAnchor={i === 0 ? "start" : i === n - 1 ? "end" : "middle"} className="fill-faint text-[11px]">
               {labelFor(dates, i)}
             </text>

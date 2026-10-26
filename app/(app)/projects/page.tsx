@@ -19,7 +19,7 @@ function ProjectCard({ project }: { project: Project }) {
     <div className="group flex flex-col rounded-[16px] border border-line-strong bg-surface transition-shadow hover:shadow-[0_16px_40px_-24px_rgb(0_0_0/0.3)]">
       <Link href={base} className="flex flex-1 flex-col p-5">
         <span className="flex items-center gap-3">
-          <BrandTile name={project.brand_name} color={YOU_COLOR} size={36} />
+          <BrandTile name={project.brand_name} color={YOU_COLOR} size={36} website={project.website} />
           <span className="min-w-0 flex-1">
             <span className="block truncate text-[15px] font-medium text-ink">{project.brand_name}</span>
             <span className="block truncate text-[12px] text-muted">{host(project.website)}</span>

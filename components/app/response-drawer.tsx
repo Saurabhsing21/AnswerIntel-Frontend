@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { EngineIcon } from "@/components/product/engine-icon";
 import { useApi } from "@/lib/api/client";
 import type { ResponseDetail } from "@/lib/api/types";
+import { WhyMissing } from "@/components/app/why-missing";
 import { SOURCE_LABELS } from "@/lib/format";
 import { Skeleton, VerdictPill } from "@/components/app/ui";
 
@@ -110,6 +111,8 @@ export function ResponseDrawer({ projectId, responseId, onClose }: { projectId: 
                 </div>
                 {data.brand?.reason && <p className="mt-2 text-[12px] text-muted">Why: {data.brand.reason}</p>}
               </div>
+
+              <WhyMissing projectId={projectId} responseId={responseId} />
 
               <div>
                 <p className="mb-2 text-[12px] text-muted">What {data.engine_name} said <span className="text-faint">· highlighted: the sentences behind each verdict</span></p>

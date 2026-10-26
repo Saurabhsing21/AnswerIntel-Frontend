@@ -62,7 +62,7 @@ function PaletteDialog({ onClose }: { onClose: () => void }) {
     list.push({ id: "new-project", group: "Actions", label: "New project", icon: <Plus size={16} />, run: go("/projects/new") });
     list.push({ id: "all-projects", group: "Pages", label: "All projects", icon: <SquaresFour size={16} />, run: go("/projects") });
     for (const p of projects) {
-      list.push({ id: `project-${p.id}`, group: "Projects", label: p.brand_name, icon: <BrandTile name={p.brand_name} color={YOU_COLOR} size={16} />, run: go(`/projects/${p.id}`) });
+      list.push({ id: `project-${p.id}`, group: "Projects", label: p.brand_name, icon: <BrandTile name={p.brand_name} color={YOU_COLOR} size={16} website={p.website} />, run: go(`/projects/${p.id}`) });
     }
     return list;
   }, [projectId, projects, router, startScan]);

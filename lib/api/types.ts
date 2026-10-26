@@ -1,15 +1,18 @@
-export type Engine = "chatgpt" | "perplexity" | "gemini" | "google";
+import type { Engine } from "@/lib/data";
+
+export type { Engine };
 export type Verdict = "recommended" | "mentioned" | "absent";
 
-export type Project = { id: string; workspace_id: string; brand_name: string; website: string; description: string | null; category: string; country: string };
+export type Project = { id: string; workspace_id: string; brand_name: string; website: string; description: string | null; category: string; country: string; engines: Engine[] };
 
 export type Role = "owner" | "admin" | "member";
 export type Workspace = { id: string; name: string; role: Role };
-export type Member = { user_id: number; email: string; role: Role };
+export type Member = { user_id: number; email: string; name: string | null; role: Role };
+export type Invite = { id: number; email: string; role: Role; expires_at: string };
 
 export type PlanKey = "none" | "trial" | "starter" | "growth" | "pro";
-/** unsubscribed = never paid; trialing only exists for workspaces that predate billing. */
-export type BillingState = "unsubscribed" | "trialing" | "active" | "past_due" | "lapsed";
+/** unsubscribed = never paid; free = the one-scan free trial; trialing only exists for workspaces that predate billing. */
+export type BillingState = "unsubscribed" | "free" | "trialing" | "active" | "past_due" | "lapsed";
 export type PlanLimits = {
   projects: number;
   /** One pool shared by every project in the workspace. */
@@ -24,6 +27,11 @@ export type PlanLimits = {
   retention_days: number;
   schedules: boolean;
   experiments: boolean;
+  scans_total: number | null;
+  /** false on the free trial: drafts, re-tests, reports, exports, invites and more prompts are locked. */
+  pro: boolean;
+  /** Engines this plan can't use. */
+  locked_engines: string[];
 };
 export type Billing = {
   workspace_id: string;
@@ -46,6 +54,7 @@ export type Billing = {
     seats: number;
     scans_today: number;
     scans_30_days: number;
+    scans_total: number;
     answers_30_days: number;
     active_prompts: number;
     per_project: { id: string; brand_name: string; active_prompts: number; competitors: number }[];
@@ -63,11 +72,15 @@ export type Prompt = {
   source: "ai" | "template" | "user";
   importance: number | null;
   is_active: boolean;
+  /** Engines this prompt runs on; null = every engine the project scans. */
+  engines: Engine[] | null;
 };
 
 export type Scan = {
   id: number;
   status: "queued" | "running" | "completed" | "partial" | "failed";
+  /** "retest" = only one opportunity's prompts, to check a fix. */
+  kind?: "full" | "retest";
   provider: string | null;
   simulated: boolean;
   total_runs: number;
@@ -105,7 +118,20 @@ export type Opportunity = {
   area: "content" | "third_party" | "positioning" | "technical" | null;
   expected_objective: string | null;
   related_prompts: string[];
+  /** Compared with the previous scan; "resolved" = no longer found, the fix worked. */
+  trend: "new" | "open" | "better" | "worse" | "resolved";
+  first_seen_scan_id: number | null;
+  previous_count: number | null;
+  steps: string[];
+  effort: "S" | "M" | "L" | null;
+  experiment_id: number | null;
+  retest: Retest | null;
+  /** Past the free trial's top 3: the kind of gap is shown, the fix is not. */
+  locked: boolean;
 };
+
+export type RetestCount = { answers: number; mentioned: number; recommended: number; scan_id: number };
+export type Retest = { status: "running" | "done" | "failed"; scan_id: number; prompts: number; before: RetestCount | null; after?: RetestCount };
 
 export type ReportType = "weekly" | "monthly" | "manual";
 export type ReportSummary = {
@@ -154,9 +180,11 @@ export type Dashboard = {
     margins?: Partial<Record<MetricKey, number | null>>;
     /** whether the change since the previous scan is bigger than that noise */
     significant?: Partial<Record<MetricKey, boolean | null>>;
+    /** Open category questions vs questions that name a brand (naming a brand nearly guarantees a mention). */
+    by_question?: Record<"category" | "named", { responses: number; mention_rate: number | null; recommendation_rate: number | null }>;
   }) | null;
   engines: { key: Engine; name: string; responses: number; mention_rate: number; recommendation_rate: number }[];
-  competitors: { id: number | null; name: string; is_you: boolean; mention_rate: number; recommendation_rate: number; share_of_voice: number; average_position: number | null; citation_count: number }[];
+  competitors: { id: number | null; name: string; is_you: boolean; website?: string | null; mention_rate: number; recommendation_rate: number; share_of_voice: number; average_position: number | null; citation_count: number }[];
   trend: {
     scan_id: number;
     date: string;
@@ -166,6 +194,8 @@ export type Dashboard = {
     competitors: Record<string, { mention_rate: number; recommendation_rate: number; share_of_voice: number }>;
   }[];
   top_opportunities: Opportunity[];
+  /** This week's 3 actions; `done` = how many of them are marked done. */
+  this_week: { items: Opportunity[]; done: number };
   recent_answers: { id: number; engine: Engine; engine_name: string; prompt: string; verdict: Verdict; position: number | null; created_at: string }[];
 };
 
@@ -209,6 +239,8 @@ export type Source = {
   owner: string | null;
   urls: string[];
   group: "you" | "competitors" | "both";
+  /** Past the free trial's top 3: counted but not named. */
+  locked?: boolean;
 };
 
 export type CompetitorAnalysis = {
@@ -241,6 +273,31 @@ export type FreeCheck = {
     prompts: { text: string; answers: { engine: Engine; engine_name: string; mentioned: boolean; recommended: boolean; position: number | null; evidence: string | null }[] }[];
     summary: { answers: number; mentioned: number; recommended: number; engines: string[] };
     top_sources: { domain: string; count: number }[];
+    why?: { code: string; title: string; detail: string; action: string }[];
     simulated: boolean;
   } | null;
 };
+
+export type DiagnosisCause = {
+  code: "TECHNICAL" | "SOURCE_GAP" | "NO_ANSWER_PAGE" | "WINNING_CRITERIA" | "NOT_RECOMMENDED";
+  title: string;
+  detail: string;
+  action: string;
+  evidence: {
+    url?: string;
+    agent?: string;
+    pages?: { url: string; domain: string | null; title?: string | null; competitors: string[] }[];
+    unreadable?: { url: string; domain: string | null }[];
+    sitemap?: string;
+    pages_checked?: number;
+    winners?: { name: string; reason: string | null; quote: string | null }[];
+    quote?: string | null;
+    reason?: string | null;
+  };
+};
+
+export type Diagnosis = { status: "recommended" | "mentioned" | "absent"; causes: DiagnosisCause[] };
+
+export type Me = { id: number; email: string; name: string | null; email_verified: boolean };
+
+export type EngineOption = { key: Engine; name: string; web_search: boolean; available: boolean; default: boolean };

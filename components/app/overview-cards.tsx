@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, CalendarCheck, ChartLine, FileText, Flask, Handshake, Target, Wrench } from "@phosphor-icons/react";
+import { Check, ArrowRight, CalendarCheck, ChartLine, FileText, Flask, Handshake, Target, Wrench } from "@phosphor-icons/react";
 import Link from "next/link";
 import { BrandTile } from "@/components/app/brand-tile";
 import { Sparkline } from "@/components/app/charts";
@@ -22,7 +22,7 @@ const seeAll = "text-[12px] font-medium text-muted transition-colors hover:text-
 export const METRIC_COLOR: Partial<Record<MetricKey, string>> = { mention_rate: "#2f6bff", recommendation_rate: "#16a34a", share_of_voice: "#7a5af8" };
 
 /** margin: ± how much the rate can move by chance; noise: the change since last scan is within that. */
-export type KpiTab = { key: MetricKey; label: string; value: number; delta: number | null; spark: number[]; margin?: number | null; noise?: boolean };
+export type KpiTab = { key: MetricKey; label: string; value: number; delta: number | null; spark: number[]; margin?: number | null; noise?: boolean; sub?: string };
 
 export function KpiTabs({ tabs, selected, onSelect }: { tabs: KpiTab[]; selected: MetricKey; onSelect: (key: MetricKey) => void }) {
   return (
@@ -52,13 +52,18 @@ export function KpiTabs({ tabs, selected, onSelect }: { tabs: KpiTab[]; selected
               <span className="mt-1.5 flex items-baseline gap-2">
                 <span className="font-mono text-[30px] leading-none tracking-tight tabular-nums">{pct(t.value)}</span>
                 {t.margin != null && (
-                  <span className="font-mono text-[11px] text-faint" title="How much this can move between scans by chance (95%)">
-                    ±{Math.round(t.margin * 100)}
+                  <span className="font-mono text-[11px] text-faint" title="AI answers vary from run to run. With this many answers, this number can move up or down by this much without anything changing (95% range).">
+                    ±{Math.round(t.margin * 100)} pts
                   </span>
                 )}
                 <Delta value={t.delta} />
               </span>
-              {t.noise && <span className="mt-1 block text-[11px] text-faint">Within normal variation</span>}
+              {t.sub && <span className="mt-1 block text-[11px] text-muted">{t.sub}</span>}
+              {t.noise ? (
+                <span className="mt-0.5 block text-[11px] text-faint">Change is within normal run-to-run variation</span>
+              ) : t.margin != null && t.delta == null ? (
+                <span className="mt-0.5 block text-[11px] text-faint">±{Math.round(t.margin * 100)} pts is normal run-to-run variation</span>
+              ) : null}
             </span>
             <Sparkline values={t.spark} color={on ? color : "#a3a3a3"} />
           </button>
@@ -70,7 +75,7 @@ export function KpiTabs({ tabs, selected, onSelect }: { tabs: KpiTab[]; selected
 
 /* ---------- Ranked competitor table ---------- */
 
-export type RankRow = { name: string; isYou: boolean; color: string; value: number; delta: number | null; position: number | null };
+export type RankRow = { name: string; isYou: boolean; color: string; value: number; delta: number | null; position: number | null; website?: string | null };
 
 export function RankTable({ rows, metricLabel, projectId }: { rows: RankRow[]; metricLabel: string; projectId: string }) {
   return (
@@ -98,7 +103,7 @@ export function RankTable({ rows, metricLabel, projectId }: { rows: RankRow[]; m
           >
             <span className="font-mono text-[12px] text-faint">{i + 1}</span>
             <span className="flex min-w-0 items-center gap-2.5">
-              <BrandTile name={r.name} color={r.color} size={22} />
+              <BrandTile name={r.name} color={r.color} size={22} website={r.website} />
               <span className="truncate text-[13px] font-medium text-ink">{r.name}</span>
               {r.isYou && <span className="rounded-[4px] bg-mark px-1.5 py-px text-[10px] font-semibold text-ink">You</span>}
             </span>
@@ -151,6 +156,55 @@ export function EnginesCard({ engines, averagePosition }: { engines: Dashboard["
 export const AREA_ICON = { content: FileText, third_party: Handshake, positioning: Target, technical: Wrench } as const;
 export const AREA_TONE: Record<keyof typeof AREA_ICON, Tone> = { content: "blue", third_party: "violet", positioning: "amber", technical: "green" };
 export const AREA_LABEL = { content: "Content", third_party: "Third-party presence", positioning: "Positioning", technical: "Technical" } as const;
+
+const EFFORT_LABEL: Record<string, string> = { S: "Quick win", M: "A few hours", L: "Bigger project" };
+
+/** This week's 3 actions, with progress: the habit loop that brings people back each week. */
+export function ThisWeekCard({ plan, projectId }: { plan: Dashboard["this_week"]; projectId: string }) {
+  const total = plan.items.length;
+  return (
+    <Card
+      title="This week's 3 actions"
+      subtitle={total ? `${plan.done} of ${total} done` : "Nothing urgent right now"}
+      action={<Link href={`/projects/${projectId}/opportunities`} className={seeAll}>All opportunities</Link>}
+      className="flex flex-col"
+    >
+      {total > 0 && (
+        <div className="flex gap-1 px-5 pt-3" aria-hidden>
+          {plan.items.map((o) => <span key={o.id} className={cx("h-1.5 flex-1 rounded-full", o.status === "completed" ? "bg-up" : o.status === "in_progress" ? "bg-ink" : "bg-sunken")} />)}
+        </div>
+      )}
+      {total ? (
+        <ol className="flex flex-1 flex-col divide-y divide-line">
+          {plan.items.map((o, i) => {
+            const done = o.status === "completed";
+            return (
+              <li key={o.id} className="flex flex-1">
+                <Link href={`/projects/${projectId}/opportunities#opp-${o.id}`} className="group flex w-full items-start gap-3.5 px-5 py-3.5 transition-colors hover:bg-[#fbfbfa]">
+                  <span className={cx("mt-0.5 grid size-6 shrink-0 place-items-center rounded-full font-mono text-[11px]", done ? "bg-up text-white" : "bg-sunken text-ink")}>
+                    {done ? <Check size={12} weight="bold" /> : i + 1}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className={cx("block text-[13px] font-medium", done ? "text-muted line-through" : "text-ink")}>{o.title}</span>
+                    <span className="mt-0.5 block truncate text-[12px] text-muted">{o.steps[0] ?? o.recommended_action}</span>
+                    <span className="mt-1.5 flex items-center gap-2">
+                      <ImpactPill impact={o.impact} />
+                      {o.effort && <span className="text-[11px] text-faint">{EFFORT_LABEL[o.effort]}</span>}
+                      {o.status === "in_progress" && <span className="text-[11px] font-medium text-ink">In progress</span>}
+                    </span>
+                  </span>
+                  <ArrowRight size={14} className="mt-1 shrink-0 text-faint transition-transform group-hover:translate-x-0.5 group-hover:text-ink" />
+                </Link>
+              </li>
+            );
+          })}
+        </ol>
+      ) : (
+        <EmptyState title="No open opportunities" body="AI recommends you wherever your competitors show up. Keep scanning to stay ahead." />
+      )}
+    </Card>
+  );
+}
 
 export function OpportunitiesCard({ items, projectId }: { items: Opportunity[]; projectId: string }) {
   return (
@@ -286,7 +340,7 @@ export function ActivityCard({ projectId, visibility }: { projectId: string; vis
       </div>
       <ul className="flex flex-1 flex-col divide-y divide-line">
         {running ? (
-          <ActivityRow icon={Flask} tone="violet" title={running.name} meta={`Running since ${new Date(running.started_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}, baseline ${pct(running.baseline.mention_rate)} mentions`} href={`${base}/experiments`} action="Open" />
+          <ActivityRow icon={Flask} tone="violet" title={running.name} meta={`Running since ${new Date(running.started_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}, baseline ${pct(running.baseline.mention_rate)} mentions`} href={`${base}/opportunities?tab=tracked`} action="Open" />
         ) : (
           <ActivityRow icon={Flask} tone="violet" title="Test a change" meta="Save a baseline, change your site, then re-scan to see the impact." href={`${base}/experiments?new=1`} action="Start" />
         )}

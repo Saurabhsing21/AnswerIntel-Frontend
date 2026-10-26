@@ -56,9 +56,13 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const projects = useApi<Project[]>("/projects");
   const workspaces = useApi<Workspace[]>("/workspaces");
   const { reload: reloadProjects } = projects;
+  const { reload: reloadWorkspaces } = workspaces;
 
-  // New projects should appear in the switcher as soon as you land back in the app.
-  useEffect(() => reloadProjects(), [pathname, reloadProjects]);
+  // New or renamed projects and workspaces should appear in the switcher as soon as you land back in the app.
+  useEffect(() => {
+    reloadProjects();
+    reloadWorkspaces();
+  }, [pathname, reloadProjects, reloadWorkspaces]);
 
   // Keyed by project: switching projects drops the previous project's scans and schedule instead of flashing them.
   return (

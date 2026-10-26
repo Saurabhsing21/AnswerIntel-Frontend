@@ -1,21 +1,22 @@
 "use client";
 
-import { Check, CircleNotch, CreditCard, Lock, SignOut, Warning, X } from "@phosphor-icons/react";
+import { Check, CircleNotch, CreditCard, Lock, Warning, X } from "@phosphor-icons/react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useProject } from "@/components/app/project-context";
 import { ErrorBanner, Segmented } from "@/components/app/ui";
 import { buttonClass } from "@/components/ui/button";
-import { Logo } from "@/components/ui/logo";
-import { api, ApiError, PLAN_LIMIT_EVENT } from "@/lib/api/client";
+import { ApiError, PLAN_LIMIT_EVENT } from "@/lib/api/client";
 import type { Billing, BillingState } from "@/lib/api/types";
 import { startCheckout } from "@/lib/billing/checkout";
 import { daysUntil, FEATURED, type Interval, type PaidPlan, PLANS } from "@/lib/billing/plans";
 import { cx } from "@/lib/cx";
+import { siteHref } from "@/lib/urls";
 
 export const STATE_LABEL: Record<BillingState, string> = {
   unsubscribed: "No plan",
+  free: "Free trial",
   trialing: "Trial",
   active: "Active",
   past_due: "Payment due",
@@ -23,6 +24,7 @@ export const STATE_LABEL: Record<BillingState, string> = {
 };
 const STATE_PILL: Record<BillingState, string> = {
   unsubscribed: "bg-sunken text-ink-2",
+  free: "bg-mark-soft text-ink",
   trialing: "bg-blue-soft text-blue-ink",
   active: "bg-up-soft text-up-ink",
   past_due: "bg-amber-soft text-amber-ink",
@@ -36,6 +38,7 @@ const LIMIT_LABEL: Record<string, string> = {
   competitors: "competitors per project",
   seats: "seats",
   scans_per_day: "scans a day",
+  scans_total: "free scan",
   schedules: "weekly scans",
   experiments: "experiments",
 };
@@ -103,6 +106,7 @@ export function BillingBanner() {
 export function PlanCard({ onNavigate }: { onNavigate?: () => void }) {
   const { billing } = useProject();
   const href = useUsageHref();
+  if (billing?.state === "free") return <TrialCard billing={billing} />; // shown before the first project too
   if (!billing || !href || billing.state === "unsubscribed") return null;
   const used = billing.usage.answers_30_days;
   const limit = billing.limits.answers_per_month;
@@ -120,9 +124,31 @@ export function PlanCard({ onNavigate }: { onNavigate?: () => void }) {
         </span>
       </div>
       <div className="mt-1 h-1 overflow-hidden rounded-full bg-sunken">
-        <div className={cx("h-full rounded-full", used >= limit ? "bg-down" : "bg-ink")} style={{ width: `${Math.min(100, (used / Math.max(1, limit)) * 100)}%` }} />
+        <div className={cx("h-full rounded-full", used >= limit ? "bg-down" : "bg-mark-strong")} style={{ width: `${Math.min(100, (used / Math.max(1, limit)) * 100)}%` }} />
       </div>
     </Link>
+  );
+}
+
+/** Sidebar card on the free trial: how much of the one free scan is left, and the way to a plan. */
+function TrialCard({ billing }: { billing: Billing }) {
+  const used = billing.usage.scans_total;
+  const limit = billing.limits.scans_total ?? 1;
+  const left = Math.max(0, limit - used);
+  return (
+    <div className="mx-3 mb-2 rounded-[12px] border border-line bg-surface p-3 text-[11px]">
+      <p className="font-medium text-ink">Free trial</p>
+      <div className="mt-2.5 flex justify-between text-muted">
+        <span>Free scan</span>
+        <span className="font-mono tabular-nums">{used}/{limit} used</span>
+      </div>
+      <div className="mt-1 h-1 overflow-hidden rounded-full bg-sunken">
+        <div className={cx("h-full rounded-full", left ? "bg-mark-strong" : "bg-down")} style={{ width: `${Math.min(100, (used / Math.max(1, limit)) * 100)}%` }} />
+      </div>
+      <a href={siteHref("/pricing")} className="mt-2.5 flex h-7 items-center justify-center rounded-full bg-ink text-[12px] font-medium text-white transition-colors hover:bg-[#2b2b2b]">
+        {left ? "See plans" : "Upgrade to keep tracking"}
+      </a>
+    </div>
   );
 }
 
@@ -141,41 +167,56 @@ export function UpgradePrompt() {
     return () => window.removeEventListener(PLAN_LIMIT_EVENT, onLimit);
   }, [reloadBilling]);
 
+  // Esc closes it, like any dialog.
+  useEffect(() => {
+    if (!error) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setError(null);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [error]);
+
   // An unpaid workspace already sees the subscribe step; nothing to add.
   if (!error || billing?.state === "unsubscribed") return null;
   const inactive = error.limit === "subscription";
-  const title = inactive ? "Your subscription is not active" : `You have reached your plan's ${LIMIT_LABEL[error.limit ?? ""] ?? "limit"}`;
+  const trial = billing?.state === "free";
+  const title = trial
+    ? error.limit === "scans_total" ? "You've used your free scan" : "Unlock this with a paid plan"
+    : inactive ? "Your subscription is not active" : `You've reached your plan's ${LIMIT_LABEL[error.limit ?? ""] ?? "limit"}`;
+  const close = () => setError(null);
+  const cta = trial && billing?.can_manage
+    ? <a href={siteHref("/pricing")} className={cx(buttonClass("primary"), "flex-1 justify-center")}>See plans</a>
+    : href && billing?.can_manage
+      ? <Link href={href} onClick={close} className={cx(buttonClass("primary"), "flex-1 justify-center")}>{inactive ? "Renew subscription" : "Change plan"}</Link>
+      : null;
+
   return (
-    <div
-      role="alertdialog"
-      aria-label={title}
-      className="fixed bottom-4 left-4 z-[65] w-[min(380px,calc(100vw-2rem))] rounded-[16px] border border-line-strong bg-surface p-4 shadow-[0_24px_60px_-20px_rgb(0_0_0/0.35)] lg:left-[264px]"
-    >
-      <div className="flex items-start gap-3">
-        <span className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-sunken text-ink-2">
-          <Lock size={18} />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="text-[14px] font-medium text-ink">{title}</p>
-          <p className="mt-0.5 text-[13px] text-muted">{error.message}</p>
-          <div className="mt-3">
-            {href && billing?.can_manage ? (
-              <Link href={href} onClick={() => setError(null)} className="inline-flex h-8 items-center rounded-full bg-ink px-3.5 text-[13px] font-medium text-white transition-colors hover:bg-[#2b2b2b]">
-                {inactive ? "Renew subscription" : "Change plan"}
-              </Link>
-            ) : (
-              <span className="text-[12px] text-muted">Ask the workspace owner to change the plan.</span>
-            )}
-          </div>
+    <div className="fixed inset-0 z-[70] grid place-items-center p-4" role="dialog" aria-modal="true" aria-label={title}>
+      <button type="button" aria-label="Close" onClick={close} className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" />
+      <div className="relative w-full max-w-[440px] overflow-hidden rounded-[22px] border border-line-strong bg-surface shadow-[0_32px_80px_-24px_rgb(0_0_0/0.45)]">
+        <div className="relative bg-mark px-6 pt-6 pb-5">
+          <button type="button" onClick={close} aria-label="Close" className="absolute top-3 right-3 grid size-8 place-items-center rounded-full text-ink/70 transition-colors hover:bg-black/10 hover:text-ink">
+            <X size={15} />
+          </button>
+          <span className="grid size-11 place-items-center rounded-[14px] bg-ink text-mark">
+            <Lock size={20} weight="bold" />
+          </span>
+          <p className="mt-4 font-display text-[21px] leading-tight font-semibold tracking-[-0.02em] text-ink">{title}</p>
+          <p className="mt-1.5 text-[14px] leading-relaxed text-ink/75">{error.message}</p>
         </div>
-        <button
-          type="button"
-          onClick={() => setError(null)}
-          className="grid size-7 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-sunken hover:text-ink"
-          aria-label="Dismiss"
-        >
-          <X size={14} />
-        </button>
+        {(trial || error.limit !== "subscription") && (
+          <ul className="space-y-2.5 px-6 pt-5 text-[13px] text-ink-2">
+            {["Weekly tracking on every AI engine, including Claude and Google AI", "Every fix with steps, drafts and a re-test to prove it worked", "Up to 160 questions, 100 competitors, reports and alerts"].map((line) => (
+              <li key={line} className="flex items-start gap-2.5">
+                <Check size={15} weight="bold" className="mt-px shrink-0 text-up" /> {line}
+              </li>
+            ))}
+          </ul>
+        )}
+        <div className="flex items-center gap-2 px-6 pt-5 pb-6">
+          {cta ?? <p className="flex-1 text-[13px] text-muted">Ask the workspace owner to change the plan.</p>}
+          <button type="button" onClick={close} className={buttonClass("secondary")}>Not now</button>
+        </div>
+        {trial && <p className="border-t border-line bg-[#fbfbfa] px-6 py-3 text-center text-[12px] text-muted">Plans from $20 a month. Cancel any time.</p>}
       </div>
     </div>
   );
@@ -239,14 +280,17 @@ export function PlanChooser({ billing, returnPath, action = "Continue to payment
 
 /** Full-screen step for a workspace that has never paid. There is no free plan, so nothing else is usable. */
 export function SubscribeGate() {
-  const { billing, reloadBilling } = useProject();
-  const router = useRouter();
+  const { reloadBilling } = useProject();
   // Back from Checkout: the webhook confirms a moment later, so wait for it instead of asking again.
   // Only rendered once billing has loaded in the browser, so reading the URL here is safe.
   const [confirming, setConfirming] = useState(() => new URLSearchParams(window.location.search).get("checkout") === "success");
 
   useEffect(() => {
-    if (!confirming) return;
+    if (!confirming) {
+      // Never paid: plans are chosen on the website's pricing page, which goes straight to Checkout.
+      window.location.replace(siteHref("/pricing?subscribe=1"));
+      return;
+    }
     let tries = 0;
     const t = window.setInterval(() => {
       if (++tries > 20) {
@@ -257,36 +301,12 @@ export function SubscribeGate() {
     return () => window.clearInterval(t);
   }, [confirming, reloadBilling]);
 
-  async function logout() {
-    await api("/api/auth/logout", { method: "POST" });
-    router.push("/login");
-  }
-
-  if (!billing) return null;
   return (
-    <div className="grid min-h-dvh place-items-center bg-page px-4 py-10">
-      <div className="w-full max-w-[640px]">
-        <div className="mb-8 flex items-center justify-between">
-          <Logo size="lg" />
-          <button type="button" onClick={logout} className="inline-flex items-center gap-1.5 text-[13px] text-muted transition-colors hover:text-ink">
-            <SignOut size={14} /> Log out
-          </button>
-        </div>
-        <div className="rounded-[20px] border border-line-strong bg-surface p-6 shadow-[0_24px_60px_-30px_rgb(0_0_0/0.2)] md:p-8">
-          {confirming ? (
-            <div className="flex flex-col items-center py-8 text-center">
-              <CircleNotch size={28} className="animate-spin text-ink" />
-              <p className="mt-4 text-[15px] font-medium text-ink">Confirming your payment</p>
-              <p className="mt-1 text-[13px] text-muted">This takes a few seconds.</p>
-            </div>
-          ) : (
-            <>
-              <h1 className="font-display text-[24px] font-semibold tracking-[-0.03em]">Complete your subscription</h1>
-              <p className="mt-1 mb-6 text-[14px] text-muted">Choose a plan to start tracking how AI recommends your brand. Change or cancel any time.</p>
-              <PlanChooser billing={billing} returnPath="/projects/new" />
-            </>
-          )}
-        </div>
+    <div className="grid min-h-dvh place-items-center bg-page px-4" role="status">
+      <div className="flex flex-col items-center text-center">
+        <CircleNotch size={28} className="animate-spin text-ink" />
+        <p className="mt-4 text-[15px] font-medium text-ink">{confirming ? "Confirming your payment" : "Taking you to plans"}</p>
+        {confirming && <p className="mt-1 text-[13px] text-muted">This takes a few seconds.</p>}
       </div>
     </div>
   );

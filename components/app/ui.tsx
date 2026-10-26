@@ -1,6 +1,7 @@
 "use client";
 
-import { ArrowDownRight, ArrowUpRight, WarningCircle } from "@phosphor-icons/react";
+import { ArrowDownRight, ArrowUpRight, Eye, EyeSlash, WarningCircle } from "@phosphor-icons/react";
+import { useState } from "react";
 import type { Verdict } from "@/lib/api/types";
 import { cx } from "@/lib/cx";
 
@@ -182,3 +183,22 @@ export function Field({ label, hint, error, children }: { label: string; hint?: 
 
 export const inputClass =
   "h-10 w-full rounded-[10px] border border-line-strong bg-surface px-3 text-[14px] text-ink outline-none transition-colors placeholder:text-faint focus:border-ink";
+
+/** A password field with a show/hide toggle, so people can check what they typed. */
+export function PasswordInput(props: Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "className">) {
+  const [shown, setShown] = useState(false);
+  return (
+    <span className="relative block">
+      <input {...props} type={shown ? "text" : "password"} className={cx(inputClass, "pr-10")} />
+      <button
+        type="button"
+        onClick={() => setShown((s) => !s)}
+        aria-label={shown ? "Hide password" : "Show password"}
+        aria-pressed={shown}
+        className="absolute inset-y-0 right-0 grid w-10 place-items-center text-muted transition-colors hover:text-ink"
+      >
+        {shown ? <EyeSlash size={16} /> : <Eye size={16} />}
+      </button>
+    </span>
+  );
+}

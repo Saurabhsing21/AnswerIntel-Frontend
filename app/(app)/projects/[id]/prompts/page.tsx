@@ -1,32 +1,54 @@
 "use client";
 
-import { CaretDown, Hash, ListChecks, MagnifyingGlass, PencilSimple, Plus, Prohibit, Sparkle, Trash, Trophy } from "@phosphor-icons/react";
+import { ArrowRight, CaretDown, Hash, Lightbulb, ListChecks, MagnifyingGlass, PencilSimple, Plus, Prohibit, Sparkle, Trash, Trophy } from "@phosphor-icons/react";
 import { useParams } from "next/navigation";
 import { Fragment, useMemo, useState } from "react";
-import { EngineIcon } from "@/components/product/engine-icon";
+import { EngineIcon, engineNames } from "@/components/product/engine-icon";
+import Link from "next/link";
+import { GeneratePrompts } from "@/components/app/generate-prompts";
+import { askUpgrade, ProBadge, usePro } from "@/components/app/pro-lock";
+import { WhyMissing } from "@/components/app/why-missing";
+import { useProject } from "@/components/app/project-context";
 import { useLatestResults } from "@/components/app/latest-results";
 import { ResponseDrawer } from "@/components/app/response-drawer";
 import { useToast } from "@/components/app/toast";
 import { Card, EmptyState, ErrorBanner, PageHeader, Segmented, Skeleton, StatStrip, VerdictPill, inputClass } from "@/components/app/ui";
 import { buttonClass } from "@/components/ui/button";
 import { api, ApiError, useApi } from "@/lib/api/client";
-import type { EngineResult, Prompt } from "@/lib/api/types";
+import type { Engine, EngineResult, Opportunity, Prompt } from "@/lib/api/types";
 import { CATEGORY_LABELS } from "@/lib/format";
 import { cx } from "@/lib/cx";
 
-function Cell({ result }: { result?: EngineResult }) {
-  if (!result) return <span className="size-6 rounded-[6px] border border-dashed border-line-strong" aria-label="Not scanned" />;
+const VERDICT_TEXT = { recommended: "Recommended", mentioned: "Mentioned, not recommended", absent: "Not mentioned" } as const;
+
+/**
+ * One logo per engine this question is asked on. Read-only: a lime ring means that engine recommended you in the
+ * latest scan; everything else stays neutral. Hover for the engine's name and result.
+ */
+function EngineChips({ prompt, projectEngines, result }: { prompt: Prompt; projectEngines: Engine[]; result?: { engines: EngineResult[] } }) {
+  const asked = projectEngines.filter((k) => !prompt.engines || prompt.engines.includes(k));
   return (
-    <span
-      title={`${result.engine_name}: ${result.verdict}${result.position ? ` #${result.position}` : ""}`}
-      className={cx(
-        "grid size-6 place-items-center rounded-[6px]",
-        result.verdict === "recommended" && "bg-up text-white",
-        result.verdict === "mentioned" && "bg-blue-soft text-blue-ink",
-        result.verdict === "absent" && "border border-line-strong text-faint",
-      )}
-    >
-      <EngineIcon engine={result.engine} size={11} mono />
+    <span className="hidden shrink-0 items-center gap-1.5 sm:flex">
+      {asked.map((k) => {
+        const r = result?.engines.find((e) => e.engine === k);
+        const recommended = r?.verdict === "recommended";
+        const status = r ? `${VERDICT_TEXT[r.verdict]}${r.position ? ` (#${r.position})` : ""}` : "Not scanned yet";
+        return (
+          <span key={k} className="group relative" aria-label={`${engineNames[k]}: ${status}`} role="img">
+            <span
+              className={cx(
+                "grid size-8 place-items-center rounded-full border-2 bg-surface transition-colors",
+                recommended ? "border-mark-strong bg-mark-soft" : "border-line",
+              )}
+            >
+              <EngineIcon engine={k} size={15} />
+            </span>
+            <span className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-1.5 -translate-x-1/2 whitespace-nowrap rounded-[6px] bg-night px-2 py-1 text-[11px] text-white opacity-0 shadow-lg transition-opacity duration-100 group-hover:opacity-100">
+              {engineNames[k]} · {status}
+            </span>
+          </span>
+        );
+      })}
     </span>
   );
 }
@@ -45,7 +67,20 @@ function Priority({ value }: { value: number }) {
 
 export default function PromptsPage() {
   const { id } = useParams<{ id: string }>();
+  const { project } = useProject();
+  const pro = usePro();
+  // Each question links to the open opportunity that covers it: from "you lose here" straight to the fix.
+  const opportunities = useApi<Opportunity[]>(`/projects/${id}/opportunities`);
+  const fixFor = useMemo(() => {
+    const map = new Map<string, Opportunity>();
+    for (const o of opportunities.data ?? []) {
+      if (o.trend === "resolved" || o.status === "dismissed") continue;
+      for (const q of o.related_prompts) if (!map.has(q.trim().toLowerCase())) map.set(q.trim().toLowerCase(), o);
+    }
+    return map;
+  }, [opportunities.data]);
   const toast = useToast();
+  const [generating, setGenerating] = useState(false);
   const { data: prompts, setData: setPrompts, loading, error: loadError } = useApi<Prompt[]>(`/projects/${id}/prompts`);
   const { results, scan } = useLatestResults(id);
   const [query, setQuery] = useState("");
@@ -57,7 +92,6 @@ export default function PromptsPage() {
   const [error, setError] = useState("");
 
   const byPrompt = useMemo(() => new Map((results?.prompts ?? []).map((r) => [r.prompt_id, r])), [results]);
-  const engines = useMemo(() => [...new Map((results?.prompts ?? []).flatMap((p) => p.engines.map((e) => [e.engine, e.engine_name]))).entries()], [results]);
   // Most commercially important questions first (scored when prompts are generated); unscored keep their order.
   const rows = (prompts ?? [])
     .filter((p) => (category === "ALL" || p.category === category) && p.text.toLowerCase().includes(query.trim().toLowerCase()))
@@ -101,12 +135,10 @@ export default function PromptsPage() {
       form.reset();
     }
   }
-  async function generate() {
-    const result = await act(() => api<{ prompts: Prompt[]; created: number }>(`/projects/${id}/prompts/generate`, { method: "POST" }));
-    if (result) {
-      setPrompts(result.prompts);
-      toast.push(result.created ? `${result.created} new prompts added.` : "No new prompts to add. You already cover the ground.", "success");
-    }
+  function added(created: Prompt[], inactive: number) {
+    setPrompts((all) => [...(all ?? []), ...created]);
+    const off = inactive ? ` ${inactive} switched off: your plan's prompt limit is full.` : "";
+    toast.push(`${created.length} prompt${created.length === 1 ? "" : "s"} added.${off}`, "success");
   }
 
   const activeCount = prompts?.filter((p) => p.is_active).length ?? 0;
@@ -114,11 +146,15 @@ export default function PromptsPage() {
   return (
     <>
       <PageHeader
-        title="Prompts"
+        title="Answers"
         description={`${activeCount} active questions are asked to every engine on each scan. Results show the latest scan${scan ? ` (#${scan.id})` : ""}.`}
         actions={
-          <button type="button" onClick={generate} disabled={busy} className={buttonClass("primary", "sm")}>
-            <Sparkle size={14} weight="fill" /> Generate more
+          <button
+            type="button"
+            onClick={() => (pro ? setGenerating(true) : askUpgrade("More prompts are on paid plans. Track up to 160 questions, written to your instructions."))}
+            className={buttonClass("primary", "sm")}
+          >
+            <Sparkle size={14} weight="fill" /> Generate more {!pro && <ProBadge />}
           </button>
         }
       />
@@ -151,14 +187,20 @@ export default function PromptsPage() {
             />
           </div>
         </div>
-        {engines.length > 0 && (
-          <div className="hidden items-center gap-4 border-b border-line px-4 py-2 text-[11px] text-muted md:flex">
-            <span>Latest scan, per engine:</span>
-              <span className="flex items-center gap-1"><span className="size-3 rounded-[3px] bg-up" />Recommended</span>
-              <span className="flex items-center gap-1"><span className="size-3 rounded-[3px] bg-blue-soft ring-1 ring-blue/30" />Mentioned</span>
-              <span className="flex items-center gap-1"><span className="size-3 rounded-[3px] border border-line-strong" />Absent</span>
-          </div>
-        )}
+        <div className="hidden items-center gap-3 border-b border-line bg-[#fbfbfa] px-4 py-2 text-[11px] font-medium text-muted md:flex">
+          <span className="w-9 shrink-0">On</span>
+          <span className="min-w-0 flex-1">Question</span>
+          <span className="w-[92px] shrink-0 text-center">Type</span>
+          <span className="shrink-0 text-center" style={{ width: Math.max(1, project?.engines.length ?? 1) * 38 - 6 }}>AI engines</span>
+          <span className="w-10 shrink-0 text-right">Seen</span>
+          <span className="w-[62px] shrink-0 text-right">Edit</span>
+        </div>
+        <div className="hidden flex-wrap items-center gap-x-4 gap-y-1 border-b border-line px-4 py-2 text-[11px] text-muted md:flex">
+          <span>Each logo is one AI engine this question is asked on.</span>
+          <span className="flex items-center gap-1.5"><span className="size-3 rounded-full border-2 border-mark-strong bg-mark-soft" />Recommended you</span>
+          <span className="flex items-center gap-1.5"><span className="size-3 rounded-full border-2 border-line" />Didn&apos;t recommend you</span>
+          <span className="text-faint">Hover a logo for the details. Change engines in Settings.</span>
+        </div>
 
         {loading ? (
           <div className="space-y-2 p-4">{[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-10" />)}</div>
@@ -173,7 +215,7 @@ export default function PromptsPage() {
                 <Fragment key={p.id}>
                   <li className={cx("flex items-center gap-3 px-4 py-2.5", isOpen && "bg-[#fbfbfa]")}>
                     <button type="button" role="switch" aria-checked={p.is_active} aria-label={`Track "${p.text}"`} onClick={() => toggle(p)}
-                      className={cx("relative h-5 w-9 shrink-0 rounded-full transition-colors", p.is_active ? "bg-ink" : "bg-[#d9d9d6]")}>
+                      className={cx("relative h-5 w-9 shrink-0 rounded-full transition-colors", p.is_active ? "bg-mark ring-1 ring-mark-strong ring-inset" : "bg-[#d9d9d6]")}>
                       <span className={cx("absolute top-0.5 size-4 rounded-full bg-white shadow transition-[left]", p.is_active ? "left-[18px]" : "left-0.5")} />
                     </button>
                     {editing === p.id ? (
@@ -196,22 +238,48 @@ export default function PromptsPage() {
                       </button>
                     )}
                     {p.importance != null && <Priority value={p.importance} />}
-                    <span className="hidden shrink-0 rounded-full bg-sunken px-2 py-0.5 text-[11px] text-ink-2 md:inline">{CATEGORY_LABELS[p.category] ?? p.category}</span>
-                    <span className="hidden shrink-0 gap-1 sm:flex">
-                      {engines.map(([key]) => <Cell key={key} result={result?.engines.find((e) => e.engine === key)} />)}
+                    <span className="hidden w-[92px] shrink-0 justify-center md:flex">
+                      <span className="truncate rounded-full bg-sunken px-2 py-0.5 text-[11px] text-ink-2">{CATEGORY_LABELS[p.category] ?? p.category}</span>
                     </span>
+                    <EngineChips prompt={p} projectEngines={project?.engines ?? []} result={result} />
                     <span className="hidden w-10 shrink-0 text-right font-mono text-[12px] text-muted sm:block">
                       {result ? `${result.seen_on}/${result.engines.length}` : "-"}
                     </span>
-                    <button type="button" onClick={() => setEditing(p.id)} className="grid size-7 shrink-0 place-items-center rounded-full text-muted hover:bg-sunken hover:text-ink" aria-label="Edit prompt">
+                    <button type="button" onClick={() => setEditing(p.id)} title="Edit the question" className="grid size-7 shrink-0 place-items-center rounded-full text-muted hover:bg-sunken hover:text-ink" aria-label="Edit prompt">
                       <PencilSimple size={13} />
                     </button>
-                    <button type="button" onClick={() => remove(p)} className="grid size-7 shrink-0 place-items-center rounded-full text-muted hover:bg-sunken hover:text-down" aria-label="Delete prompt">
+                    <button type="button" onClick={() => remove(p)} title="Delete the question" className="grid size-7 shrink-0 place-items-center rounded-full text-muted hover:bg-sunken hover:text-down" aria-label="Delete prompt">
                       <Trash size={13} />
                     </button>
                   </li>
                   {isOpen && result && (
-                    <li className="bg-[#fbfbfa] px-4 pb-4">
+                    <li className="space-y-3 bg-[#fbfbfa] px-4 pb-4">
+                      {(() => {
+                        const fix = fixFor.get(p.text.trim().toLowerCase());
+                        const weakest = result.engines.find((e) => e.verdict === "absent") ?? result.engines.find((e) => e.verdict === "mentioned");
+                        return (
+                          (fix || weakest) && (
+                            <div className={cx("grid gap-3", fix && weakest && "lg:grid-cols-2")}>
+                              {weakest && (
+                                <div className="rounded-[12px] border border-line bg-surface p-3.5">
+                                  <WhyMissing projectId={id} responseId={weakest.response_id} wide={!fix} />
+                                </div>
+                              )}
+                              {fix && (
+                                <Link href={`/projects/${id}/opportunities#opp-${fix.id}`} className="group flex items-start gap-3 rounded-[12px] border border-line bg-surface p-3.5 transition-colors hover:border-line-strong">
+                                  <Lightbulb size={16} className="mt-0.5 shrink-0 text-ink" />
+                                  <span className="min-w-0 flex-1">
+                                    <span className="block text-[12px] text-muted">The fix for this question</span>
+                                    <span className="block text-[13px] font-medium text-ink">{fix.title}</span>
+                                    {fix.steps[0] && <span className="mt-0.5 block text-[12px] text-ink-2">{fix.steps[0]}</span>}
+                                  </span>
+                                  <ArrowRight size={14} className="mt-1 shrink-0 text-faint group-hover:text-ink" />
+                                </Link>
+                              )}
+                            </div>
+                          )
+                        );
+                      })()}
                       <div className="grid gap-2 md:grid-cols-3">
                         {result.engines.map((e) => (
                           <div key={e.engine} className="rounded-[12px] border border-line bg-surface p-3 text-[12px]">
@@ -237,12 +305,23 @@ export default function PromptsPage() {
             })}
           </ul>
         )}
-        <form onSubmit={add} className="flex gap-2 border-t border-line p-3">
-          <input name="text" required minLength={8} className={inputClass} placeholder="Add a question your buyers ask AI" aria-label="New prompt" />
-          <button type="submit" disabled={busy} className={buttonClass("primary", "sm")}><Plus size={14} weight="bold" /> Add</button>
-        </form>
+        {pro ? (
+          <form onSubmit={add} className="flex gap-2 border-t border-line p-3">
+            <input name="text" required minLength={8} className={inputClass} placeholder="Add a question your buyers ask AI" aria-label="New prompt" />
+            <button type="submit" disabled={busy} className={buttonClass("primary", "sm")}><Plus size={14} weight="bold" /> Add</button>
+          </form>
+        ) : (
+          <button
+            type="button"
+            onClick={() => askUpgrade("Adding your own questions is on paid plans.")}
+            className="flex w-full items-center gap-2 border-t border-line px-4 py-3 text-left text-[13px] text-muted hover:bg-[#fbfbfa]"
+          >
+            <Plus size={14} weight="bold" /> Add your own questions <ProBadge className="ml-1" />
+          </button>
+        )}
       </Card>
       <ResponseDrawer projectId={id} responseId={response} onClose={() => setResponse(null)} />
+      <GeneratePrompts projectId={id} open={generating} onClose={() => setGenerating(false)} onAdded={added} />
     </>
   );
 }

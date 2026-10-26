@@ -8,6 +8,7 @@ import { api, ApiError } from "@/lib/api/client";
 import type { ReportSummary, Scan } from "@/lib/api/types";
 import { BrandTile } from "@/components/app/brand-tile";
 import { MenuItem, MenuLabel, Popover } from "@/components/app/popover";
+import { askUpgrade, ProBadge, usePro } from "@/components/app/pro-lock";
 import { isScanActive, useProject } from "@/components/app/project-context";
 import { useToast } from "@/components/app/toast";
 import { EngineIcon } from "@/components/product/engine-icon";
@@ -26,11 +27,12 @@ function scanLabel(scan: Scan | null) {
 
 function ExportMenu() {
   const { projectId, scans } = useProject();
+  const pro = usePro();
   const toast = useToast();
   const [busy, setBusy] = useState(false);
 
   async function exportLatest(format: "pdf" | "html") {
-    const finished = scans.find((s) => s.status === "completed" || s.status === "partial");
+    const finished = scans.find((s) => s.kind !== "retest" && (s.status === "completed" || s.status === "partial"));
     if (!projectId || !finished) {
       toast.push("Run a scan first, so there is something to export.", "error");
       return;
@@ -81,7 +83,8 @@ function ExportMenu() {
           <MenuItem
             onClick={() => {
               close();
-              const finished = scans.find((s) => s.status === "completed" || s.status === "partial");
+              if (!pro) return askUpgrade("CSV export of every answer is on paid plans.");
+              const finished = scans.find((s) => s.kind !== "retest" && (s.status === "completed" || s.status === "partial"));
               if (!finished) return toast.push("Run a scan first, so there is something to export.", "error");
               const link = document.createElement("a"); // a file download, not a page navigation
               link.href = `/api/backend/projects/${projectId}/scans/${finished.id}/export.csv`;
@@ -89,7 +92,7 @@ function ExportMenu() {
               link.click();
             }}
           >
-            <FileCsv size={16} /> Every answer (CSV)
+            <FileCsv size={16} /> Every answer (CSV) {!pro && <ProBadge className="ml-auto" />}
           </MenuItem>
           <div className="mt-1 border-t border-line pt-1">
             <MenuItem href={`/projects/${projectId}/reports`} onClick={close}>
@@ -123,7 +126,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
         {project ? (
           <div className="flex min-w-0 items-center gap-1.5 overflow-hidden">
             <Link href={`/projects/${project.id}`} className={`${chip} transition-colors hover:bg-[#e8e8e5]`}>
-              <BrandTile name={project.brand_name} color={YOU_COLOR} size={14} />
+              <BrandTile name={project.brand_name} color={YOU_COLOR} size={14} website={project.website} />
               <span className="max-w-[120px] truncate">{project.brand_name}</span>
             </Link>
             <Link href={`/projects/${project.id}/scans`} className={`${chip} hidden transition-colors hover:bg-[#e8e8e5] sm:inline-flex`}>

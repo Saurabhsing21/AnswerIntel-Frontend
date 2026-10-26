@@ -4,7 +4,7 @@ import { CaretLeft, CheckCircle, CircleNotch, EnvelopeSimple, FilePdf, LinkSimpl
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { BrandBars, BrandLineChart, type BrandSeries } from "@/components/app/charts";
+import { BrandLineChart, type BrandSeries } from "@/components/app/charts";
 import { BrandTile } from "@/components/app/brand-tile";
 import { Popover } from "@/components/app/popover";
 import { useToast } from "@/components/app/toast";
@@ -167,7 +167,7 @@ export default function ReportPage() {
       <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
         <Card title="Mentions by brand" subtitle={n > 1 ? `Across ${n} scans` : "Latest scan"} className="flex flex-col">
           <div className="flex-1 px-4 py-4">
-            {n > 1 ? <BrandLineChart series={series} dates={c.trend.map((p) => p.date)} metricKey="mention_rate" label="Mentions" /> : <BrandBars series={series} label="Mentions" />}
+            <BrandLineChart series={series} dates={c.trend.map((p) => p.date)} metricKey="mention_rate" label="Mentions" />
           </div>
         </Card>
         <Card title="Competitors" subtitle="Ranked by mentions" className="flex flex-col">
