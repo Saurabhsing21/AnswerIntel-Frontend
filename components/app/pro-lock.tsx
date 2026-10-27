@@ -11,6 +11,12 @@ export function usePro(): boolean {
   return billing?.limits.pro ?? true;
 }
 
+/** Whether the plan includes tracked fixes (experiments): Growth and Pro, not Starter or the free trial. */
+export function useTracked(): boolean {
+  const { billing } = useProject();
+  return billing?.limits.experiments ?? true;
+}
+
 /** Opens the upgrade prompt the API's own limit errors open, for a locked thing the user clicked. */
 export function askUpgrade(message: string, limit = "pro") {
   window.dispatchEvent(new CustomEvent(PLAN_LIMIT_EVENT, { detail: new ApiError(402, "PLAN_LIMIT", message, limit) }));

@@ -4,7 +4,7 @@ import { ArrowCounterClockwise, ChatCircleText, Check, CheckCircle, CircleNotch,
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { ExperimentsSection } from "@/components/app/experiments-section";
-import { askUpgrade, ProBadge, usePro } from "@/components/app/pro-lock";
+import { askUpgrade, ProBadge, usePro, useTracked } from "@/components/app/pro-lock";
 import { useRefreshOnScan } from "@/components/app/project-context";
 import { AREA_ICON, AREA_LABEL, AREA_TONE } from "@/components/app/overview-cards";
 import { useToast } from "@/components/app/toast";
@@ -126,6 +126,7 @@ function OpportunitiesInner() {
   const router = useRouter();
   const tab = useSearchParams().get("tab") === "tracked" ? "tracked" : "fixes";
   const pro = usePro();
+  const tracked = useTracked(); // tracked fixes start on Growth
   const toast = useToast();
   // Poll while a re-test runs, so its result appears without a reload.
   const { data, setData, loading, error, reload } = useApi<Opportunity[]>(`/projects/${id}/opportunities`, (rows) =>
@@ -207,15 +208,15 @@ function OpportunitiesInner() {
         />
       </div>
       {tab === "tracked" ? (
-        pro ? (
+        tracked ? (
           <ExperimentsSection />
         ) : (
           <Card>
             <EmptyState
               icon={<Lock size={30} />}
-              title="Tracked fixes are on paid plans"
+              title="Tracked fixes are on Growth and Pro"
               body="Freeze your numbers before a change, then see exactly what moved after the next scan."
-              action={<button type="button" onClick={() => askUpgrade("Tracked fixes are on paid plans, from $20 a month.")} className={buttonClass("primary", "sm")}>See plans</button>}
+              action={<button type="button" onClick={() => askUpgrade("Tracked fixes are on Growth and Pro, from $50 a month.", pro ? "experiments" : "pro")} className={buttonClass("primary", "sm")}>See plans</button>}
             />
           </Card>
         )
@@ -349,11 +350,11 @@ function OpportunitiesInner() {
                       {o.trend !== "resolved" && o.status === "open" && (
                         <button
                           type="button"
-                          onClick={() => (pro ? startTracked(o) : setStatus(o, "in_progress"))}
+                          onClick={() => (tracked ? startTracked(o) : setStatus(o, "in_progress"))}
                           className={buttonClass("primary", "sm")}
-                          title={pro ? "Saves today's numbers as a baseline, so you can prove the result later" : undefined}
+                          title={tracked ? "Saves today's numbers as a baseline, so you can prove the result later" : undefined}
                         >
-                          <Play size={14} weight="fill" /> {pro ? "Start and track" : "Start"}
+                          <Play size={14} weight="fill" /> {tracked ? "Start and track" : "Start"}
                         </button>
                       )}
                       {o.trend !== "resolved" && o.status === "in_progress" && (

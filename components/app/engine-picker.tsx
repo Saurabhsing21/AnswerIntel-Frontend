@@ -72,7 +72,7 @@ export function EnginePicker({ engines, value, onChange, wide, locked = [], max 
                 {e.available && locked.includes(e.key) ? (
                   <ProBadge />
                 ) : !e.available ? (
-                  <span className="rounded-full bg-sunken px-2 py-0.5 text-[11px] text-muted">{e.key === "google" ? "Needs setup" : "Soon"}</span>
+                  <span className="rounded-full bg-sunken px-2 py-0.5 text-[11px] text-muted">{e.key === "google" ? "Needs setup" : "Coming soon"}</span>
                 ) : (
                   e.web_search && (
                     <span className="inline-flex items-center gap-1 text-[11px] text-muted" title="Searches the web before answering, like the real app">
