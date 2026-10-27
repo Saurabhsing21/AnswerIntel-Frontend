@@ -4,7 +4,7 @@ import { ArrowRight, ChartLine, Flask, MagnifyingGlass, Play, Plus, SquaresFour,
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { BrandTile } from "@/components/app/brand-tile";
-import { NAV } from "@/components/app/nav";
+import { ACCOUNT_NAV, NAV, type NavItem } from "@/components/app/nav";
 import { useProject } from "@/components/app/project-context";
 import { YOU_COLOR } from "@/lib/brand";
 import { cx } from "@/lib/cx";
@@ -49,14 +49,12 @@ function PaletteDialog({ onClose }: { onClose: () => void }) {
     if (base) {
       list.push(
         { id: "scan", group: "Actions", label: "Run a new scan", icon: <Play size={16} />, run: () => void startScan() },
-        { id: "report", group: "Actions", label: "Generate a weekly report", icon: <ChartLine size={16} />, run: go(`${base}/reports?new=weekly`) },
+        { id: "report", group: "Actions", label: "Generate a report", icon: <ChartLine size={16} />, run: go(`${base}/reports?new=manual`) },
         { id: "experiment", group: "Actions", label: "Start an experiment", icon: <Flask size={16} />, run: go(`${base}/experiments?new=1`) },
         { id: "competitor", group: "Actions", label: "Add a competitor", icon: <UserPlus size={16} />, run: go(`${base}/competitors?add=1`) },
       );
-      for (const group of NAV) {
-        for (const { href, label, icon: Icon } of group.items) {
-          list.push({ id: `page-${href}`, group: "Pages", label, icon: <Icon size={16} />, run: go(`${base}${href}`) });
-        }
+      for (const { href, label, icon: Icon } of [...NAV.flatMap((group): readonly NavItem[] => group.items), ...ACCOUNT_NAV]) {
+        list.push({ id: `page-${href}`, group: "Pages", label, icon: <Icon size={16} />, run: go(`${base}${href}`) });
       }
     }
     list.push({ id: "new-project", group: "Actions", label: "New project", icon: <Plus size={16} />, run: go("/projects/new") });

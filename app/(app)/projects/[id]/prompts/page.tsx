@@ -146,7 +146,7 @@ export default function PromptsPage() {
   return (
     <>
       <PageHeader
-        title="Answers"
+        title="Buyer questions"
         description={`${activeCount} active questions are asked to every engine on each scan. Results show the latest scan${scan ? ` (#${scan.id})` : ""}.`}
         actions={
           <button

@@ -9,11 +9,14 @@ export function Popover({
   trigger,
   children,
   align = "left",
+  side = "bottom",
   className,
 }: {
   trigger: (state: { open: boolean; toggle: () => void }) => React.ReactNode;
   children: (close: () => void) => React.ReactNode;
   align?: "left" | "right";
+  /** "top" opens above the trigger, for menus at the bottom of the screen. */
+  side?: "top" | "bottom";
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -40,8 +43,9 @@ export function Popover({
       {open && (
         <div
           className={cx(
-            "absolute z-40 mt-1.5 min-w-full rounded-[12px] border border-line-strong bg-surface p-1.5 shadow-[0_16px_40px_-16px_rgb(0_0_0/0.25)]",
+            "absolute z-40 min-w-full rounded-[12px] border border-line-strong bg-surface p-1.5 shadow-[0_16px_40px_-16px_rgb(0_0_0/0.25)]",
             align === "right" ? "right-0" : "left-0",
+            side === "top" ? "bottom-full mb-1.5" : "mt-1.5",
             className ?? "w-64",
           )}
         >

@@ -1,6 +1,6 @@
 "use client";
 
-import { Buildings, CaretUpDown, Check, MagnifyingGlass, Plus, SignOut, SquaresFour, X } from "@phosphor-icons/react";
+import { Buildings, CaretUpDown, Check, MagnifyingGlass, Plus, SignOut, SquaresFour, UserCircle, X } from "@phosphor-icons/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -8,7 +8,7 @@ import { api, useApi } from "@/lib/api/client";
 import { PlanCard } from "@/components/app/billing";
 import { BrandTile } from "@/components/app/brand-tile";
 import { OPEN_PALETTE_EVENT } from "@/components/app/command-palette";
-import { NAV } from "@/components/app/nav";
+import { ACCOUNT_NAV, NAV } from "@/components/app/nav";
 import { MenuItem, MenuLabel, Popover } from "@/components/app/popover";
 import { ProBadge, usePro } from "@/components/app/pro-lock";
 import { useProject } from "@/components/app/project-context";
@@ -198,28 +198,28 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                     </Link>
                   );
                 })}
-                {group.label === "More" && scans.length > 0 && (
-                  <div className="mt-3">
-                    <p className="px-2 pb-1 text-[11px] text-faint">Recent scans</p>
-                    {scans.slice(0, 3).map((scan, i) => (
-                      <Link
-                        key={scan.id}
-                        href={`${base}/scans/${scan.id}`}
-                        onClick={onNavigate}
-                        className={cx("flex items-center gap-2.5 rounded-[8px] px-2 py-1.5 text-[12px] text-ink-2 transition-colors hover:bg-black/[0.04] hover:text-ink", i === 2 && "[@media(max-height:820px)]:hidden")}
-                      >
-                        <span className={cx("size-1.5 shrink-0 rounded-full", STATUS_COLOR[scan.status], scan.status === "running" && "animate-pulse")} aria-label={scan.status} />
-                        {new Date(scan.completed_at ?? scan.created_at).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}
-                        {scan.kind === "retest" && <span className="rounded-[4px] bg-sunken px-1 text-[10px] text-muted">Re-test</span>}
-                        <span className="ml-auto font-mono text-faint">
-                          {scan.completed_runs}/{scan.total_runs}
-                        </span>
-                      </Link>
-                    ))}
-                  </div>
-                )}
               </div>
             ))}
+            {scans.length > 0 && (
+              <div className="mt-3">
+                <p className="px-2 pb-1 text-[11px] text-faint">Recent scans</p>
+                {scans.slice(0, 3).map((scan, i) => (
+                  <Link
+                    key={scan.id}
+                    href={`${base}/scans/${scan.id}`}
+                    onClick={onNavigate}
+                    className={cx("flex items-center gap-2.5 rounded-[8px] px-2 py-1.5 text-[12px] text-ink-2 transition-colors hover:bg-black/[0.04] hover:text-ink", i === 2 && "[@media(max-height:820px)]:hidden")}
+                  >
+                    <span className={cx("size-1.5 shrink-0 rounded-full", STATUS_COLOR[scan.status], scan.status === "running" && "animate-pulse")} aria-label={scan.status} />
+                    {new Date(scan.completed_at ?? scan.created_at).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}
+                    {scan.kind === "retest" && <span className="rounded-[4px] bg-sunken px-1 text-[10px] text-muted">Re-test</span>}
+                    <span className="ml-auto font-mono text-faint">
+                      {scan.completed_runs}/{scan.total_runs}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
           </>
         ) : (
           <div className="mb-3">
@@ -238,12 +238,40 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       <NextScanCard />
 
       <div className="flex items-center gap-2.5 border-t border-line px-4 py-3">
-        <Link href="/account" onClick={onNavigate} className="flex min-w-0 flex-1 items-center gap-2.5 rounded-[8px] transition-colors hover:text-ink" title="Account settings">
-          <span className="grid size-7 shrink-0 place-items-center rounded-full bg-ink text-[11px] font-semibold text-white" aria-hidden>
-            {(me.data?.name || me.data?.email)?.[0]?.toUpperCase() ?? "?"}
-          </span>
-          <span className="min-w-0 flex-1 truncate text-[12px] text-ink-2">{me.data?.name || me.data?.email || "Signed in"}</span>
-        </Link>
+        <div className="min-w-0 flex-1">
+          <Popover
+            side="top"
+            className="w-56"
+            trigger={({ open, toggle }) => (
+              <button type="button" onClick={toggle} aria-expanded={open} className="flex w-full min-w-0 items-center gap-2.5 rounded-[8px] text-left transition-colors hover:text-ink" title="Account and project settings">
+                <span className="grid size-7 shrink-0 place-items-center rounded-full bg-ink text-[11px] font-semibold text-white" aria-hidden>
+                  {(me.data?.name || me.data?.email)?.[0]?.toUpperCase() ?? "?"}
+                </span>
+                <span className="min-w-0 flex-1 truncate text-[12px] text-ink-2">{me.data?.name || me.data?.email || "Signed in"}</span>
+                <CaretUpDown size={14} className="shrink-0 text-faint" />
+              </button>
+            )}
+          >
+            {(close) => (
+              <>
+                {base && (
+                  <>
+                    <MenuLabel>This project</MenuLabel>
+                    {ACCOUNT_NAV.map(({ href, label, icon: Icon }) => (
+                      <MenuItem key={href} href={`${base}${href}`} active={pathname.startsWith(`${base}${href}`)} onClick={() => { close(); onNavigate?.(); }}>
+                        <Icon size={16} /> {label}
+                      </MenuItem>
+                    ))}
+                  </>
+                )}
+                <MenuLabel>You</MenuLabel>
+                <MenuItem href="/account" active={pathname === "/account"} onClick={() => { close(); onNavigate?.(); }}>
+                  <UserCircle size={16} /> Account settings
+                </MenuItem>
+              </>
+            )}
+          </Popover>
+        </div>
         <button
           type="button"
           onClick={logout}
