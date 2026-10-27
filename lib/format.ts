@@ -14,7 +14,7 @@ export function timeAgo(iso: string | null | undefined) {
   return `${Math.round(s / 86400)}d ago`;
 }
 
-export const REPORT_LABELS = { weekly: "Weekly report", monthly: "Monthly report", manual: "Report" } as const;
+export const REPORT_LABELS = { weekly: "Weekly report", monthly: "Monthly report", manual: "Scan report" } as const;
 
 export const CATEGORY_LABELS: Record<string, string> = {
   CATEGORY: "Category",

@@ -4,7 +4,6 @@ import { CalendarCheck, ChartLine, CircleNotch, EnvelopeSimple, FilePdf, LinkSim
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
-import { MenuItem, Popover } from "@/components/app/popover";
 import { useProject } from "@/components/app/project-context";
 import { useToast } from "@/components/app/toast";
 import { Card, EmptyState, ErrorBanner, PageHeader, Skeleton, StatStrip } from "@/components/app/ui";
@@ -31,7 +30,7 @@ function ReportExtras({ projectId, weeklyOn }: { projectId: string; weeklyOn: bo
   const share = [
     { icon: LinkSimple, title: "A private link", body: "Anyone with it can read the report. No account needed, and you can revoke it." },
     { icon: FilePdf, title: "A PDF", body: "Attach it to an investor update or a client email." },
-    { icon: EnvelopeSimple, title: "An email", body: weeklyOn ? "Sent to you automatically after every weekly scan." : "Turn on the weekly scan and it arrives on its own." },
+    { icon: EnvelopeSimple, title: "An email", body: "Sent to you after every scan, so you never have to come and look." },
   ];
   return (
     <div className="mt-4 grid gap-4 lg:grid-cols-2">
@@ -55,7 +54,7 @@ function ReportExtras({ projectId, weeklyOn }: { projectId: string; weeklyOn: bo
           </ul>
           {group.title.startsWith("Share") && !weeklyOn && (
             <Link href={`/projects/${projectId}/settings`} className="border-t border-line px-5 py-3 text-[12px] font-medium text-ink-2 transition-colors hover:text-ink">
-              Turn on the weekly email in Settings
+              Turn on weekly scans in Settings
             </Link>
           )}
         </Card>
@@ -117,31 +116,14 @@ function ReportsInner() {
         title="Reports"
         description="Shareable summaries of where you stand, as a link, a PDF or an email."
         actions={
-          <Popover
-            align="right"
-            className="w-60"
-            trigger={({ open, toggle }) => (
-              <button
-                type="button"
-                onClick={pro ? toggle : () => askUpgrade("Reports are on paid plans: a weekly summary by email, PDF exports and share links.")}
-                aria-expanded={open}
-                disabled={!hasData || generating !== null}
-                className={buttonClass("primary", "sm")}
-              >
-                {generating ? <CircleNotch size={14} className="animate-spin" /> : <Plus size={14} weight="bold" />} Generate report {!pro && <ProBadge />}
-              </button>
-            )}
+          <button
+            type="button"
+            onClick={pro ? () => void generate("manual") : () => askUpgrade("Reports are on paid plans: a report after every scan, by email, as a PDF and as a share link.")}
+            disabled={!hasData || generating !== null}
+            className={buttonClass("primary", "sm")}
           >
-            {(close) => (
-              <>
-                {(["weekly", "monthly", "manual"] as const).map((type) => (
-                  <MenuItem key={type} onClick={() => { close(); void generate(type); }}>
-                    <ChartLine size={16} /> {REPORT_LABELS[type]}
-                  </MenuItem>
-                ))}
-              </>
-            )}
-          </Popover>
+            {generating ? <CircleNotch size={14} className="animate-spin" /> : <Plus size={14} weight="bold" />} New report from latest scan {!pro && <ProBadge />}
+          </button>
         }
       />
 
@@ -150,7 +132,7 @@ function ReportsInner() {
           { label: "Reports", value: reports.length, hint: "kept as a frozen snapshot", icon: <ChartLine size={18} />, tone: "blue" },
           { label: "Shared links", value: reports.filter((r) => r.shared).length, hint: "readable without an account", icon: <ShareNetwork size={18} />, tone: "violet" },
           { label: "Emailed", value: reports.filter((r) => r.emailed_at).length, hint: "sent to you", icon: <EnvelopeSimple size={18} />, tone: "green" },
-          { label: "Weekly email", value: schedule?.enabled ? "On" : "Off", hint: schedule?.enabled ? `${WEEKDAYS[schedule.day_of_week]} ${formatHour(schedule.hour)}` : "turn on in Settings", icon: <CalendarCheck size={18} />, tone: "amber" },
+          { label: "Weekly scan", value: schedule?.enabled ? "On" : "Off", hint: schedule?.enabled ? `${WEEKDAYS[schedule.day_of_week]} ${formatHour(schedule.hour)}` : "turn on in Settings", icon: <CalendarCheck size={18} />, tone: "amber" },
         ]}
       />
 
@@ -161,8 +143,8 @@ function ReportsInner() {
           <EmptyState
             icon={<ChartLine size={30} />}
             title={hasData ? "No reports yet" : "Run a scan to create your first report"}
-            body="A report freezes today's numbers into a clean summary you can send to a teammate, a client or an investor."
-            action={hasData ? <button type="button" onClick={() => generate("weekly")} className={buttonClass("primary", "sm")}><Plus size={14} weight="bold" /> Generate weekly report</button> : undefined}
+            body="Every scan now creates a report on its own. You can also make one from your latest scan to send to a teammate, a client or an investor."
+            action={hasData ? <button type="button" onClick={() => generate("manual")} className={buttonClass("primary", "sm")}><Plus size={14} weight="bold" /> New report from latest scan</button> : undefined}
           />
         </Card>
       ) : (

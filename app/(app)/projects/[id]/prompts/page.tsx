@@ -286,10 +286,11 @@ export default function PromptsPage() {
                             <div className="flex items-center gap-2">
                               <EngineIcon engine={e.engine} size={13} />
                               <span className="font-medium">{e.engine_name}</span>
-                              <span className="ml-auto"><VerdictPill verdict={e.verdict} position={e.position} /></span>
+                              <span className="ml-auto inline-flex items-center gap-1.5 text-muted">You <VerdictPill verdict={e.verdict} position={e.position} /></span>
                             </div>
                             <p className="mt-2 text-muted">
-                              Recommends: <span className="text-ink">{e.competitors_recommended.join(", ") || "none of your competitors"}</span>
+                              {e.verdict === "recommended" ? "Also recommends" : "Recommends instead"}:{" "}
+                              <span className="text-ink">{e.competitors_recommended.join(", ") || "none of your competitors"}</span>
                             </p>
                             {e.citations.length > 0 && <p className="mt-1 truncate text-muted">Cites: {e.citations.join(", ")}</p>}
                             <button type="button" onClick={() => setResponse(e.response_id)} className="mt-2 font-medium text-ink underline-offset-2 hover:underline">
