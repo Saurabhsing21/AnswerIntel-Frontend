@@ -241,6 +241,8 @@ export type Source = {
   group: "you" | "competitors" | "both";
   /** Past the free trial's top 3: counted but not named. */
   locked?: boolean;
+  /** Locked rows only: a tiny copy of the site's logo, shown blurred so the teaser shows real sites. */
+  preview?: string | null;
 };
 
 export type CompetitorAnalysis = {

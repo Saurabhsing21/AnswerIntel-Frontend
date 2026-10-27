@@ -146,8 +146,15 @@ export function SourcesSection() {
                         onClick={() => askUpgrade("Every source AI cites, with who it recommends, is on paid plans.")}
                         className="flex w-full items-center gap-3 rounded-[12px] border border-dashed border-line-strong px-4 py-3 text-left text-[13px] text-muted transition-colors hover:border-ink"
                       >
-                        <span className="flex gap-1 blur-[2px]" aria-hidden>
-                          {[0, 1, 2].map((i) => <span key={i} className="size-6 rounded-[7px] bg-sunken" />)}
+                        <span className="flex gap-1.5" aria-hidden>
+                          {(sources.some((s) => s.preview) ? sources.filter((s) => s.preview) : sources.filter((s) => s.locked).slice(0, 3)).map((s, i) =>
+                            s.preview ? (
+                              // eslint-disable-next-line @next/next/no-img-element -- an 8px data URI, no optimisation to gain
+                              <img key={i} src={s.preview} alt="" className="size-7 rounded-[8px] border border-line bg-white object-cover blur-[2.5px]" />
+                            ) : (
+                              <span key={i} className="size-7 rounded-[8px] bg-sunken" />
+                            ),
+                          )}
                         </span>
                         Upgrade to see {sources.filter((s) => s.locked).length} more sources AI cites
                         <ProBadge className="ml-auto" />
