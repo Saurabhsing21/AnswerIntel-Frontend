@@ -31,14 +31,60 @@ function wasSeen(reportId: number) {
   }
 }
 
-/** Paid plans: "your report is ready" for the latest scan. The free trial: what the report holds, locked. */
-export function ReportReady({ projectId, brand }: { projectId: string; brand: string }) {
+/** The first scan's answers to "what did you find, why, and what do I do first", shown once on the Overview. */
+export type FirstScan = { found: string; why: string; actions: { id: number; title: string }[] };
+
+/** Paid plans: "your report is ready" for the latest scan. The free trial: what the report holds, locked.
+ * After the first scan both lead with the results in three short answers. */
+export function ReportReady({ projectId, brand, first }: { projectId: string; brand: string; first?: FirstScan }) {
   const { billing } = useProject();
   if (!billing) return null;
-  return billing.limits.pro ? <ReadyBanner projectId={projectId} /> : <LockedPreview brand={brand} />;
+  return billing.limits.pro ? <ReadyBanner projectId={projectId} first={first} /> : <LockedPreview brand={brand} projectId={projectId} first={first} />;
 }
 
-function ReadyBanner({ projectId }: { projectId: string }) {
+function FirstResults({ projectId, first, action }: { projectId: string; first: FirstScan; action: React.ReactNode }) {
+  return (
+    <div className="overflow-hidden rounded-[16px] border border-ink bg-surface">
+      <div className="flex flex-col gap-3 bg-mark-soft/60 px-5 py-4 sm:flex-row sm:items-center">
+        <div className="min-w-0 flex-1">
+          <p className="text-[17px] font-semibold tracking-[-0.01em] text-ink">Your results are ready</p>
+          <p className="mt-0.5 text-[13px] text-ink-2">What AI says about you today, why, and the first things to fix.</p>
+        </div>
+        {action}
+      </div>
+      <div className="grid divide-y divide-line border-t border-ink/15 md:grid-cols-3 md:divide-x md:divide-y-0">
+        <div className="px-5 py-4">
+          <p className="text-[12px] font-medium text-muted">What we found</p>
+          <p className="mt-1 text-[14px] text-ink">{first.found}</p>
+        </div>
+        <div className="px-5 py-4">
+          <p className="text-[12px] font-medium text-muted">Why</p>
+          <p className="mt-1 text-[14px] text-ink">{first.why}</p>
+          <Link href={`/projects/${projectId}/prompts`} className="mt-2 inline-flex items-center gap-1 text-[12px] font-medium text-ink-2 hover:text-ink">
+            Read the answers <ArrowRight size={12} weight="bold" />
+          </Link>
+        </div>
+        <div className="px-5 py-4">
+          <p className="text-[12px] font-medium text-muted">What to do first</p>
+          {first.actions.length ? (
+            <ol className="mt-1 space-y-1 text-[14px] text-ink">
+              {first.actions.map((a, i) => (
+                <li key={a.id} className="flex gap-2">
+                  <span className="font-mono text-[12px] leading-[21px] text-faint">{i + 1}</span>
+                  <Link href={`/projects/${projectId}/opportunities`} className="hover:underline">{a.title}</Link>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p className="mt-1 text-[14px] text-ink">Nothing urgent. AI recommends you wherever it recommends a competitor.</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ReadyBanner({ projectId, first }: { projectId: string; first?: FirstScan }) {
   const toast = useToast();
   const { scans } = useProject();
   const scan = scans.find((s) => s.kind !== "retest" && (s.status === "completed" || s.status === "partial"));
@@ -60,6 +106,22 @@ function ReadyBanner({ projectId }: { projectId: string }) {
     }
     hadReport.current = Boolean(report);
   }, [data, report, toast]);
+
+  if (first) {
+    return (
+      <FirstResults
+        projectId={projectId}
+        first={first}
+        action={report ? (
+          <Link href={`/projects/${projectId}/reports/${report.id}`} className={buttonClass("primary", "sm")}>
+            View full report <ArrowRight size={14} weight="bold" />
+          </Link>
+        ) : (
+          <span className="text-[12px] text-muted">Writing your report...</span>
+        )}
+      />
+    );
+  }
 
   if (!report || dismissedId === report.id || wasSeen(report.id)) return null;
 
@@ -99,7 +161,35 @@ function ReadyBanner({ projectId }: { projectId: string }) {
   );
 }
 
-function LockedPreview({ brand }: { brand: string }) {
+function LockedPreview({ brand, projectId, first }: { brand: string; projectId: string; first?: FirstScan }) {
+  const unlock = (
+    <a href={siteHref("/pricing")} className={buttonClass("primary", "sm")}>
+      Unlock the full report
+    </a>
+  );
+  const locked = (
+    <ol className="grid border-t border-ink/15 bg-surface/70 sm:grid-cols-5 sm:divide-x sm:divide-line">
+      {REPORT_SECTIONS.map((s) => (
+        <li key={s.title} className="flex gap-2.5 px-5 py-3 sm:flex-col sm:gap-1">
+          <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-ink">
+            <LockSimple size={12} weight="bold" className="text-muted" /> {s.title}
+          </span>
+          <span className="hidden text-[11px] leading-snug text-muted sm:block">{s.body}</span>
+        </li>
+      ))}
+    </ol>
+  );
+  if (first) {
+    return (
+      <div className="space-y-2">
+        <FirstResults projectId={projectId} first={first} action={unlock} />
+        <div className="overflow-hidden rounded-[16px] border border-line-strong">
+          <p className="px-5 pt-3 pb-2 text-[12px] font-medium text-muted">In the full report, on Pro</p>
+          {locked}
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="overflow-hidden rounded-[16px] border border-ink bg-mark-soft/60">
       <div className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center">
@@ -110,20 +200,9 @@ function LockedPreview({ brand }: { brand: string }) {
             Plans from $20 a month.
           </p>
         </div>
-        <a href={siteHref("/pricing")} className={buttonClass("primary", "sm")}>
-          Unlock the report
-        </a>
+        {unlock}
       </div>
-      <ol className="grid border-t border-ink/15 bg-surface/70 sm:grid-cols-5 sm:divide-x sm:divide-line">
-        {REPORT_SECTIONS.map((s) => (
-          <li key={s.title} className="flex gap-2.5 px-5 py-3 sm:flex-col sm:gap-1">
-            <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-ink">
-              <LockSimple size={12} weight="bold" className="text-muted" /> {s.title}
-            </span>
-            <span className="hidden text-[11px] leading-snug text-muted sm:block">{s.body}</span>
-          </li>
-        ))}
-      </ol>
+      {locked}
     </div>
   );
 }

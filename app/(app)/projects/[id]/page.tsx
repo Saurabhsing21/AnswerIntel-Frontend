@@ -6,7 +6,7 @@ import { BrandLineChart, type BrandSeries } from "@/components/app/charts";
 import { GetStarted } from "@/components/app/get-started";
 import { ActivityCard, AnswersCard, EnginesCard, KpiTabs, RankTable, ThisWeekCard, type RankRow } from "@/components/app/overview-cards";
 import { isScanActive, useProject, useRefreshOnScan } from "@/components/app/project-context";
-import { ReportReady } from "@/components/app/report-ready";
+import { type FirstScan, ReportReady } from "@/components/app/report-ready";
 import { ResponseDrawer } from "@/components/app/response-drawer";
 import { Card, ErrorBanner, Skeleton } from "@/components/app/ui";
 import { useApi } from "@/lib/api/client";
@@ -89,6 +89,16 @@ export default function OverviewPage() {
       ? "First scan complete. Run another to start tracking changes."
       : `${brand}'s ${noun} is ${delta === 0 ? "unchanged" : `${delta > 0 ? "up" : "down"} ${Math.abs(Math.round(delta * 1000) / 10)} pts`} since the previous scan`;
 
+  const topRival = rows.find((r) => !r.isYou);
+  const firstScan: FirstScan = {
+    found: `AI mentions ${brand} in ${pct(v.mention_rate ?? 0)} of answers to your buyers' questions and recommends it in ${pct(v.recommendation_rate ?? 0)}.`,
+    why: data.top_opportunities[0]?.description
+      ?? (topRival && topRival.value > you.value
+        ? `AI brings up ${topRival.name} more often: ${pct(topRival.value)} of answers against your ${pct(you.value)}.`
+        : `You lead every tracked competitor on ${noun}.`),
+    actions: data.top_opportunities.slice(0, 3).map((o) => ({ id: o.id, title: o.title })),
+  };
+
   const footer = [
     { label: leader.isYou ? "You lead" : "Leader", value: leader.isYou ? "You" : leader.name, hint: pct(leader.value) },
     { label: "Gap to leader", value: leader.isYou ? "None" : `${Math.round((leader.value - you.value) * 100)} pts`, hint: `You ${pct(you.value)}` },
@@ -102,11 +112,13 @@ export default function OverviewPage() {
 
   return (
     <div className="space-y-4">
-      <ReportReady projectId={id} brand={brand} />
-      <p className="text-[14px]">
-        <span className="font-medium text-ink">Overview</span>
-        <span className="text-muted"> · {headline}</span>
-      </p>
+      <ReportReady projectId={id} brand={brand} first={n === 1 ? firstScan : undefined} />
+      {n > 1 && (
+        <p className="text-[14px]">
+          <span className="font-medium text-ink">Overview</span>
+          <span className="text-muted"> · {headline}</span>
+        </p>
+      )}
 
       <KpiTabs
         tabs={TABS.map((t) => ({
