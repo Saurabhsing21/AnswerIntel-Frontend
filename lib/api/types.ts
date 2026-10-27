@@ -258,9 +258,13 @@ export type ReportContent = {
   visibility: NonNullable<Dashboard["visibility"]>;
   engines: Dashboard["engines"];
   competitors: Dashboard["competitors"];
-  top_opportunities: Pick<Opportunity, "type" | "title" | "description" | "recommended_action" | "impact">[];
+  top_opportunities: (Pick<Opportunity, "type" | "title" | "description" | "recommended_action" | "impact"> & { steps?: string[] })[];
   trend: Dashboard["trend"];
   summary: string[];
+  /** Added later; older reports lack them. */
+  questions?: { text: string; status: "won" | "shared" | "mentioned" | "absent"; engines: number; recommended_on: number; winners: string[] }[];
+  sources?: { domain: string; citations: number; with_you: number; owner: string | null }[];
+  why_not_you?: { question: string; engine: string; winner: string; mentioned: boolean; reason: string | null; quote: string | null }[];
 };
 export type Report = ReportSummary & { content: ReportContent };
 

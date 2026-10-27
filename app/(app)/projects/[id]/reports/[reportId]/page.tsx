@@ -83,6 +83,9 @@ export default function ReportPage() {
     { label: "Citation rate", value: c.visibility.citation_rate, delta: c.visibility.deltas.citation_rate },
   ];
   const ranked = [...c.competitors].sort((a, b) => b.mention_rate - a.mention_rate);
+  const lost = (c.questions ?? []).filter((q) => (q.status === "absent" || q.status === "mentioned") && q.winners.length > 0);
+  const why = c.why_not_you ?? [];
+  const gaps = (c.sources ?? []).filter((s) => !s.with_you && s.owner !== c.brand).slice(0, 8);
 
   return (
     <div className="space-y-4">
@@ -152,60 +155,162 @@ export default function ReportPage() {
         </ul>
       </Card>
 
-      <div className="grid overflow-hidden rounded-[16px] border border-line-strong bg-surface sm:grid-cols-2 lg:grid-cols-4">
-        {tiles.map((t, i) => (
-          <div key={t.label} className={`px-5 py-4 ${i > 0 ? "border-t border-line sm:border-t-0 sm:border-l" : ""}`}>
-            <p className="text-[12px] text-muted">{t.label}</p>
-            <p className="mt-1.5 flex items-baseline gap-2">
-              <span className="font-mono text-[28px] leading-none tabular-nums">{pct(t.value)}</span>
-              <Delta value={t.delta} />
-            </p>
-          </div>
-        ))}
-      </div>
+      <Section n={1} title="Where you stand" lead="How often AI names and recommends you, overall and engine by engine.">
+        <div className="grid overflow-hidden rounded-[16px] border border-line-strong bg-surface sm:grid-cols-2 lg:grid-cols-4">
+          {tiles.map((t, i) => (
+            <div key={t.label} className={`px-5 py-4 ${i > 0 ? "border-t border-line sm:border-t-0 sm:border-l" : ""}`}>
+              <p className="text-[12px] text-muted">{t.label}</p>
+              <p className="mt-1.5 flex items-baseline gap-2">
+                <span className="font-mono text-[28px] leading-none tabular-nums">{pct(t.value)}</span>
+                <Delta value={t.delta} />
+              </p>
+            </div>
+          ))}
+        </div>
+        {c.engines.length > 0 && (
+          <Card className="mt-4">
+            <table className="w-full text-[13px]">
+              <thead>
+                <tr className="text-left text-[11px] text-faint">
+                  <th className="px-5 py-2.5 font-medium">Engine</th>
+                  <th className="px-3 py-2.5 text-right font-medium">Answers</th>
+                  <th className="px-3 py-2.5 text-right font-medium">Mentioned</th>
+                  <th className="px-5 py-2.5 text-right font-medium">Recommended</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line border-t border-line">
+                {c.engines.map((e) => (
+                  <tr key={e.key}>
+                    <td className="px-5 py-2.5 font-medium text-ink">{e.name}</td>
+                    <td className="px-3 py-2.5 text-right font-mono tabular-nums text-muted">{e.responses}</td>
+                    <td className="px-3 py-2.5 text-right font-mono tabular-nums">{pct(e.mention_rate)}</td>
+                    <td className="px-5 py-2.5 text-right font-mono tabular-nums">{pct(e.recommendation_rate)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Card>
+        )}
+        {n > 1 ? (
+          <Card title="Mentions by brand" subtitle={`Across ${n} scans`} className="mt-4">
+            <div className="px-4 py-4">
+              <BrandLineChart series={series} dates={c.trend.map((p) => p.date)} metricKey="mention_rate" label="Mentions" />
+            </div>
+          </Card>
+        ) : (
+          <p className="mt-3 text-[12px] text-muted">This is your first scan. Tracking starts with the next one, and later reports show what changed.</p>
+        )}
+      </Section>
 
-      <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-        <Card title="Mentions by brand" subtitle={n > 1 ? `Across ${n} scans` : "Latest scan"} className="flex flex-col">
-          <div className="flex-1 px-4 py-4">
-            <BrandLineChart series={series} dates={c.trend.map((p) => p.date)} metricKey="mention_rate" label="Mentions" />
-          </div>
-        </Card>
-        <Card title="Competitors" subtitle="Ranked by mentions" className="flex flex-col">
-          <ol className="flex flex-1 flex-col divide-y divide-line">
-            {ranked.map((r, i) => (
-              <li key={r.name} className={`flex flex-1 items-center gap-3 px-5 py-2.5 ${r.is_you ? "bg-[#f7f7f6]" : ""}`}>
-                <span className="w-4 font-mono text-[12px] text-faint">{i + 1}</span>
-                <BrandTile name={r.name} color={brandColor(r.name, r.is_you, rivals)} size={22} />
-                <span className="min-w-0 flex-1 truncate text-[13px] font-medium">{r.name}</span>
-                {r.is_you && <span className="rounded-[4px] bg-ink px-1.5 py-px text-[10px] font-medium text-white">You</span>}
-                <span className="font-mono text-[13px] tabular-nums">{pct(r.mention_rate)}</span>
-                {r.average_position != null && <PositionChip value={r.average_position} />}
-              </li>
-            ))}
-          </ol>
-        </Card>
-      </div>
+      <Section n={2} title="Who AI recommends instead" lead="Every tracked brand in the same answers, and who won the questions you did not.">
+        <div className="grid gap-4 lg:grid-cols-[1fr_1.4fr]">
+          <Card title="Brands" subtitle="Ranked by mentions">
+            <ol className="divide-y divide-line">
+              {ranked.map((r, i) => (
+                <li key={r.name} className={`flex items-center gap-3 px-5 py-2.5 ${r.is_you ? "bg-[#f7f7f6]" : ""}`}>
+                  <span className="w-4 font-mono text-[12px] text-faint">{i + 1}</span>
+                  <BrandTile name={r.name} color={brandColor(r.name, r.is_you, rivals)} size={22} />
+                  <span className="min-w-0 flex-1 truncate text-[13px] font-medium">{r.name}</span>
+                  {r.is_you && <span className="rounded-[4px] bg-ink px-1.5 py-px text-[10px] font-medium text-white">You</span>}
+                  <span className="font-mono text-[13px] tabular-nums">{pct(r.mention_rate)}</span>
+                  {r.average_position != null && <PositionChip value={r.average_position} />}
+                </li>
+              ))}
+            </ol>
+          </Card>
+          <Card title="Questions you lost" subtitle={lost.length ? `${lost.length} of ${c.questions?.length ?? 0} questions` : "None in this scan"}>
+            {lost.length ? (
+              <ul className="divide-y divide-line">
+                {lost.slice(0, 8).map((q) => (
+                  <li key={q.text} className="px-5 py-3">
+                    <p className="text-[13px] text-ink">{q.text}</p>
+                    <p className="mt-0.5 text-[12px] text-muted">
+                      {q.status === "mentioned" ? "Mentioned, not recommended" : "Not named"}. AI picked <span className="font-medium text-ink">{q.winners.join(", ")}</span>.
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="px-5 py-4 text-[13px] text-muted">You were recommended wherever a competitor was.</p>
+            )}
+          </Card>
+        </div>
+      </Section>
 
-      {c.top_opportunities.length > 0 && (
-        <Card title="What to do next" subtitle="Highest impact first">
-          <ul className="divide-y divide-line">
-            {c.top_opportunities.map((o) => (
-              <li key={o.title} className="flex items-start gap-3.5 px-5 py-4">
-                <span className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-sunken text-ink-2">
-                  <Target size={18} />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <ImpactPill impact={o.impact} />
-                  </div>
-                  <p className="mt-1 text-[14px] font-medium text-ink">{o.title}</p>
-                  <p className="mt-0.5 text-[13px] text-muted">{o.recommended_action}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </Card>
+      {why.length > 0 && (
+        <Section n={3} title="Why AI skips you" lead="The reason the engine gave on your biggest losses, with the sentence from its answer.">
+          <Card>
+            <ul className="divide-y divide-line">
+              {why.map((w) => (
+                <li key={w.question} className="px-5 py-4">
+                  <p className="text-[14px] font-medium text-ink">{w.question}</p>
+                  <p className="mt-1 text-[13px] text-muted">
+                    {w.engine} recommended <span className="font-medium text-ink">{w.winner}</span> and {w.mentioned ? "only mentioned you" : "did not name you"}.
+                    {w.reason && <> Why: {w.reason.replace(/\.$/, "")}.</>}
+                  </p>
+                  {w.quote && <blockquote className="mt-2 border-l-2 border-mark-strong bg-sunken px-3 py-2 text-[13px] italic text-ink-2">{w.quote}</blockquote>}
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </Section>
       )}
+
+      {gaps.length > 0 && (
+        <Section n={why.length ? 4 : 3} title="Sources AI trusts" lead="Sites AI cited in this scan that never backed an answer naming you. Getting listed on them is one of the strongest fixes.">
+          <Card>
+            <ul className="divide-y divide-line">
+              {gaps.map((s) => (
+                <li key={s.domain} className="flex items-center gap-3 px-5 py-2.5 text-[13px]">
+                  <span className="min-w-0 flex-1 truncate font-medium text-ink">{s.domain}</span>
+                  <span className="text-muted">{s.owner ?? "Independent"}</span>
+                  <span className="w-24 text-right font-mono tabular-nums text-muted">{s.citations} {s.citations === 1 ? "citation" : "citations"}</span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </Section>
+      )}
+
+      <Section n={1 + 2 + (why.length ? 1 : 0) + (gaps.length ? 1 : 0)} title="What to do first" lead="Ranked by expected impact on how often AI recommends you.">
+        {c.top_opportunities.length > 0 ? (
+          <Card>
+            <ul className="divide-y divide-line">
+              {c.top_opportunities.map((o) => (
+                <li key={o.title} className="flex items-start gap-3.5 px-5 py-4">
+                  <span className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-sunken text-ink-2">
+                    <Target size={18} />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <ImpactPill impact={o.impact} />
+                    <p className="mt-1 text-[14px] font-medium text-ink">{o.title}</p>
+                    {o.steps?.length ? (
+                      <ul className="mt-1 list-disc space-y-0.5 pl-4 text-[13px] text-muted">
+                        {o.steps.map((step) => <li key={step}>{step}</li>)}
+                      </ul>
+                    ) : (
+                      <p className="mt-0.5 text-[13px] text-muted">{o.recommended_action}</p>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        ) : (
+          <p className="text-[13px] text-muted">No open gaps were found in this scan.</p>
+        )}
+      </Section>
     </div>
+  );
+}
+
+function Section({ n, title, lead, children }: { n: number; title: string; lead: string; children: React.ReactNode }) {
+  return (
+    <section className="pt-4">
+      <p className="font-mono text-[12px] font-medium text-faint">{String(n).padStart(2, "0")}</p>
+      <h2 className="mt-0.5 font-display text-[19px] font-semibold tracking-[-0.02em] text-ink">{title}</h2>
+      <p className="mb-3 mt-0.5 text-[13px] text-muted">{lead}</p>
+      {children}
+    </section>
   );
 }
