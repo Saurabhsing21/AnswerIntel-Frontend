@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Check, CircleNotch, MagnifyingGlass, Plus, Sparkle } from "@phosphor-icons/react";
+import { ArrowLeft, Check, CircleNotch, Lock, MagnifyingGlass, Plus, Sparkle } from "@phosphor-icons/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useRef, useState } from "react";
 import { BrandTile } from "@/components/app/brand-tile";
@@ -391,7 +391,7 @@ function NewProjectWizard() {
                   Your free scan asks the {active} ticked questions, the ones closest to a purchase. Swap any of them; plans track up to 160.
                 </p>
               )}
-              <PromptGroups prompts={prompts} onToggle={togglePrompt} />
+              <PromptGroups prompts={prompts} onToggle={togglePrompt} full={active >= (billing?.limits.active_prompts ?? Infinity)} />
               <form onSubmit={addPrompt} className="flex gap-2">
                 <input name="text" required minLength={8} className={inputClass} placeholder="Add a question your buyers ask" aria-label="New question" />
                 <button type="submit" className={cx(buttonClass("secondary"), "shrink-0")} aria-label="Add question">
@@ -461,7 +461,8 @@ function StepFoot({ error, children }: { error: string; children: React.ReactNod
   );
 }
 
-function PromptGroups({ prompts, onToggle }: { prompts: Prompt[]; onToggle: (p: Prompt) => void }) {
+/** `full`: the plan's prompt limit is reached, so switched-off prompts show a lock and open the upgrade prompt. */
+function PromptGroups({ prompts, onToggle, full }: { prompts: Prompt[]; onToggle: (p: Prompt) => void; full: boolean }) {
   const groups = new Map<string, Prompt[]>();
   for (const p of prompts) groups.set(p.category, [...(groups.get(p.category) ?? []), p]);
   return (
@@ -475,8 +476,19 @@ function PromptGroups({ prompts, onToggle }: { prompts: Prompt[]; onToggle: (p: 
             {rows.map((p) => (
               <li key={p.id}>
                 <label className="flex cursor-pointer items-center gap-3 px-3.5 py-2.5 transition-colors hover:bg-[#fbfbfa]">
-                  <input type="checkbox" checked={p.is_active} onChange={() => onToggle(p)} className="size-4 shrink-0 accent-mark-strong" />
-                  <span className={cx("min-w-0 flex-1 text-[14px]", p.is_active ? "text-ink" : "text-faint line-through")}>{p.text}</span>
+                  {full && !p.is_active ? (
+                    <button
+                      type="button"
+                      onClick={() => askUpgrade("Your plan's question limit is reached. Paid plans track up to 160 questions.", "active_prompts")}
+                      aria-label="Locked: upgrade to add this question"
+                      className="grid size-4 shrink-0 place-items-center text-muted"
+                    >
+                      <Lock size={14} weight="bold" />
+                    </button>
+                  ) : (
+                    <input type="checkbox" checked={p.is_active} onChange={() => onToggle(p)} className="size-4 shrink-0 accent-mark-strong" />
+                  )}
+                  <span className={cx("min-w-0 flex-1 text-[14px]", p.is_active ? "text-ink" : "text-ink-2")}>{p.text}</span>
                 </label>
               </li>
             ))}
