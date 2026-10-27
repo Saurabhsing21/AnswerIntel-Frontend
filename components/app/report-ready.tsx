@@ -116,9 +116,9 @@ function ReadyBanner({ projectId, first }: { projectId: string; first?: FirstSca
           <Link href={`/projects/${projectId}/reports/${report.id}`} className={buttonClass("primary", "sm")}>
             View full report <ArrowRight size={14} weight="bold" />
           </Link>
-        ) : (
+        ) : data ? (
           <span className="text-[12px] text-muted">Writing your report...</span>
-        )}
+        ) : null}
       />
     );
   }
