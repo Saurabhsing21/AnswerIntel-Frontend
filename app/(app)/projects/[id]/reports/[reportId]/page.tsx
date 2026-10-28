@@ -211,7 +211,7 @@ export default function ReportPage() {
                 </ul>
               ) : null}
               <Link href={`/projects/${id}/opportunities`} className={`${buttonClass("primary", "sm")} mt-4 self-start`}>
-                Open the to-do list
+                Open the action plan
               </Link>
             </>
           ) : (

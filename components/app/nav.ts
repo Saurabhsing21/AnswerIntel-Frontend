@@ -19,7 +19,7 @@ export const NAV = [
   },
   {
     label: "Fix it",
-    items: [{ href: "/opportunities", label: "To-do", icon: ListChecks }],
+    items: [{ href: "/opportunities", label: "Action plan", icon: ListChecks }],
   },
 ] as const;
 

@@ -195,10 +195,10 @@ function OpportunitiesInner() {
 
   return (
     <>
-      <PageHeader title="To-do" description="What to change so AI recommends you, ranked by impact, with the proof once you've done it." />
+      <PageHeader title="Action plan" description="What to change so AI recommends you, ranked by impact, with the proof once you've done it." />
       <div className="mb-4">
         <Segmented
-          label="To-do sections"
+          label="Action plan sections"
           value={tab}
           onChange={(next) => router.replace(`/projects/${id}/opportunities${next === "tracked" ? "?tab=tracked" : ""}`, { scroll: false })}
           options={[
@@ -225,7 +225,7 @@ function OpportunitiesInner() {
 
       <StatStrip
         stats={[
-          { label: "To do", value: todo.length, hint: "open or in progress", icon: <Lightbulb size={18} />, tone: "blue" },
+          { label: "Open", value: todo.length, hint: "open or in progress", icon: <Lightbulb size={18} />, tone: "blue" },
           { label: "High impact", value: todo.filter((o) => o.impact === "high").length, hint: "fix these first", icon: <Flag size={18} />, tone: "red" },
           { label: "In progress", value: all.filter((o) => o.status === "in_progress").length, hint: "you are on it", icon: <Play size={18} />, tone: "amber" },
           { label: "Fixed", value: fixed.length, hint: "gone since the last scan", icon: <CheckCircle size={18} />, tone: "green" },
@@ -251,7 +251,7 @@ function OpportunitiesInner() {
             value={view}
             onChange={setView}
             options={[
-              { key: "todo", label: "To do" },
+              { key: "todo", label: "Open" },
               { key: "completed", label: "Done" },
               { key: "fixed", label: "Fixed", count: fixed.length },
               { key: "dismissed", label: "Dismissed" },
