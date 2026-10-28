@@ -1,14 +1,15 @@
 "use client";
 
-import { CaretLeft, CheckCircle, CircleNotch, EnvelopeSimple, FilePdf, LinkSimple, ShareNetwork, Target } from "@phosphor-icons/react";
+import { CaretLeft, CheckCircle, CircleNotch, EnvelopeSimple, LinkSimple, ShareNetwork, Target } from "@phosphor-icons/react";
 import Link from "next/link";
+import { PdfButton } from "@/components/app/pdf-button";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { BrandLineChart, type BrandSeries } from "@/components/app/charts";
 import { BrandTile } from "@/components/app/brand-tile";
 import { Popover } from "@/components/app/popover";
 import { useToast } from "@/components/app/toast";
-import { Card, Delta, ErrorBanner, ImpactPill, Skeleton } from "@/components/app/ui";
+import { Card, ErrorBanner, ImpactPill, Skeleton } from "@/components/app/ui";
 import { PositionChip } from "@/components/product/delta";
 import { buttonClass } from "@/components/ui/button";
 import { api, ApiError, useApi } from "@/lib/api/client";
@@ -77,12 +78,18 @@ export default function ReportPage() {
   }
 
   const tiles = [
-    { label: "Mentions", value: c.visibility.mention_rate, delta: c.visibility.deltas.mention_rate },
-    { label: "Recommendations", value: c.visibility.recommendation_rate, delta: c.visibility.deltas.recommendation_rate },
-    { label: "Share of voice", value: c.visibility.share_of_voice, delta: c.visibility.deltas.share_of_voice },
-    { label: "Citation rate", value: c.visibility.citation_rate, delta: c.visibility.deltas.citation_rate },
+    { label: "Mentions", value: c.visibility.mention_rate ?? 0, delta: c.visibility.deltas.mention_rate },
+    { label: "Recommendations", value: c.visibility.recommendation_rate ?? 0, delta: c.visibility.deltas.recommendation_rate },
+    { label: "Share of voice", value: c.visibility.share_of_voice ?? 0, delta: c.visibility.deltas.share_of_voice },
+    { label: "Cited", value: c.visibility.citation_rate ?? 0, delta: c.visibility.deltas.citation_rate },
   ];
   const ranked = [...c.competitors].sort((a, b) => b.mention_rate - a.mention_rate);
+  const leader = ranked.find((r) => !r.is_you && r.mention_rate > (c.visibility.mention_rate ?? 0)) ?? null;
+  const meta = c.meta;
+  // Same formula as the PDF: 40% mentions, 40% recommendations, 20% citations.
+  const score = Math.round(100 * (0.4 * (c.visibility.mention_rate ?? 0) + 0.4 * (c.visibility.recommendation_rate ?? 0) + 0.2 * (c.visibility.citation_rate ?? 0)));
+  const findings = c.summary.filter((line) => !line.startsWith("Top opportunity:"));
+  const first = c.top_opportunities[0];
   const lost = (c.questions ?? []).filter((q) => (q.status === "absent" || q.status === "mentioned") && q.winners.length > 0);
   const why = c.why_not_you ?? [];
   const gaps = (c.sources ?? []).filter((s) => !s.with_you && s.owner !== c.brand).slice(0, 8);
@@ -95,9 +102,9 @@ export default function ReportPage() {
         </Link>
         <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="min-w-0">
-            <h1 className="font-display text-[24px] font-semibold tracking-[-0.03em] md:text-[26px]">{REPORT_LABELS[report.type]}</h1>
+            <h1 className="font-display text-[22px] font-semibold tracking-[-0.03em]">{REPORT_LABELS[report.type]}</h1>
             <p className="mt-0.5 text-[13px] text-muted">
-              {c.brand} · {day(report.period_start)} to {day(report.period_end)} · scan #{report.scan_id}
+              {day(report.period_start)} to {day(report.period_end)} · scan #{report.scan_id}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
@@ -134,9 +141,7 @@ export default function ReportPage() {
                 </div>
               )}
             </Popover>
-            <a href={`/api/backend${base}/export?format=pdf`} target="_blank" rel="noreferrer" className={buttonClass("secondary", "sm")}>
-              <FilePdf size={14} /> PDF
-            </a>
+            <PdfButton href={`/api/backend${base}/export?format=pdf`} />
             <button type="button" onClick={email} disabled={busy === "email"} className={buttonClass("primary", "sm")}>
               {busy === "email" ? <CircleNotch size={14} className="animate-spin" /> : <EnvelopeSimple size={14} />} {report.emailed_at ? "Email again" : "Email me"}
             </button>
@@ -144,38 +149,113 @@ export default function ReportPage() {
         </div>
       </div>
 
-      <Card title="Summary" subtitle="The short version">
-        <ul className="divide-y divide-line">
-          {c.summary.map((line) => (
-            <li key={line} className="flex items-start gap-3 px-5 py-3.5 text-[14px] text-ink">
-              <CheckCircle size={18} weight="fill" className="mt-px shrink-0 text-ink" />
-              {line}
-            </li>
-          ))}
-        </ul>
-      </Card>
-
-      <Section n={1} title="Where you stand" lead="How often AI names and recommends you, overall and engine by engine.">
-        <div className="grid overflow-hidden rounded-[16px] border border-line-strong bg-surface sm:grid-cols-2 lg:grid-cols-4">
-          {tiles.map((t, i) => (
-            <div key={t.label} className={`px-5 py-4 ${i > 0 ? "border-t border-line sm:border-t-0 sm:border-l" : ""}`}>
-              <p className="text-[12px] text-muted">{t.label}</p>
-              <p className="mt-1.5 flex items-baseline gap-2">
-                <span className="font-mono text-[28px] leading-none tabular-nums">{pct(t.value)}</span>
-                <Delta value={t.delta} />
+      <section className="relative overflow-hidden rounded-[20px] bg-night px-6 py-6 text-white md:px-8 md:py-7">
+        <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 size-[320px] rounded-full border border-white/10" />
+        <div aria-hidden className="pointer-events-none absolute -right-10 -top-10 size-[190px] rounded-full border border-white/10" />
+        <div className="relative flex flex-col gap-6 md:flex-row md:items-center">
+          <div className="min-w-0 flex-1">
+            <p className="inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.08em] text-white/60">
+              <span className="size-1.5 rounded-full bg-mark" /> AI visibility report
+            </p>
+            <h2 className="mt-2 truncate font-display text-[34px] font-semibold leading-none tracking-[-0.035em] md:text-[42px]">{c.brand}</h2>
+            <p className="mt-3 text-[13px] text-white/60">
+              {[c.category, meta?.engines?.length ? `${meta.engines.length} AI engines` : null, meta?.questions ? `${meta.questions} buyer questions` : null, meta?.answers ? `${meta.answers} answers read` : null].filter(Boolean).join("  ·  ")}
+            </p>
+          </div>
+          <ScoreRing score={score} />
+        </div>
+        <div className="relative mt-6 grid gap-px overflow-hidden rounded-[14px] bg-white/10 sm:grid-cols-2 lg:grid-cols-4">
+          {tiles.map((t) => (
+            <div key={t.label} className="bg-night/80 px-4 py-3.5 backdrop-blur-sm" style={{ backgroundColor: "rgb(255 255 255 / 0.04)" }}>
+              <p className="text-[12px] text-white/60">{t.label}</p>
+              <p className="mt-1 flex items-baseline gap-2">
+                <span className="font-mono text-[26px] font-medium leading-none tabular-nums">{pct(t.value)}</span>
+                {t.delta != null && Math.round(t.delta * 100) !== 0 && (
+                  <span className={`font-mono text-[11px] ${t.delta > 0 ? "text-mark" : "text-[#ff8a8f]"}`}>
+                    {t.delta > 0 ? "+" : ""}{Math.round(t.delta * 100)} pts
+                  </span>
+                )}
               </p>
+              <div className="mt-2.5 h-1 overflow-hidden rounded-full bg-white/10">
+                <div className="h-full rounded-full bg-mark" style={{ width: `${Math.max(t.value > 0 ? 2 : 0, Math.round(t.value * 100))}%` }} />
+              </div>
             </div>
           ))}
         </div>
+      </section>
+
+      <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+        <Card title="Key findings" subtitle="The short version, in sentences you can forward">
+          <ol className="divide-y divide-line">
+            {findings.map((line, i) => (
+              <li key={line} className="flex items-start gap-3 px-5 py-3.5 text-[14px] leading-relaxed text-ink">
+                <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-sunken font-mono text-[11px] font-medium text-ink-2">{i + 1}</span>
+                {line}
+              </li>
+            ))}
+          </ol>
+        </Card>
+        <div className="flex flex-col rounded-[16px] border border-mark-strong/40 bg-mark-soft/70 p-5">
+          <p className="inline-flex items-center gap-1.5 text-[12px] font-medium text-ink-2">
+            <Target size={14} weight="bold" /> Do this first
+          </p>
+          {first ? (
+            <>
+              <p className="mt-2 text-[16px] font-semibold leading-snug tracking-[-0.01em] text-ink">{first.title}</p>
+              <p className="mt-1.5 text-[13px] leading-relaxed text-ink-2">{first.recommended_action}</p>
+              {first.steps?.length ? (
+                <ul className="mt-3 space-y-1.5 text-[13px] text-ink">
+                  {first.steps.slice(0, 3).map((step) => (
+                    <li key={step} className="flex gap-2"><CheckCircle size={15} weight="fill" className="mt-0.5 shrink-0 text-mark-strong" />{step}</li>
+                  ))}
+                </ul>
+              ) : null}
+              <Link href={`/projects/${id}/opportunities`} className={`${buttonClass("primary", "sm")} mt-4 self-start`}>
+                Open the to-do list
+              </Link>
+            </>
+          ) : (
+            <p className="mt-2 text-[14px] text-ink">Nothing urgent. AI recommends you wherever it recommends a competitor.</p>
+          )}
+        </div>
+      </div>
+
+      <Section n={1} title="Where you stand" lead="How often AI names and recommends you, against the brand it names most, and engine by engine.">
+        {leader && (
+          <Card>
+            <div className="flex flex-wrap items-center justify-between gap-2 px-5 pt-4">
+              <p className="text-[14px] font-medium text-ink">You vs {leader.name}</p>
+              <div className="flex items-center gap-3 text-[12px] text-muted">
+                <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full" style={{ background: YOU_COLOR }} />{c.brand}</span>
+                <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full" style={{ background: brandColor(leader.name, false, rivals) }} />{leader.name}</span>
+              </div>
+            </div>
+            <div className="space-y-3.5 px-5 pb-5 pt-4">
+              {([
+                ["Mentions", c.visibility.mention_rate ?? 0, leader.mention_rate],
+                ["Recommendations", c.visibility.recommendation_rate ?? 0, leader.recommendation_rate],
+                ["Share of voice", c.visibility.share_of_voice ?? 0, leader.share_of_voice],
+              ] as const).map(([label, mine, theirs]) => (
+                <div key={label} className="grid grid-cols-[8.5rem_1fr] items-center gap-4 text-[13px]">
+                  <span className="text-ink-2">{label}</span>
+                  <div className="space-y-1">
+                    <Meter value={mine} color={YOU_COLOR} />
+                    <Meter value={theirs} color={brandColor(leader.name, false, rivals)} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
         {c.engines.length > 0 && (
-          <Card className="mt-4">
+          <Card className={leader ? "mt-4" : ""}>
             <table className="w-full text-[13px]">
               <thead>
                 <tr className="text-left text-[11px] text-faint">
                   <th className="px-5 py-2.5 font-medium">Engine</th>
                   <th className="px-3 py-2.5 text-right font-medium">Answers</th>
-                  <th className="px-3 py-2.5 text-right font-medium">Mentioned</th>
-                  <th className="px-5 py-2.5 text-right font-medium">Recommended</th>
+                  <th className="w-[28%] px-3 py-2.5 font-medium">Mentioned</th>
+                  <th className="w-[28%] px-5 py-2.5 font-medium">Recommended</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line border-t border-line">
@@ -183,8 +263,8 @@ export default function ReportPage() {
                   <tr key={e.key}>
                     <td className="px-5 py-2.5 font-medium text-ink">{e.name}</td>
                     <td className="px-3 py-2.5 text-right font-mono tabular-nums text-muted">{e.responses}</td>
-                    <td className="px-3 py-2.5 text-right font-mono tabular-nums">{pct(e.mention_rate)}</td>
-                    <td className="px-5 py-2.5 text-right font-mono tabular-nums">{pct(e.recommendation_rate)}</td>
+                    <td className="px-3 py-2.5"><Meter value={e.mention_rate} color="var(--color-ink)" compact /></td>
+                    <td className="px-5 py-2.5"><Meter value={e.recommendation_rate} color="var(--color-mark-strong)" compact /></td>
                   </tr>
                 ))}
               </tbody>
@@ -300,6 +380,43 @@ export default function ReportPage() {
           <p className="text-[13px] text-muted">No open gaps were found in this scan.</p>
         )}
       </Section>
+    </div>
+  );
+}
+
+function ScoreRing({ score }: { score: number }) {
+  const label = score < 10 ? "Not visible" : score < 30 ? "Emerging" : score < 60 ? "Visible" : "Leading";
+  const r = 46;
+  const length = 2 * Math.PI * r;
+  return (
+    <div className="flex items-center gap-4 md:flex-col md:gap-2">
+      <div className="relative size-[116px] shrink-0">
+        <svg viewBox="0 0 116 116" className="size-full -rotate-90">
+          <circle cx="58" cy="58" r={r} fill="none" stroke="rgb(255 255 255 / 0.12)" strokeWidth="9" />
+          <circle cx="58" cy="58" r={r} fill="none" stroke="var(--color-mark)" strokeWidth="9" strokeLinecap="round" strokeDasharray={`${(Math.min(score, 100) / 100) * length} ${length}`} />
+        </svg>
+        <div className="absolute inset-0 grid place-items-center text-center">
+          <div>
+            <p className="font-mono text-[32px] font-medium leading-none tabular-nums">{score}</p>
+            <p className="mt-1 text-[10px] text-white/50">of 100</p>
+          </div>
+        </div>
+      </div>
+      <div className="md:text-center">
+        <p className="text-[11px] text-white/50">AI visibility score</p>
+        <span className="mt-1 inline-block rounded-full bg-white/10 px-2 py-0.5 text-[11px] font-medium text-mark">{label}</span>
+      </div>
+    </div>
+  );
+}
+
+function Meter({ value, color, compact }: { value: number; color: string; compact?: boolean }) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <div className={`flex-1 overflow-hidden rounded-full bg-sunken ${compact ? "h-1.5" : "h-2"}`}>
+        <div className="h-full rounded-full" style={{ width: `${Math.max(value > 0 ? 2 : 0, Math.round(value * 100))}%`, background: color }} />
+      </div>
+      <span className="w-9 text-right font-mono text-[12px] tabular-nums text-ink">{pct(value)}</span>
     </div>
   );
 }

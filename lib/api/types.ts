@@ -144,6 +144,8 @@ export type ReportSummary = {
   created_at: string;
   emailed_at: string | null;
   shared: boolean;
+  pdf_status: "pending" | "ready" | "failed" | null;
+  headline?: { mention_rate: number; recommendation_rate: number; share_of_voice: number; score: number }; // list only
 };
 
 export type Experiment = {
@@ -259,6 +261,7 @@ export type ReportContent = {
   engines: Dashboard["engines"];
   competitors: Dashboard["competitors"];
   top_opportunities: (Pick<Opportunity, "type" | "title" | "description" | "recommended_action" | "impact"> & { steps?: string[] })[];
+  meta?: { engines?: string[]; questions?: number; answers?: number; scans_in_trend?: number; country?: string };
   trend: Dashboard["trend"];
   summary: string[];
   /** Added later; older reports lack them. */

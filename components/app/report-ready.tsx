@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, ChartLine, EnvelopeSimple, LockSimple, X } from "@phosphor-icons/react";
+import { ArrowRight, ChartLine, EnvelopeSimple, Lightbulb, LockSimple, X } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useProject } from "@/components/app/project-context";
@@ -32,7 +32,34 @@ function wasSeen(reportId: number) {
 }
 
 /** The first scan's answers to "what did you find, why, and what do I do first", shown once on the Overview. */
-export type FirstScan = { found: string; why: string; actions: { id: number; title: string }[] };
+export type FirstScan = {
+  mention: number;
+  recommend: number;
+  answers: number;
+  rank: number;
+  brands: { name: string; mention: number; isYou: boolean; color: string }[]; // most named first
+  why: string;
+  actions: { id: number; title: string; impact: "high" | "medium" | "low" }[];
+};
+
+const pct = (v: number) => `${Math.round(v * 100)}%`;
+const IMPACT = {
+  high: { label: "High impact", className: "bg-up-soft text-up-ink" },
+  medium: { label: "Medium", className: "bg-amber-soft text-amber-ink" },
+  low: { label: "Low", className: "bg-sunken text-muted" },
+};
+
+function Stat({ label, value, tone }: { label: string; value: number; tone: string }) {
+  return (
+    <div className="min-w-0">
+      <p className="text-[12px] text-muted">{label}</p>
+      <p className="mt-0.5 font-mono text-[30px] font-semibold leading-none tracking-[-0.03em] text-ink tabular-nums">{pct(value)}</p>
+      <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-sunken">
+        <div className={`h-full rounded-full ${tone}`} style={{ width: `${Math.max(value > 0 ? 3 : 0, Math.round(value * 100))}%` }} />
+      </div>
+    </div>
+  );
+}
 
 /** Paid plans: "your report is ready" for the latest scan. The free trial: what the report holds, locked.
  * After the first scan both lead with the results in three short answers. */
@@ -44,41 +71,77 @@ export function ReportReady({ projectId, brand, first }: { projectId: string; br
 
 function FirstResults({ projectId, first, action }: { projectId: string; first: FirstScan; action: React.ReactNode }) {
   return (
-    <div className="overflow-hidden rounded-[16px] border border-ink bg-surface">
-      <div className="flex flex-col gap-3 bg-mark-soft/60 px-5 py-4 sm:flex-row sm:items-center">
+    <div className="overflow-hidden rounded-[16px] border border-line-strong bg-surface shadow-[0_1px_2px_rgb(0_0_0/0.04)]">
+      <div className="flex flex-col gap-3 border-b border-line bg-mark-soft/60 px-5 py-4 sm:flex-row sm:items-center">
         <div className="min-w-0 flex-1">
-          <p className="text-[17px] font-semibold tracking-[-0.01em] text-ink">Your results are ready</p>
+          <p className="inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.06em] text-ink-2">
+            <span className="size-1.5 rounded-full bg-mark-strong" /> First scan · {first.answers} AI answers read
+          </p>
+          <p className="mt-1 text-[18px] font-semibold tracking-[-0.015em] text-ink">Your results are ready</p>
           <p className="mt-0.5 text-[13px] text-ink-2">What AI says about you today, why, and the first things to fix.</p>
         </div>
         {action}
       </div>
-      <div className="grid divide-y divide-line border-t border-ink/15 md:grid-cols-3 md:divide-x md:divide-y-0">
-        <div className="px-5 py-4">
-          <p className="text-[12px] font-medium text-muted">What we found</p>
-          <p className="mt-1 text-[14px] text-ink">{first.found}</p>
-        </div>
-        <div className="px-5 py-4">
-          <p className="text-[12px] font-medium text-muted">Why</p>
-          <p className="mt-1 text-[14px] text-ink">{first.why}</p>
-          <Link href={`/projects/${projectId}/prompts`} className="mt-2 inline-flex items-center gap-1 text-[12px] font-medium text-ink-2 hover:text-ink">
+      <div className="grid divide-y divide-line lg:grid-cols-[1fr_1fr_1.25fr] lg:divide-x lg:divide-y-0">
+        <section className="px-5 py-5">
+          <h3 className="text-[12px] font-medium text-muted">What we found</h3>
+          <div className="mt-3 grid grid-cols-2 gap-5">
+            <Stat label="Mentioned" value={first.mention} tone="bg-ink" />
+            <Stat label="Recommended" value={first.recommend} tone="bg-mark-strong" />
+          </div>
+          <div className="mt-5 border-t border-line pt-4">
+            <p className="text-[12px] text-muted">
+              How often AI names each brand · you rank <span className="font-medium text-ink">#{first.rank} of {first.brands.length}</span>
+            </p>
+            <ul className="mt-2.5 space-y-2">
+              {first.brands.slice(0, 4).map((b) => (
+                <li key={b.name} className="grid grid-cols-[minmax(0,6.5rem)_1fr_2.5rem] items-center gap-3 text-[13px]">
+                  <span className={`truncate ${b.isYou ? "font-semibold text-ink" : "text-ink-2"}`}>{b.isYou ? `${b.name} (you)` : b.name}</span>
+                  <span className="h-1.5 overflow-hidden rounded-full bg-sunken">
+                    <span className="block h-full rounded-full" style={{ width: `${Math.max(b.mention > 0 ? 3 : 0, Math.round(b.mention * 100))}%`, background: b.color }} />
+                  </span>
+                  <span className="text-right font-mono text-[12px] text-ink tabular-nums">{pct(b.mention)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+        <section className="px-5 py-5">
+          <h3 className="text-[12px] font-medium text-muted">Why</h3>
+          <div className="mt-3 flex gap-3">
+            <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-[8px] bg-amber-soft text-amber-ink">
+              <Lightbulb size={15} weight="bold" />
+            </span>
+            <p className="text-[14px] leading-relaxed text-ink">{first.why}</p>
+          </div>
+          <Link href={`/projects/${projectId}/prompts`} className="mt-3 ml-10 inline-flex items-center gap-1 text-[12px] font-medium text-ink-2 hover:text-ink">
             Read the answers <ArrowRight size={12} weight="bold" />
           </Link>
-        </div>
-        <div className="px-5 py-4">
-          <p className="text-[12px] font-medium text-muted">What to do first</p>
+        </section>
+        <section className="px-3 py-3 sm:px-5 sm:py-5">
+          <h3 className="px-2 text-[12px] font-medium text-muted sm:px-0">What to do first</h3>
           {first.actions.length ? (
-            <ol className="mt-1 space-y-1 text-[14px] text-ink">
+            <ol className="mt-2 space-y-0.5">
               {first.actions.map((a, i) => (
-                <li key={a.id} className="flex gap-2">
-                  <span className="font-mono text-[12px] leading-[21px] text-faint">{i + 1}</span>
-                  <Link href={`/projects/${projectId}/opportunities`} className="hover:underline">{a.title}</Link>
+                <li key={a.id}>
+                  <Link
+                    href={`/projects/${projectId}/opportunities`}
+                    className="group -mx-2 flex items-start gap-3 rounded-[10px] px-2 py-2 transition-colors hover:bg-sunken"
+                  >
+                    <span className="mt-px grid size-6 shrink-0 place-items-center rounded-full bg-ink font-mono text-[11px] font-medium text-white">{i + 1}</span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[14px] leading-snug text-ink">{a.title}</span>
+                      <span className={`mt-1 inline-block rounded-full px-1.5 py-px text-[10.5px] font-medium ${IMPACT[a.impact].className}`}>{IMPACT[a.impact].label}</span>
+                    </span>
+                    <ArrowRight size={14} className="mt-1 shrink-0 text-faint transition-transform group-hover:translate-x-0.5 group-hover:text-ink" />
+                  </Link>
                 </li>
               ))}
             </ol>
           ) : (
-            <p className="mt-1 text-[14px] text-ink">Nothing urgent. AI recommends you wherever it recommends a competitor.</p>
+            <p className="mt-3 px-2 text-[14px] text-ink sm:px-0">Nothing urgent. AI recommends you wherever it recommends a competitor.</p>
           )}
-        </div>
+        </section>
       </div>
     </div>
   );

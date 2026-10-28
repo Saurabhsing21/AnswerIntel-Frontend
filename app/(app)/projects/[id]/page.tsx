@@ -90,13 +90,18 @@ export default function OverviewPage() {
       : `${brand}'s ${noun} is ${delta === 0 ? "unchanged" : `${delta > 0 ? "up" : "down"} ${Math.abs(Math.round(delta * 1000) / 10)} pts`} since the previous scan`;
 
   const topRival = rows.find((r) => !r.isYou);
+  const byMention = [...data.competitors].sort((a, b) => b.mention_rate - a.mention_rate);
   const firstScan: FirstScan = {
-    found: `AI mentions ${brand} in ${pct(v.mention_rate ?? 0)} of answers to your buyers' questions and recommends it in ${pct(v.recommendation_rate ?? 0)}.`,
+    mention: v.mention_rate ?? 0,
+    recommend: v.recommendation_rate ?? 0,
+    answers: v.total_responses,
+    rank: byMention.findIndex((c) => c.is_you) + 1,
+    brands: byMention.map((c) => ({ name: c.name, mention: c.mention_rate, isYou: c.is_you, color: brandColor(c.name, c.is_you, rivals) })),
     why: data.top_opportunities[0]?.description
       ?? (topRival && topRival.value > you.value
         ? `AI brings up ${topRival.name} more often: ${pct(topRival.value)} of answers against your ${pct(you.value)}.`
         : `You lead every tracked competitor on ${noun}.`),
-    actions: data.top_opportunities.slice(0, 3).map((o) => ({ id: o.id, title: o.title })),
+    actions: data.top_opportunities.slice(0, 3).map((o) => ({ id: o.id, title: o.title, impact: o.impact })),
   };
 
   const footer = [
