@@ -162,6 +162,9 @@ function ReportsInner() {
       ) : (
         <>
           <LatestReport projectId={id} report={reports[0]} previous={reports[1]} onCopy={() => copyLink(reports[0])} />
+          <p className="mt-3 text-[12px] text-muted">
+            Scores are estimates from the answers we read: 40% mentions, 40% recommendations, 20% citations.
+          </p>
           {reports.length > 1 && (
             <Card title="Earlier reports" subtitle="Each one is the snapshot of its own scan" className="mt-4">
               <ul className="divide-y divide-line">
@@ -222,7 +225,7 @@ function LatestReport({ projectId, report, previous, onCopy }: { projectId: stri
             <div className="grid size-[68px] shrink-0 place-items-center rounded-[16px] bg-white/[0.06] text-center">
               <div>
                 <p className="font-mono text-[24px] font-medium leading-none tabular-nums text-mark">{h.score}</p>
-                <p className="mt-1 text-[9px] uppercase tracking-[0.08em] text-white/50">score</p>
+                <p className="mt-1 text-[9px] uppercase tracking-[0.08em] text-white/50">est. score</p>
               </div>
             </div>
           )}

@@ -164,6 +164,9 @@ export default function ReportPage() {
           </div>
           <ScoreRing score={score} />
         </div>
+        <p className="relative mt-4 text-[12px] text-white/50">
+          The score is an estimate from the answers we read: 40% how often you are mentioned, 40% how often you are recommended, 20% how often your site is cited.
+        </p>
         <div className="relative mt-6 grid gap-px overflow-hidden rounded-[14px] bg-white/10 sm:grid-cols-2 lg:grid-cols-4">
           {tiles.map((t) => (
             <div key={t.label} className="bg-night/80 px-4 py-3.5 backdrop-blur-sm" style={{ backgroundColor: "rgb(255 255 255 / 0.04)" }}>
@@ -403,7 +406,7 @@ function ScoreRing({ score }: { score: number }) {
         </div>
       </div>
       <div className="md:text-center">
-        <p className="text-[11px] text-white/50">AI visibility score</p>
+        <p className="text-[11px] text-white/50">AI visibility score (estimate)</p>
         <span className="mt-1 inline-block rounded-full bg-white/10 px-2 py-0.5 text-[11px] font-medium text-mark">{label}</span>
       </div>
     </div>

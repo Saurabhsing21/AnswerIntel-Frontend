@@ -1,9 +1,10 @@
 "use client";
 
-import { CheckCircle, EnvelopeSimple, SignOut, WarningCircle } from "@phosphor-icons/react";
+import { CheckCircle, DownloadSimple, EnvelopeSimple, SignOut, Trash, WarningCircle } from "@phosphor-icons/react";
 import { useState } from "react";
 import { useToast } from "@/components/app/toast";
 import { Card, ErrorBanner, Field, inputClass, PasswordInput, PageHeader, Skeleton } from "@/components/app/ui";
+import { GoogleButton } from "@/components/app/google-button";
 import { buttonClass } from "@/components/ui/button";
 import { api, ApiError, useApi } from "@/lib/api/client";
 import type { Me } from "@/lib/api/types";
@@ -177,6 +178,84 @@ function Sessions() {
   );
 }
 
+function YourData() {
+  const { busy, error, run } = useSubmit();
+  const [confirming, setConfirming] = useState(false);
+  async function download() {
+    const res = await fetch("/api/backend/auth/me/export");
+    if (!res.ok) throw new ApiError(res.status, "EXPORT_FAILED", "We couldn't prepare your export. Please try again.");
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(await res.blob());
+    link.download = /filename="([^"]+)"/.exec(res.headers.get("content-disposition") ?? "")?.[1] ?? "seenlens-export.json";
+    link.click();
+    URL.revokeObjectURL(link.href);
+  }
+  return (
+    <Card title="Your data" subtitle="Take it with you, or leave">
+      <div className="space-y-4 p-5">
+        <p className="text-[13px] text-muted">
+          Download your account, projects, questions, competitors, answers and reports as a JSON file.
+        </p>
+        <button type="button" disabled={busy} className={buttonClass("secondary", "sm")} onClick={() => run(download)}>
+          <DownloadSimple size={14} /> Export my data
+        </button>
+        <div className="space-y-3 border-t border-line pt-4">
+          <p className="text-[13px] text-muted">
+            Deleting your account permanently removes it, and every workspace you are the only owner of, with its projects, answers and reports. Active subscriptions are cancelled. This cannot be undone.
+          </p>
+          {error && <ErrorBanner message={error} />}
+          <button type="button" className={buttonClass("secondary", "sm")} onClick={() => setConfirming(true)}>
+            <Trash size={14} /> Delete account
+          </button>
+        </div>
+      </div>
+      {confirming && <DeleteDialog onClose={() => setConfirming(false)} />}
+    </Card>
+  );
+}
+
+function DeleteDialog({ onClose }: { onClose: () => void }) {
+  const { busy, error, run } = useSubmit();
+  const [password, setPassword] = useState("");
+  function remove(body: { password: string } | { google_credential: string }) {
+    run(async () => {
+      await api("/auth/me", { method: "DELETE", json: body });
+      await api("/api/auth/logout", { method: "POST" }).catch(() => null);
+      window.location.replace("/");
+    });
+  }
+  return (
+    <div role="dialog" aria-modal="true" aria-labelledby="delete-title" className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4">
+      <div className="w-full max-w-md space-y-4 rounded-[16px] bg-surface p-6 shadow-xl">
+        <h2 id="delete-title" className="text-[16px] font-semibold text-ink">Delete your account?</h2>
+        <p className="text-[13px] text-muted">
+          This is permanent. If you are the only owner of a workspace that has other members, hand it over or remove them first.
+        </p>
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            remove({ password });
+          }}
+        >
+          <Field label="Your password">
+            <PasswordInput name="password" required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          </Field>
+          {error && <ErrorBanner message={error} />}
+          <div className="flex gap-2">
+            <button type="submit" disabled={busy || !password} className={buttonClass("primary", "sm")}>Delete my account</button>
+            <button type="button" disabled={busy} className={buttonClass("secondary", "sm")} onClick={onClose}>Cancel</button>
+          </div>
+        </form>
+        <div className="space-y-2 border-t border-line pt-4">
+          <p className="text-[12px] text-muted">Signed up with Google? Confirm by signing in with Google again.</p>
+          <GoogleButton text="continue_with" onCredential={(google_credential) => remove({ google_credential })} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AccountPage() {
   const me = useApi<Me>("/auth/me");
   if (me.error) return <ErrorBanner message={me.error.message} />;
@@ -194,6 +273,7 @@ export default function AccountPage() {
           <div className="min-w-0 space-y-4">
             <Password me={me.data} />
             <Sessions />
+            <YourData />
           </div>
         </div>
       )}
