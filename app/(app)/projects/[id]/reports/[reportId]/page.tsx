@@ -149,42 +149,47 @@ export default function ReportPage() {
         </div>
       </div>
 
-      <section className="relative overflow-hidden rounded-[20px] bg-night px-6 py-6 text-white md:px-8 md:py-7">
-        <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 size-[320px] rounded-full border border-white/10" />
-        <div aria-hidden className="pointer-events-none absolute -right-10 -top-10 size-[190px] rounded-full border border-white/10" />
-        <div className="relative flex flex-col gap-6 md:flex-row md:items-center">
-          <div className="min-w-0 flex-1">
-            <p className="inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.08em] text-white/60">
-              <span className="size-1.5 rounded-full bg-mark" /> AI visibility report
-            </p>
-            <h2 className="mt-2 truncate font-display text-[34px] font-semibold leading-none tracking-[-0.035em] md:text-[42px]">{c.brand}</h2>
-            <p className="mt-3 text-[13px] text-white/60">
-              {[c.category, meta?.engines?.length ? `${meta.engines.length} AI engines` : null, meta?.questions ? `${meta.questions} buyer questions` : null, meta?.answers ? `${meta.answers} answers read` : null].filter(Boolean).join("  ·  ")}
-            </p>
+      <section className="relative overflow-hidden rounded-[20px] border border-line-strong bg-surface">
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-mark-soft/70 to-transparent" />
+        <div className="relative flex flex-col gap-6 px-6 pb-5 pt-6 md:flex-row md:items-center md:px-8 md:pt-7">
+          <div className="flex min-w-0 flex-1 items-center gap-4">
+            <BrandTile name={c.brand} color={YOU_COLOR} size={56} website={c.website} />
+            <div className="min-w-0">
+              <p className="inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.08em] text-ink-2">
+                <span className="size-1.5 rounded-full bg-mark-strong" /> AI visibility report
+              </p>
+              <h2 className="mt-1 truncate font-display text-[30px] font-semibold leading-tight tracking-[-0.03em] text-ink md:text-[36px]">{c.brand}</h2>
+              <p className="mt-1 text-[13px] text-muted">
+                {[c.category, meta?.engines?.length ? `${meta.engines.length} AI engines` : null, meta?.questions ? `${meta.questions} buyer questions` : null, meta?.answers ? `${meta.answers} answers read` : null].filter(Boolean).join("  ·  ")}
+              </p>
+            </div>
           </div>
           <ScoreRing score={score} />
         </div>
-        <p className="relative mt-4 text-[12px] text-white/50">
-          The score is an estimate from the answers we read: 40% how often you are mentioned, 40% how often you are recommended, 20% how often your site is cited.
-        </p>
-        <div className="relative mt-6 grid gap-px overflow-hidden rounded-[14px] bg-white/10 sm:grid-cols-2 lg:grid-cols-4">
-          {tiles.map((t) => (
-            <div key={t.label} className="bg-night/80 px-4 py-3.5 backdrop-blur-sm" style={{ backgroundColor: "rgb(255 255 255 / 0.04)" }}>
-              <p className="text-[12px] text-white/60">{t.label}</p>
-              <p className="mt-1 flex items-baseline gap-2">
-                <span className="font-mono text-[26px] font-medium leading-none tabular-nums">{pct(t.value)}</span>
+        <div className="relative grid gap-px border-t border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+          {tiles.map((t, i) => (
+            <div key={t.label} className="bg-surface px-6 py-4 md:px-8">
+              <p className="flex items-center gap-1.5 text-[12px] text-muted">
+                <span className="size-2 rounded-full" style={{ background: TILE_COLORS[i % TILE_COLORS.length] }} />
+                {t.label}
+              </p>
+              <p className="mt-1.5 flex items-baseline gap-2">
+                <span className="font-mono text-[26px] font-medium leading-none tabular-nums text-ink">{pct(t.value)}</span>
                 {t.delta != null && Math.round(t.delta * 100) !== 0 && (
-                  <span className={`font-mono text-[11px] ${t.delta > 0 ? "text-mark" : "text-[#ff8a8f]"}`}>
+                  <span className={`font-mono text-[11px] ${t.delta > 0 ? "text-up-ink" : "text-down-ink"}`}>
                     {t.delta > 0 ? "+" : ""}{Math.round(t.delta * 100)} pts
                   </span>
                 )}
               </p>
-              <div className="mt-2.5 h-1 overflow-hidden rounded-full bg-white/10">
-                <div className="h-full rounded-full bg-mark" style={{ width: `${Math.max(t.value > 0 ? 2 : 0, Math.round(t.value * 100))}%` }} />
+              <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-sunken">
+                <div className="h-full rounded-full" style={{ width: `${Math.max(t.value > 0 ? 2 : 0, Math.round(t.value * 100))}%`, background: TILE_COLORS[i % TILE_COLORS.length] }} />
               </div>
             </div>
           ))}
         </div>
+        <p className="relative border-t border-line bg-[#fafaf9] px-6 py-2.5 text-[12px] text-muted md:px-8">
+          The score is an estimate from the answers we read: 40% how often you are mentioned, 40% how often you are recommended, 20% how often your site is cited.
+        </p>
       </section>
 
       <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
@@ -387,27 +392,34 @@ export default function ReportPage() {
   );
 }
 
+const TILE_COLORS = ["var(--color-blue)", "var(--color-violet)", "var(--color-amber)", "var(--color-up)"];
+
 function ScoreRing({ score }: { score: number }) {
-  const label = score < 10 ? "Not visible" : score < 30 ? "Emerging" : score < 60 ? "Visible" : "Leading";
+  const tier =
+    score < 10 ? { label: "Not visible", ring: "var(--color-down)", pill: "bg-down-soft text-down-ink" }
+    : score < 30 ? { label: "Emerging", ring: "var(--color-amber)", pill: "bg-amber-soft text-amber-ink" }
+    : score < 60 ? { label: "Visible", ring: "var(--color-blue)", pill: "bg-blue-soft text-blue-ink" }
+    : { label: "Leading", ring: "var(--color-up)", pill: "bg-up-soft text-up-ink" };
   const r = 46;
   const length = 2 * Math.PI * r;
   return (
-    <div className="flex items-center gap-4 md:flex-col md:gap-2">
-      <div className="relative size-[116px] shrink-0">
+    <div className="flex items-center gap-4">
+      <div className="relative size-[104px] shrink-0">
         <svg viewBox="0 0 116 116" className="size-full -rotate-90">
-          <circle cx="58" cy="58" r={r} fill="none" stroke="rgb(255 255 255 / 0.12)" strokeWidth="9" />
-          <circle cx="58" cy="58" r={r} fill="none" stroke="var(--color-mark)" strokeWidth="9" strokeLinecap="round" strokeDasharray={`${(Math.min(score, 100) / 100) * length} ${length}`} />
+          <circle cx="58" cy="58" r={r} fill="none" stroke="var(--color-sunken)" strokeWidth="10" />
+          <circle cx="58" cy="58" r={r} fill="none" stroke={tier.ring} strokeWidth="10" strokeLinecap="round" strokeDasharray={`${(Math.min(score, 100) / 100) * length} ${length}`} />
         </svg>
         <div className="absolute inset-0 grid place-items-center text-center">
           <div>
-            <p className="font-mono text-[32px] font-medium leading-none tabular-nums">{score}</p>
-            <p className="mt-1 text-[10px] text-white/50">of 100</p>
+            <p className="font-mono text-[30px] font-medium leading-none tabular-nums text-ink">{score}</p>
+            <p className="mt-1 text-[10px] text-muted">of 100</p>
           </div>
         </div>
       </div>
-      <div className="md:text-center">
-        <p className="text-[11px] text-white/50">AI visibility score (estimate)</p>
-        <span className="mt-1 inline-block rounded-full bg-white/10 px-2 py-0.5 text-[11px] font-medium text-mark">{label}</span>
+      <div>
+        <p className="text-[12px] text-muted">AI visibility score</p>
+        <p className="text-[11px] text-faint">estimate</p>
+        <span className={`mt-1.5 inline-block rounded-full px-2.5 py-0.5 text-[12px] font-medium ${tier.pill}`}>{tier.label}</span>
       </div>
     </div>
   );
