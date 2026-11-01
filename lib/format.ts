@@ -54,3 +54,6 @@ export const SOURCE_LABELS: Record<string, string> = {
   documentation: "Docs",
   other: "Other",
 };
+
+/** AI answers are markdown; a quoted sentence should read as plain text, without list bullets or ** marks. */
+export const plainQuote = (text: string) => text.replace(/^\s*[-*•]\s+/, "").replace(/\*\*|__|`/g, "").trim();

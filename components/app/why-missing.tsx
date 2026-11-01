@@ -4,6 +4,7 @@ import { ArrowUpRight, Lightbulb } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/app/ui";
 import { useApi } from "@/lib/api/client";
 import type { Diagnosis, DiagnosisCause } from "@/lib/api/types";
+import { plainQuote } from "@/lib/format";
 
 function Evidence({ cause }: { cause: DiagnosisCause }) {
   const ev = cause.evidence;
@@ -25,12 +26,12 @@ function Evidence({ cause }: { cause: DiagnosisCause }) {
       <ul className="mt-2 space-y-1.5">
         {ev.winners.map((w) => (
           <li key={w.name} className="text-[12px] text-ink-2">
-            <span className="font-medium text-ink">{w.name}</span>: {w.quote ? <q className="text-muted">{w.quote}</q> : w.reason}
+            <span className="font-medium text-ink">{w.name}</span>: {w.quote ? <q className="text-muted">{plainQuote(w.quote)}</q> : w.reason}
           </li>
         ))}
       </ul>
     );
-  if (ev.quote) return <q className="mt-2 block text-[12px] text-muted">{ev.quote}</q>;
+  if (ev.quote) return <q className="mt-2 block text-[12px] text-muted">{plainQuote(ev.quote)}</q>;
   const link = ev.url ?? ev.sitemap;
   if (link)
     return (

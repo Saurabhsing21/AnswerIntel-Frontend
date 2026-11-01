@@ -15,7 +15,7 @@ import { buttonClass } from "@/components/ui/button";
 import { api, ApiError, useApi } from "@/lib/api/client";
 import type { Report } from "@/lib/api/types";
 import { brandColor, YOU_COLOR } from "@/lib/brand";
-import { pct, REPORT_LABELS } from "@/lib/format";
+import { pct, plainQuote, REPORT_LABELS } from "@/lib/format";
 
 const day = (d: string) => new Date(`${d}T00:00:00`).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 
@@ -292,7 +292,7 @@ export default function ReportPage() {
               {ranked.map((r, i) => (
                 <li key={r.name} className={`flex items-center gap-3 px-5 py-2.5 ${r.is_you ? "bg-[#f7f7f6]" : ""}`}>
                   <span className="w-4 font-mono text-[12px] text-faint">{i + 1}</span>
-                  <BrandTile name={r.name} color={brandColor(r.name, r.is_you, rivals)} size={22} />
+                  <BrandTile name={r.name} color={brandColor(r.name, r.is_you, rivals)} size={22} website={r.website ?? (r.is_you ? c.website : null)} />
                   <span className="min-w-0 flex-1 truncate text-[13px] font-medium">{r.name}</span>
                   {r.is_you && <span className="rounded-[4px] bg-ink px-1.5 py-px text-[10px] font-medium text-white">You</span>}
                   <span className="font-mono text-[13px] tabular-nums">{pct(r.mention_rate)}</span>
@@ -331,7 +331,7 @@ export default function ReportPage() {
                     {w.engine} recommended <span className="font-medium text-ink">{w.winner}</span> and {w.mentioned ? "only mentioned you" : "did not name you"}.
                     {w.reason && <> Why: {w.reason.replace(/\.$/, "")}.</>}
                   </p>
-                  {w.quote && <blockquote className="mt-2 border-l-2 border-mark-strong bg-sunken px-3 py-2 text-[13px] italic text-ink-2">{w.quote}</blockquote>}
+                  {w.quote && <blockquote className="mt-2 border-l-2 border-mark-strong bg-sunken px-3 py-2 text-[13px] italic text-ink-2">{plainQuote(w.quote)}</blockquote>}
                 </li>
               ))}
             </ul>

@@ -13,7 +13,7 @@ import { buttonClass } from "@/components/ui/button";
 import { api, ApiError, useApi } from "@/lib/api/client";
 import type { LostQuestion, Opportunity, OpportunityList, PlanStatus } from "@/lib/api/types";
 import { cx } from "@/lib/cx";
-import { pct } from "@/lib/format";
+import { pct, plainQuote } from "@/lib/format";
 
 type Status = Opportunity["status"];
 type Area = NonNullable<Opportunity["area"]>;
@@ -151,7 +151,7 @@ function QuestionRow({ q }: { q: LostQuestion }) {
               {w.quote && (
                 <p className="mt-0.5 flex items-start gap-1 italic text-muted">
                   <Quotes size={11} weight="fill" className="mt-0.5 shrink-0 text-faint" />
-                  {w.quote}
+                  {plainQuote(w.quote)}
                 </p>
               )}
             </li>
