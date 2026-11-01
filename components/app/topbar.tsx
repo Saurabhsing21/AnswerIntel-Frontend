@@ -152,14 +152,6 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
         )}
 
         <div className="ml-auto flex shrink-0 items-center gap-2">
-          {latestScan?.simulated && (
-            <span
-              title="No AI provider key is configured, so answers are generated locally."
-              className="hidden rounded-[6px] border border-dashed border-line-strong px-2 py-1 text-[12px] text-muted lg:inline"
-            >
-              Sample data
-            </span>
-          )}
           {projectId ? (
             <>
               <ExportMenu />

@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarCheck, CircleNotch, Database, FloppyDisk, Trash, Warning } from "@phosphor-icons/react";
+import { CalendarCheck, CircleNotch, FloppyDisk, Trash, Warning } from "@phosphor-icons/react";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useProject } from "@/components/app/project-context";
@@ -222,20 +222,11 @@ function EnginesCard({ project, onSaved }: { project: Project; onSaved: () => vo
 
 export default function SettingsPage() {
   const { id } = useParams<{ id: string }>();
-  const { project, schedule, latestScan, reloadSchedule, reloadProjects } = useProject();
+  const { project, schedule, reloadSchedule, reloadProjects } = useProject();
 
   return (
     <>
       <PageHeader title="Settings" description="Your brand details, the AI engines we ask, and when we scan." />
-      {latestScan?.simulated && (
-        <p className="mb-4 flex items-start gap-2.5 rounded-[12px] border border-line-strong bg-surface px-4 py-3 text-[13px] text-muted">
-          <Database size={16} className="mt-px shrink-0 text-ink-2" />
-          <span>
-            <span className="font-medium text-ink">Sample data.</span> Answers are generated locally so you can explore the product. To ask the real engines,
-            set <code className="rounded bg-sunken px-1 font-mono text-[12px]">OPENROUTER_API_KEY</code> on the API server and run a new scan.
-          </span>
-        </p>
-      )}
       <div className="space-y-4">
         <div className="grid gap-4 lg:grid-cols-[1.25fr_1fr]">
           {project ? <DetailsCard key={project.id + project.brand_name} project={project} onSaved={reloadProjects} /> : <Skeleton className="h-[420px]" />}

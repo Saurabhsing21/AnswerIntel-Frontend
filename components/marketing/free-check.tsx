@@ -41,7 +41,6 @@ const EXAMPLE: FreeCheck = {
     ],
     summary: { answers: 4, mentioned: 3, recommended: 2, engines: ["ChatGPT", "Perplexity"] },
     top_sources: [],
-    simulated: false,
   },
 };
 
@@ -278,11 +277,6 @@ function ResultView({ check, onReset }: { check: FreeCheck; onReset: () => void 
           <ArrowClockwise size={14} /> Check another brand
         </button>
       </div>
-      {r.simulated && (
-        <p className="rounded-[12px] border border-dashed border-line-strong px-4 py-2.5 text-[13px] text-muted">
-          Sample answers: this server has no AI key, so the engines were simulated.
-        </p>
-      )}
 
       <div className="grid items-start gap-4 lg:grid-cols-[1fr_1.35fr]">
         <motion.div {...enter(0)} className="space-y-4 lg:sticky lg:top-24">

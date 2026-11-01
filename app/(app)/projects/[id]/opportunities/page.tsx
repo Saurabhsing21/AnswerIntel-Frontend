@@ -136,13 +136,13 @@ function OpportunitiesInner() {
   const [view, setView] = useState<"todo" | "completed" | "dismissed" | "fixed">("todo");
   const [area, setArea] = useState<"all" | Area>("all");
 
-  const [draft, setDraft] = useState<{ id: number; markdown: string; generated: boolean } | null>(null);
+  const [draft, setDraft] = useState<{ id: number; markdown: string } | null>(null);
   const [drafting, setDrafting] = useState<number | null>(null);
 
   async function makeDraft(o: Opportunity) {
     setDrafting(o.id);
     try {
-      const result = await api<{ markdown: string; generated: boolean }>(`/projects/${id}/opportunities/${o.id}/draft`, { method: "POST" });
+      const result = await api<{ markdown: string }>(`/projects/${id}/opportunities/${o.id}/draft`, { method: "POST" });
       setDraft({ id: o.id, ...result });
     } catch (e) {
       if (!(e as ApiError).limit) toast.push((e as ApiError).message, "error");
@@ -394,7 +394,7 @@ function OpportunitiesInner() {
                     {draft?.id === o.id && (
                       <div className="mt-4 overflow-hidden rounded-[12px] border border-line-strong">
                         <div className="flex items-center gap-2 border-b border-line bg-[#fafaf9] px-3.5 py-2 text-[12px] text-muted">
-                          {draft.generated ? "First draft, written by AI. Fill in the [placeholders] and edit before publishing." : "Outline to fill in (connect an AI key for full drafts)."}
+                          First draft, written by AI. Fill in the [placeholders] and edit before publishing.
                           <button
                             type="button"
                             onClick={() => navigator.clipboard.writeText(draft.markdown).then(() => toast.push("Draft copied.", "success"))}

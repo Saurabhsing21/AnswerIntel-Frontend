@@ -82,7 +82,6 @@ export type Scan = {
   /** "retest" = only one opportunity's prompts, to check a fix. */
   kind?: "full" | "retest";
   provider: string | null;
-  simulated: boolean;
   total_runs: number;
   completed_runs: number;
   failed_runs: number;
@@ -283,7 +282,6 @@ export type FreeCheck = {
     summary: { answers: number; mentioned: number; recommended: number; engines: string[] };
     top_sources: { domain: string; count: number }[];
     why?: { code: string; title: string; detail: string; action: string }[];
-    simulated: boolean;
   } | null;
 };
 

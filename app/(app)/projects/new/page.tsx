@@ -71,7 +71,6 @@ function NewProjectWizard() {
   const [showDescription, setShowDescription] = useState(false);
   const [project, setProject] = useState<Project | null>(null);
   const [suggestions, setSuggestions] = useState<Suggestion[] | null>(null);
-  const [sample, setSample] = useState(false);
   const [picked, setPicked] = useState<Suggestion[]>([]);
   const [engines, setEngines] = useState<string[] | null>(null);
   const [prompts, setPrompts] = useState<Prompt[]>([]);
@@ -122,13 +121,15 @@ function NewProjectWizard() {
     e.preventDefault();
     setStep(1);
     setSuggestions(null);
-    api<{ suggestions: Suggestion[]; sample: boolean }>("/onboarding/competitors", { method: "POST", json: brandBody() })
+    api<{ suggestions: Suggestion[] }>("/onboarding/competitors", { method: "POST", json: brandBody() })
       .then((r) => {
         setSuggestions(r.suggestions);
-        setSample(r.sample);
         setPicked(r.suggestions.slice(0, 3));
       })
-      .catch(() => setSuggestions([]));
+      .catch((e) => {
+        setError((e as ApiError).message);
+        setSuggestions([]);
+      });
   }
 
   function toggle(s: Suggestion) {
@@ -290,7 +291,6 @@ function NewProjectWizard() {
           <>
             <StepHead step={1} title="Your competitors" body={`The brands buyers compare with ${draft.brand.trim()}. We picked the closest three; change them or skip.`} optional />
             <div className="space-y-3 px-7 pb-7">
-              {sample && <p className="rounded-[10px] bg-amber-soft px-3 py-2 text-[12px] text-amber-ink">Sample names for now. Real suggestions appear once an AI key is connected.</p>}
               {suggestions === null ? (
                 <div className="space-y-2" role="status">
                   <p className="flex items-center gap-2 text-[13px] text-muted">

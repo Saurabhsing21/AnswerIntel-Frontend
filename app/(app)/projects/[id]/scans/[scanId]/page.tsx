@@ -40,7 +40,6 @@ export default function ScanDetailPage() {
         <h1 className="mt-2 font-display text-[24px] font-semibold tracking-[-0.03em] md:text-[26px]">Scan #{data.scan.id}</h1>
         <p className="mt-0.5 text-[13px] text-muted">
           {new Date(data.scan.started_at ?? data.scan.created_at).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })} · {data.scan.completed_runs}/{data.scan.total_runs} answers
-          {data.scan.simulated ? " · sample data" : ""}
         </p>
       </div>
 

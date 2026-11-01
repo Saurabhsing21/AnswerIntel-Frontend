@@ -121,7 +121,6 @@ export default function ScansPage() {
                         <span className="block text-[13px] font-medium text-ink">Scan #{scan.id}</span>
                         <span className="block text-[11px] text-muted">
                           {s.label}
-                          {scan.simulated ? " · sample data" : ""}
                         </span>
                       </span>
                     </span>

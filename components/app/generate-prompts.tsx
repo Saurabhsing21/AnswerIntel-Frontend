@@ -20,7 +20,6 @@ export function GeneratePrompts({ projectId, open, onClose, onAdded }: { project
   const [count, setCount] = useState(10);
   const [suggestions, setSuggestions] = useState<Suggestion[] | null>(null);
   const [kept, setKept] = useState<Set<number>>(new Set());
-  const [sample, setSample] = useState(false);
   const [busy, setBusy] = useState<"" | "writing" | "adding">("");
   const [error, setError] = useState("");
 
@@ -38,10 +37,9 @@ export function GeneratePrompts({ projectId, open, onClose, onAdded }: { project
     setBusy("writing");
     setError("");
     try {
-      const r = await api<{ prompts: Suggestion[]; sample: boolean }>(`/projects/${projectId}/prompts/suggest`, { method: "POST", json: { instructions, count } });
+      const r = await api<{ prompts: Suggestion[] }>(`/projects/${projectId}/prompts/suggest`, { method: "POST", json: { instructions, count } });
       setSuggestions(r.prompts);
       setKept(new Set(r.prompts.map((_, i) => i)));
-      setSample(r.sample);
     } catch (err) {
       setError((err as ApiError).message);
     } finally {
@@ -149,7 +147,6 @@ export function GeneratePrompts({ projectId, open, onClose, onAdded }: { project
               <p className="text-[13px] text-muted">
                 For <span className="font-medium text-ink">&ldquo;{instructions}&rdquo;</span>. Untick any you don&apos;t want.
               </p>
-              {sample && <p className="rounded-[10px] bg-amber-soft px-3 py-2 text-[12px] text-amber-ink">Simple stand-ins for now. Real AI-written prompts appear once an AI key is connected.</p>}
               {suggestions.length === 0 ? (
                 <p className="rounded-[12px] border border-dashed border-line-strong px-4 py-6 text-center text-[13px] text-muted">
                   Everything we came up with is already in your list. Try different instructions.
