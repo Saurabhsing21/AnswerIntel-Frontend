@@ -2,13 +2,13 @@
 
 import { ArrowLeft, Check, CircleNotch, Lock, MagnifyingGlass, Plus, Sparkle } from "@phosphor-icons/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { BrandTile } from "@/components/app/brand-tile";
 import { AnswerEstimate, EnginePicker, useEngines } from "@/components/app/engine-picker";
 import { askUpgrade } from "@/components/app/pro-lock";
 import { useProject } from "@/components/app/project-context";
 import { PoolFullNotice } from "@/components/app/pool-full";
-import { ErrorBanner, Field, inputClass } from "@/components/app/ui";
+import { ErrorBanner, inputClass } from "@/components/app/ui";
 import { ButtonArrow, buttonClass } from "@/components/ui/button";
 import { api, ApiError, type PoolDetails } from "@/lib/api/client";
 import type { Competitor, Project, Prompt } from "@/lib/api/types";
@@ -42,6 +42,53 @@ const brandFromSite = (url: string) => {
   return name ? name[0].toUpperCase() + name.slice(1) : "";
 };
 
+/** Looks like a real address (has a dot and a letters-only ending), so we do not look up "hal" or "halden.c". */
+const looksLikeUrl = (value: string) => /^(https?:\/\/)?[^\s/.]+(\.[^\s/.]+)*\.[a-z]{2,}([/?#]\S*)?$/i.test(value.trim());
+
+// Three soft tones from the palette, rotated across the category pills.
+const CHIP_TONES = [
+  "bg-blue-soft text-blue-ink",
+  "bg-violet-soft text-violet-ink",
+  "bg-amber-soft text-amber-ink",
+];
+
+const primaryInput =
+  "h-11 w-full rounded-[10px] border border-line-strong bg-surface px-3.5 text-[15px] font-medium text-ink outline-none transition-colors placeholder:font-normal placeholder:text-faint focus:border-ink";
+
+function FromSite() {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-mark-soft px-1.5 py-px text-[10.5px] font-medium text-ink-2">
+      <Sparkle size={9} weight="fill" className="text-mark-strong" /> From your website
+    </span>
+  );
+}
+
+/** A labelled field with room beside the label for a badge or status, and quiet helper text. */
+function FieldRow({ label, aside, hint, children }: { label: string; aside?: React.ReactNode; hint?: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="mb-1.5 flex min-h-5 items-center gap-2 text-[13px] font-medium text-ink">
+        {label}
+        {aside}
+      </span>
+      {children}
+      {hint && <span className="mt-1 block text-[12px] text-faint">{hint}</span>}
+    </label>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="space-y-3.5">
+      <h2 className="flex items-center gap-3 text-[11px] font-semibold tracking-[0.08em] text-muted uppercase">
+        {title}
+        <span className="h-px flex-1 bg-line" />
+      </h2>
+      <div className="grid gap-4 sm:grid-cols-2">{children}</div>
+    </section>
+  );
+}
+
 export default function NewProjectPage() {
   // useSearchParams needs a Suspense boundary in the App Router.
   return (
@@ -65,11 +112,15 @@ function NewProjectWizard() {
     country: marketName(params.get("country")),
     description: "",
   }));
-  const [brandTouched, setBrandTouched] = useState(Boolean(params.get("brand")));
-  const [siteChecked, setSiteChecked] = useState("");
+  // "Touched": the person typed in the field themselves, so a website lookup must not overwrite it.
+  const brandTouched = useRef(Boolean(params.get("brand")));
+  const descriptionTouched = useRef(false);
+  const [fromSite, setFromSite] = useState({ brand: false, description: false });
+  const [reading, setReading] = useState(false);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [categoryIdeas, setCategoryIdeas] = useState<string[]>([]);
+  const lookup = useRef({ id: 0, url: "", controller: null as AbortController | null });
   const savedCompetitors = useRef(new Set<string>());
-  const [showDescription, setShowDescription] = useState(false);
   const [project, setProject] = useState<Project | null>(null);
   const [suggestions, setSuggestions] = useState<Suggestion[] | null>(null);
   const [picked, setPicked] = useState<Suggestion[]>([]);
@@ -110,17 +161,61 @@ function NewProjectWizard() {
     description: draft.description.trim() || null,
   });
 
-  /** What the website says about itself: fills the brand name and description, and suggests categories. */
-  async function lookUpSite() {
-    const url = draft.website.trim();
-    if (!url.includes(".") || url === siteChecked) return;
-    setSiteChecked(url);
-    const info = await api<{ name: string | null; description: string | null; categories: string[] }>(`/onboarding/site?url=${encodeURIComponent(url)}`).catch(() => null);
+  /** What the website says about itself. The name and description come back fast and are shown at once; the
+   * AI-written category ideas follow in a second call. A newer lookup cancels an older one. */
+  const lookUpSite = useCallback(async (raw: string) => {
+    const url = raw.trim();
+    const state = lookup.current;
+    if (!looksLikeUrl(url) || url === state.url) return;
+    state.controller?.abort();
+    const controller = new AbortController();
+    const id = ++state.id;
+    state.url = url;
+    state.controller = controller;
+    const current = () => id === lookup.current.id;
+    setReading(true);
+    const info = await api<{ name: string | null; description: string | null }>(`/onboarding/site?url=${encodeURIComponent(url)}&categories=false`, { signal: controller.signal }).catch(() => null);
+    if (!current()) return;
+    setReading(false);
     if (!info) return;
-    setDraft((d) => ({ ...d, brand: brandTouched || !info.name ? d.brand : info.name, description: d.description || info.description || "" }));
-    if (info.description) setShowDescription(true);
-    setCategoryIdeas(info.categories);
+    const takeBrand = !brandTouched.current && Boolean(info.name);
+    const takeDescription = !descriptionTouched.current && Boolean(info.description);
+    setDraft((d) => ({ ...d, brand: takeBrand ? info.name! : d.brand, description: takeDescription ? info.description! : d.description }));
+    if (takeBrand) setFromSite((f) => ({ ...f, brand: true }));
+    if (takeDescription) setFromSite((f) => ({ ...f, description: true }));
+    if (!info.name && !info.description) return;
+    setCategoriesLoading(true);
+    const found = await api<{ categories: string[] }>("/onboarding/categories", { method: "POST", json: { name: info.name, description: info.description }, signal: controller.signal }).catch(() => null);
+    if (!current()) return;
+    setCategoriesLoading(false);
+    setCategoryIdeas(found?.categories ?? []);
+  }, []);
+
+  /** The website changed: drop everything learned from the old one and stop its requests. */
+  function changeWebsite(value: string) {
+    const state = lookup.current;
+    state.controller?.abort();
+    state.id++;
+    state.url = "";
+    setReading(false);
+    setCategoriesLoading(false);
+    setCategoryIdeas([]);
+    setDraft((d) => ({
+      ...d,
+      website: value,
+      brand: brandTouched.current ? d.brand : brandFromSite(value),
+      description: fromSite.description && !descriptionTouched.current ? "" : d.description,
+    }));
+    setFromSite((f) => ({ brand: false, description: f.description && descriptionTouched.current }));
   }
+
+  // Look the site up shortly after they stop typing; leaving the field does it straight away.
+  useEffect(() => {
+    if (step !== 0 || !looksLikeUrl(draft.website)) return;
+    const timer = setTimeout(() => void lookUpSite(draft.website), 600);
+    return () => clearTimeout(timer);
+  }, [draft.website, step, lookUpSite]);
+  useEffect(() => () => lookup.current.controller?.abort(), []);
 
   /** Step 1 -> 2. Nothing is created yet: leaving setup half-way leaves no half-built project behind. */
   function findCompetitors(e: React.FormEvent) {
@@ -222,68 +317,108 @@ function NewProjectWizard() {
         {step === 0 && (
           <form onSubmit={findCompetitors}>
             <StepHead step={0} title="Let's start with your brand" body="Your website is enough to begin. We'll write the questions your buyers ask AI, in your market." />
-            <div className="grid gap-4 px-7 pb-7 sm:grid-cols-2">
-              <Field label="Website">
-                <input
-                  required
-                  autoFocus
-                  inputMode="url"
-                  value={draft.website}
-                  onChange={(e) => setDraft({ ...draft, website: e.target.value, brand: brandTouched ? draft.brand : brandFromSite(e.target.value) })}
-                  onBlur={lookUpSite}
-                  className={inputClass}
-                  placeholder="halden.co"
-                />
-              </Field>
-              <Field label="Brand name">
-                <input
-                  required
-                  value={draft.brand}
-                  onChange={(e) => {
-                    setBrandTouched(true);
-                    setDraft({ ...draft, brand: e.target.value });
-                  }}
-                  className={inputClass}
-                  placeholder="Halden"
-                />
-              </Field>
-              <Field label="What you sell" hint="In the words a buyer would search.">
-                <input required value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })} className={inputClass} placeholder="CRM software for startups" />
-              </Field>
-              {categoryIdeas.length > 0 && (
-                <div className="-mt-2 flex flex-wrap items-center gap-1.5 sm:col-span-2">
-                  <span className="text-[12px] text-muted">From your website:</span>
-                  {categoryIdeas.map((c) => (
-                    <button key={c} type="button" onClick={() => setDraft({ ...draft, category: c })}
-                      className={cx("rounded-full border px-2.5 py-0.5 text-[12px] transition-colors", draft.category === c ? "border-ink bg-mark-soft/60 text-ink" : "border-line text-ink-2 hover:border-line-strong")}>
-                      {c}
-                    </button>
-                  ))}
+            <div className="space-y-7 px-7 pb-7">
+              <Section title="Your website">
+                <FieldRow
+                  label="Website"
+                  aside={
+                    reading && (
+                      <span role="status" className="inline-flex items-center gap-1 text-[12px] font-normal text-muted">
+                        <CircleNotch size={11} className="animate-spin" /> Reading your website...
+                      </span>
+                    )
+                  }
+                >
+                  <input
+                    required
+                    autoFocus
+                    inputMode="url"
+                    value={draft.website}
+                    onChange={(e) => changeWebsite(e.target.value)}
+                    onBlur={() => void lookUpSite(draft.website)}
+                    className={primaryInput}
+                    placeholder="halden.co"
+                  />
+                </FieldRow>
+                <FieldRow label="Brand name" aside={fromSite.brand && <FromSite />}>
+                  <input
+                    required
+                    value={draft.brand}
+                    onChange={(e) => {
+                      brandTouched.current = e.target.value.trim() !== "";
+                      setFromSite((f) => ({ ...f, brand: false }));
+                      setDraft({ ...draft, brand: e.target.value });
+                    }}
+                    className={primaryInput}
+                    placeholder="Halden"
+                  />
+                </FieldRow>
+              </Section>
+
+              <Section title="How buyers find you">
+                <div className="sm:col-span-2">
+                  <FieldRow label="What you sell" hint="In the words a buyer would search.">
+                    <input required value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })} className={primaryInput} placeholder="CRM software for startups" />
+                  </FieldRow>
                 </div>
-              )}
-              <Field label="Market" hint="AI answers differ by country.">
-                <select value={draft.country} onChange={(e) => setDraft({ ...draft, country: e.target.value })} className={inputClass}>
-                  {MARKETS.map((m) => <option key={m}>{m}</option>)}
-                </select>
-              </Field>
-              <div className="sm:col-span-2">
-                {showDescription ? (
-                  <Field label="Who it's for, and what makes you different" hint="Optional. It makes the questions sharper.">
+                {(categoriesLoading || categoryIdeas.length > 0) && (
+                  <div className="-mt-1 sm:col-span-2" aria-busy={categoriesLoading}>
+                    {categoriesLoading ? (
+                      <p role="status" className="flex items-center gap-2 text-[12px] text-muted">
+                        <CircleNotch size={12} className="animate-spin" /> Finding categories...
+                        <span className="h-6 w-28 animate-pulse rounded-full bg-sunken" />
+                        <span className="hidden h-6 w-36 animate-pulse rounded-full bg-sunken sm:block" />
+                      </p>
+                    ) : (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <FromSite />
+                        {categoryIdeas.map((c, i) => {
+                          const on = draft.category.trim() === c;
+                          return (
+                            <button
+                              key={c}
+                              type="button"
+                              aria-pressed={on}
+                              onClick={() => setDraft({ ...draft, category: c })}
+                              className={cx(
+                                "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[13px] font-medium transition-[box-shadow,border-color,transform] duration-150 active:scale-[0.98]",
+                                CHIP_TONES[i % CHIP_TONES.length],
+                                on ? "border-ink shadow-[0_0_0_2px_var(--color-mark)]" : "border-transparent hover:border-current/30",
+                              )}
+                            >
+                              {on ? <Check size={12} weight="bold" /> : <Sparkle size={12} weight="fill" />}
+                              {c}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+                <FieldRow label="Market" hint="AI answers differ by country.">
+                  <select value={draft.country} onChange={(e) => setDraft({ ...draft, country: e.target.value })} className={inputClass}>
+                    {MARKETS.map((m) => <option key={m}>{m}</option>)}
+                  </select>
+                </FieldRow>
+              </Section>
+
+              <Section title="What makes you different">
+                <div className="sm:col-span-2">
+                  <FieldRow label="Who it's for, and what makes you different" aside={fromSite.description ? <FromSite /> : <span className="text-[12px] font-normal text-faint">Optional</span>} hint="It makes the questions sharper.">
                     <textarea
                       rows={3}
-                      autoFocus
                       value={draft.description}
-                      onChange={(e) => setDraft({ ...draft, description: e.target.value })}
+                      onChange={(e) => {
+                        descriptionTouched.current = e.target.value.trim() !== "";
+                        setFromSite((f) => ({ ...f, description: false }));
+                        setDraft({ ...draft, description: e.target.value });
+                      }}
                       className={cx(inputClass, "h-auto py-2.5")}
                       placeholder="A CRM founders set up in 10 minutes, with no sales team needed."
                     />
-                  </Field>
-                ) : (
-                  <button type="button" onClick={() => setShowDescription(true)} className="inline-flex items-center gap-1.5 text-[13px] font-medium text-ink-2 hover:text-ink">
-                    <Plus size={13} weight="bold" /> Add a short description <span className="font-normal text-faint">(optional)</span>
-                  </button>
-                )}
-              </div>
+                  </FieldRow>
+                </div>
+              </Section>
             </div>
             <StepFoot error={error}>
               <button type="submit" disabled={!!busy} className={cx(buttonClass("primary"), "ml-auto")}>
