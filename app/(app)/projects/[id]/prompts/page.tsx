@@ -8,13 +8,14 @@ import Link from "next/link";
 import { GeneratePrompts } from "@/components/app/generate-prompts";
 import { askUpgrade, ProBadge, usePro } from "@/components/app/pro-lock";
 import { WhyMissing } from "@/components/app/why-missing";
+import { PoolFullNotice } from "@/components/app/pool-full";
 import { useProject } from "@/components/app/project-context";
 import { useLatestResults } from "@/components/app/latest-results";
 import { ResponseDrawer } from "@/components/app/response-drawer";
 import { useToast } from "@/components/app/toast";
 import { Card, EmptyState, ErrorBanner, PageHeader, Segmented, Skeleton, StatStrip, VerdictPill, inputClass } from "@/components/app/ui";
 import { buttonClass } from "@/components/ui/button";
-import { api, ApiError, useApi } from "@/lib/api/client";
+import { api, ApiError, useApi, type PoolDetails } from "@/lib/api/client";
 import type { Engine, EngineResult, Opportunity, Prompt } from "@/lib/api/types";
 import { CATEGORY_LABELS } from "@/lib/format";
 import { cx } from "@/lib/cx";
@@ -90,6 +91,7 @@ export default function PromptsPage() {
   const [response, setResponse] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [full, setFull] = useState<{ pool: PoolDetails; message: string } | null>(null);
 
   const byPrompt = useMemo(() => new Map((results?.prompts ?? []).map((r) => [r.prompt_id, r])), [results]);
   // Most commercially important questions first (scored when prompts are generated); unscored keep their order.
@@ -101,10 +103,13 @@ export default function PromptsPage() {
   async function act<T>(fn: () => Promise<T>) {
     setBusy(true);
     setError("");
+    setFull(null);
     try {
       return await fn();
     } catch (e) {
-      setError((e as ApiError).message);
+      const err = e as ApiError;
+      if (err.details) setFull({ pool: err.details, message: err.message });
+      else setError(err.message);
     } finally {
       setBusy(false);
     }
@@ -135,8 +140,9 @@ export default function PromptsPage() {
       form.reset();
     }
   }
-  function added(created: Prompt[], inactive: number) {
+  function added(created: Prompt[], inactive: number, pool: (PoolDetails & { message: string }) | null) {
     setPrompts((all) => [...(all ?? []), ...created]);
+    setFull(pool && { pool, message: pool.message });
     const off = inactive ? ` ${inactive} switched off: your plan's question limit is full.` : "";
     toast.push(`${created.length} question${created.length === 1 ? "" : "s"} added.${off}`, "success");
   }
@@ -166,6 +172,7 @@ export default function PromptsPage() {
           { label: "Never mention you", value: scanned.filter((p) => p.seen_on === 0).length, hint: "your biggest gaps", icon: <Prohibit size={18} />, tone: "red" },
         ]}
       />
+      {full && <div className="mb-4"><PoolFullNotice pool={full.pool} projectId={id} message={full.message} /></div>}
       {(error || loadError) && <div className="mb-4"><ErrorBanner message={error || loadError!.message} /></div>}
       <Card>
         <div className="flex flex-col gap-3 border-b border-line p-3 md:flex-row md:items-center">

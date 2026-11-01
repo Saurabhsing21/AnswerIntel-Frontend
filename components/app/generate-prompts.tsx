@@ -4,7 +4,7 @@ import { ArrowLeft, Check, CircleNotch, Sparkle, X } from "@phosphor-icons/react
 import { useEffect, useState } from "react";
 import { ErrorBanner, inputClass } from "@/components/app/ui";
 import { buttonClass } from "@/components/ui/button";
-import { api, ApiError } from "@/lib/api/client";
+import { api, ApiError, type PoolDetails } from "@/lib/api/client";
 import type { Prompt } from "@/lib/api/types";
 import { cx } from "@/lib/cx";
 import { CATEGORY_LABELS } from "@/lib/format";
@@ -15,7 +15,7 @@ const IDEAS = ["Pricing and cost questions", "Questions from small agencies", "S
 const COUNTS = [5, 10, 20];
 
 /** "Generate more": the user says what kind of prompts they want, reviews what we write, and keeps only the good ones. */
-export function GeneratePrompts({ projectId, open, onClose, onAdded }: { projectId: string; open: boolean; onClose: () => void; onAdded: (prompts: Prompt[], inactive: number) => void }) {
+export function GeneratePrompts({ projectId, open, onClose, onAdded }: { projectId: string; open: boolean; onClose: () => void; onAdded: (prompts: Prompt[], inactive: number, pool: (PoolDetails & { message: string }) | null) => void }) {
   const [instructions, setInstructions] = useState("");
   const [count, setCount] = useState(10);
   const [suggestions, setSuggestions] = useState<Suggestion[] | null>(null);
@@ -53,8 +53,8 @@ export function GeneratePrompts({ projectId, open, onClose, onAdded }: { project
     setError("");
     try {
       const chosen = suggestions.filter((_, i) => kept.has(i));
-      const r = await api<{ prompts: Prompt[]; inactive: number }>(`/projects/${projectId}/prompts/accept`, { method: "POST", json: { prompts: chosen } });
-      onAdded(r.prompts, r.inactive);
+      const r = await api<{ prompts: Prompt[]; inactive: number; pool_full: (PoolDetails & { message: string }) | null }>(`/projects/${projectId}/prompts/accept`, { method: "POST", json: { prompts: chosen } });
+      onAdded(r.prompts, r.inactive, r.pool_full);
       reset();
       onClose();
     } catch (err) {

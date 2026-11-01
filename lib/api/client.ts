@@ -2,9 +2,12 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+/** Who holds the plan's shared question pool: sent with a question-limit error and when new questions land switched off. */
+export type PoolDetails = { holders: { project_id: string; brand: string; active: number }[]; limit: number };
+
 export class ApiError extends Error {
   /** `limit` names the plan limit that was hit (projects, seats, subscription...), so the UI can offer an upgrade. */
-  constructor(public status: number, public code: string, message: string, public limit?: string) {
+  constructor(public status: number, public code: string, message: string, public limit?: string, public details?: PoolDetails) {
     super(message);
   }
 }
@@ -25,8 +28,8 @@ export async function api<T>(path: string, init?: RequestInit & { json?: unknown
     if (res.status === 401 && !path.startsWith("/api/auth")) {
       window.dispatchEvent(new Event(UNAUTHORIZED_EVENT)); // AppShell sends the user to /login
     }
-    const error = new ApiError(res.status, data?.error?.code ?? "ERROR", data?.error?.message ?? "Something went wrong.", data?.error?.limit);
-    if (error.limit) window.dispatchEvent(new CustomEvent(PLAN_LIMIT_EVENT, { detail: error })); // AppShell offers an upgrade
+    const error = new ApiError(res.status, data?.error?.code ?? "ERROR", data?.error?.message ?? "Something went wrong.", data?.error?.limit, data?.error?.details);
+    if (error.limit && !error.details) window.dispatchEvent(new CustomEvent(PLAN_LIMIT_EVENT, { detail: error })); // AppShell offers an upgrade (a full question pool is explained in place instead)
     throw error;
   }
   return data as T;

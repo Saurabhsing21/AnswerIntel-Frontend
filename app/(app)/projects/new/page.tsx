@@ -7,9 +7,10 @@ import { BrandTile } from "@/components/app/brand-tile";
 import { AnswerEstimate, EnginePicker, useEngines } from "@/components/app/engine-picker";
 import { askUpgrade } from "@/components/app/pro-lock";
 import { useProject } from "@/components/app/project-context";
+import { PoolFullNotice } from "@/components/app/pool-full";
 import { ErrorBanner, Field, inputClass } from "@/components/app/ui";
 import { ButtonArrow, buttonClass } from "@/components/ui/button";
-import { api, ApiError } from "@/lib/api/client";
+import { api, ApiError, type PoolDetails } from "@/lib/api/client";
 import type { Competitor, Project, Prompt } from "@/lib/api/types";
 import { brandColor } from "@/lib/brand";
 import { cx } from "@/lib/cx";
@@ -77,14 +78,19 @@ function NewProjectWizard() {
   const [busy, setBusy] = useState("");
   const maxCompetitors = Math.min(MAX_COMPETITORS, billing?.limits.competitors ?? MAX_COMPETITORS);
   const [error, setError] = useState("");
+  // The plan's question pool is full: why the list may be unticked, or why a tick was refused.
+  const [full, setFull] = useState<{ pool: PoolDetails; message: string; onlyWhileEmpty: boolean } | null>(null);
 
   async function run<T>(label: string, fn: () => Promise<T>): Promise<T | undefined> {
     setBusy(label);
     setError("");
+    setFull(null);
     try {
       return await fn();
     } catch (e) {
-      setError((e as ApiError).message);
+      const err = e as ApiError;
+      if (err.details) setFull({ pool: err.details, message: err.message, onlyWhileEmpty: false });
+      else setError(err.message);
     } finally {
       setBusy("");
     }
@@ -174,8 +180,9 @@ function NewProjectWizard() {
         savedCompetitors.current.add(c.name);
       }
       if (prompts.length) return true; // came back from the questions: keep them as they are
-      const result = await api<{ prompts: Prompt[] }>(`/projects/${current.id}/prompts/generate`, { method: "POST" });
+      const result = await api<{ prompts: Prompt[]; pool_full: (PoolDetails & { message: string }) | null }>(`/projects/${current.id}/prompts/generate`, { method: "POST" });
       setPrompts(result.prompts);
+      if (result.pool_full) setFull({ pool: result.pool_full, message: result.pool_full.message, onlyWhileEmpty: true });
       return true;
     });
     if (done) setStep(3);
@@ -390,6 +397,13 @@ function NewProjectWizard() {
                 <p className="rounded-[10px] bg-mark-soft/60 px-3 py-2 text-[12px] text-ink-2">
                   Your free scan asks the {active} ticked questions, the ones closest to a purchase. Swap any of them; plans track up to 160.
                 </p>
+              )}
+              {full && (!full.onlyWhileEmpty || !active) && (
+                <PoolFullNotice
+                  pool={full.pool}
+                  projectId={project.id}
+                  message={full.onlyWhileEmpty ? `We wrote your questions but left them all unticked, because your plan's question limit is already used up. ${full.message}` : full.message}
+                />
               )}
               <PromptGroups prompts={prompts} onToggle={togglePrompt} full={active >= (billing?.limits.active_prompts ?? Infinity)} />
               <form onSubmit={addPrompt} className="flex gap-2">
