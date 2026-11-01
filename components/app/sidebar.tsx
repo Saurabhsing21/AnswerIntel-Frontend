@@ -1,6 +1,6 @@
 "use client";
 
-import { Buildings, CaretUpDown, Check, MagnifyingGlass, Plus, SignOut, SquaresFour, UserCircle, X } from "@phosphor-icons/react";
+import { Buildings, CaretUpDown, Check, CurrencyDollar, MagnifyingGlass, Plus, SignOut, SquaresFour, UserCircle, X } from "@phosphor-icons/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -268,6 +268,11 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                 <MenuItem href="/account" active={pathname === "/account"} onClick={() => { close(); onNavigate?.(); }}>
                   <UserCircle size={16} /> Account settings
                 </MenuItem>
+                {me.data?.is_admin && (
+                  <MenuItem href="/admin/costs" active={pathname === "/admin/costs"} onClick={() => { close(); onNavigate?.(); }}>
+                    <CurrencyDollar size={16} /> AI costs
+                  </MenuItem>
+                )}
               </>
             )}
           </Popover>

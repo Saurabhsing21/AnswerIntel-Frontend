@@ -334,6 +334,6 @@ export type DiagnosisCause = {
 
 export type Diagnosis = { status: "recommended" | "mentioned" | "absent"; causes: DiagnosisCause[] };
 
-export type Me = { id: number; email: string; name: string | null; email_verified: boolean };
+export type Me = { id: number; email: string; name: string | null; email_verified: boolean; is_admin: boolean };
 
 export type EngineOption = { key: Engine; name: string; web_search: boolean; available: boolean; default: boolean };
