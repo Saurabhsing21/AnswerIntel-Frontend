@@ -190,12 +190,15 @@ function EnginesCard({ project, onSaved }: { project: Project; onSaved: () => vo
   const { billing } = useProject();
   const [value, setValue] = useState<string[]>(project.engines);
   const [busy, setBusy] = useState(false);
-  const changed = value.join() !== project.engines.join();
+  // Engines the plan no longer includes stay on the project but are skipped by scans, so they are never saved back.
+  const allowed = billing?.limits.allowed_engines;
+  const chosen = value.filter((k) => !allowed || allowed.includes(k));
+  const changed = chosen.join() !== project.engines.filter((k) => !allowed || allowed.includes(k)).join();
 
   async function save() {
     setBusy(true);
     try {
-      await api(`/projects/${project.id}`, { method: "PUT", json: { engines: value } });
+      await api(`/projects/${project.id}`, { method: "PUT", json: { engines: chosen } });
       toast.push("AI engines saved. The next scan uses them.", "success");
       onSaved();
     } catch (e) {
@@ -208,10 +211,10 @@ function EnginesCard({ project, onSaved }: { project: Project; onSaved: () => vo
   return (
     <Card title="AI engines" subtitle="Which engines every scan asks">
       <div className="space-y-4 p-5">
-        {options ? <EnginePicker engines={options} value={value} onChange={setValue} wide locked={billing?.limits.locked_engines} max={billing?.limits.engines} /> : <Skeleton className="h-[220px]" />}
+        {options ? <EnginePicker engines={options} value={value} onChange={setValue} wide /> : <Skeleton className="h-[220px]" />}
         <div className="flex items-center gap-3 border-t border-line pt-4">
           <span className="text-[12px] text-muted">More engines use more of your monthly AI answers.</span>
-          <button type="button" onClick={save} disabled={busy || !changed || value.length === 0} className={cx(buttonClass("primary", "sm"), "ml-auto")}>
+          <button type="button" onClick={save} disabled={busy || !changed || chosen.length === 0} className={cx(buttonClass("primary", "sm"), "ml-auto")}>
             {busy ? <CircleNotch size={14} className="animate-spin" /> : <FloppyDisk size={14} />} Save
           </button>
         </div>

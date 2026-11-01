@@ -148,14 +148,12 @@ function NewProjectWizard() {
   }
 
   // Until they change it, the engines are the recommended ones.
-  const lockedEngines = billing?.limits.locked_engines ?? [];
-  const chosenEngines =
+  const allowedEngines = billing?.limits.allowed_engines;
+  const chosenEngines = (
     engines ??
     project?.engines ??
-    (engineOptions ?? [])
-      .filter((e) => e.available && e.default && !lockedEngines.includes(e.key))
-      .map((e) => e.key)
-      .slice(0, billing?.limits.engines ?? undefined);
+    (engineOptions ?? []).filter((e) => e.available && e.default).map((e) => e.key)
+  ).filter((k) => !allowedEngines || allowedEngines.includes(k));
   const brandBody = () => ({
     brand_name: draft.brand.trim(), website: withScheme(draft.website), category: draft.category.trim(), country: draft.country,
     description: draft.description.trim() || null,
@@ -501,7 +499,7 @@ function NewProjectWizard() {
             <StepHead step={2} title="Where should we ask?" body="Each AI engine answers on its own. We picked the ones buyers use most; add any others you care about." />
             <div className="space-y-4 px-7 pb-7">
               {engineOptions ? (
-                <EnginePicker engines={engineOptions} value={chosenEngines} onChange={setEngines} locked={billing?.limits.locked_engines} max={billing?.limits.engines} />
+                <EnginePicker engines={engineOptions} value={chosenEngines} onChange={setEngines} />
               ) : enginesFailed ? (
                 <p className="flex items-center gap-3 rounded-[12px] border border-dashed border-line-strong px-4 py-5 text-[13px] text-muted">
                   We couldn&apos;t load the AI engines.

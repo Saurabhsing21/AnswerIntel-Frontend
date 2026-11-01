@@ -20,7 +20,6 @@ export type PlanLimits = {
   /** AI answers (prompt × engine) in any 30 days. */
   answers_per_month: number;
   competitors: number;
-  engines: number | null;
   scans_per_day: number;
   /** null = unlimited */
   seats: number | null;
@@ -30,8 +29,12 @@ export type PlanLimits = {
   scans_total: number | null;
   /** false on the free trial: drafts, re-tests, reports, exports, invites and more prompts are locked. */
   pro: boolean;
-  /** Engines this plan can't use. */
+  /** The AI engines this plan scans. */
+  allowed_engines: string[];
+  /** Every other engine in the catalog. */
   locked_engines: string[];
+  /** For a locked engine, the plan that unlocks it; absent when no plan includes it. */
+  engine_upgrades: Record<string, PlanKey>;
 };
 export type Billing = {
   workspace_id: string;

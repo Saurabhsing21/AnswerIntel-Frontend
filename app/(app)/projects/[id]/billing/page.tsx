@@ -82,7 +82,7 @@ function UsageInner() {
   const live = subscribed(billing);
   const renewal = billing.state === "trialing" ? billing.trial_ends_at : billing.current_period_end;
   const includes: [string, boolean][] = [
-    [limits.engines == null ? "All AI engines" : `${limits.engines} AI engines per scan`, true],
+    [`${limits.allowed_engines.length} AI ${limits.allowed_engines.length === 1 ? "engine" : "engines"} per scan`, true],
     [`${Math.round(limits.retention_days / 30.5)} months of answer history`, true],
     ["Weekly scans and reports", limits.schedules],
     ["Experiments", limits.experiments],

@@ -23,7 +23,7 @@ export const PLANS: readonly PlanInfo[] = [
     audience: "For founders getting started with AI search visibility.",
     monthly: 20,
     yearly: 192,
-    includes: ["30 prompts", "520 AI answers a month", "ChatGPT, Perplexity, Gemini and Google AI", "Live web search, like the real apps", "Weekly automatic tracking", "2 projects", "20 competitors per project", "Unlimited seats"],
+    includes: ["30 prompts", "520 AI answers a month", "ChatGPT Search and Perplexity", "Live web search, like the real apps", "Weekly automatic tracking", "2 projects", "20 competitors per project", "Unlimited seats"],
   },
   {
     key: "growth",
@@ -31,7 +31,7 @@ export const PLANS: readonly PlanInfo[] = [
     audience: "For growing teams that need deeper tracking and insights.",
     monthly: 50,
     yearly: 480,
-    includes: ["80 prompts", "1,400 AI answers a month", "ChatGPT, Perplexity, Gemini and Google AI", "Live web search, like the real apps", "Weekly automatic tracking", "4 projects", "50 competitors per project", "Experiments with before and after"],
+    includes: ["80 prompts", "1,400 AI answers a month", "ChatGPT Search, Perplexity and Claude", "Live web search, like the real apps", "Weekly automatic tracking", "4 projects", "50 competitors per project", "Experiments with before and after"],
   },
   {
     key: "pro",
@@ -39,7 +39,7 @@ export const PLANS: readonly PlanInfo[] = [
     audience: "For agencies and brands running several products.",
     monthly: 100,
     yearly: 960,
-    includes: ["160 prompts", "2,800 AI answers a month", "ChatGPT, Perplexity, Gemini and Google AI", "Live web search, like the real apps", "Weekly automatic tracking", "10 projects", "100 competitors per project", "Experiments with before and after"],
+    includes: ["160 prompts", "2,800 AI answers a month", "ChatGPT Search, Perplexity, Claude and Gemini", "Live web search, like the real apps", "Weekly automatic tracking", "10 projects", "100 competitors per project", "Experiments with before and after"],
   },
 ];
 
@@ -54,7 +54,7 @@ export const COMPARISON: ComparisonGroup[] = [
   {
     title: "Tracking coverage",
     rows: [
-      { label: "AI engines", values: ["ChatGPT, Perplexity, Gemini and Google AI", "ChatGPT, Perplexity, Gemini and Google AI", "ChatGPT, Perplexity, Gemini and Google AI"] },
+      { label: "AI engines", values: ["ChatGPT Search, Perplexity", "ChatGPT Search, Perplexity, Claude", "ChatGPT Search, Perplexity, Claude, Gemini"] },
       { label: "Live web search", hint: "answers match what people see in the apps", values: [true, true, true] },
       { label: "Prompts", hint: "one pool shared by every project", values: ["30", "80", "160"] },
       { label: "AI answers a month", hint: "prompts × engines × runs", values: ["520", "1,400", "2,800"] },
