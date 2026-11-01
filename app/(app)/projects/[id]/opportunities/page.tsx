@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowCounterClockwise, ChatCircleText, Check, CheckCircle, CircleNotch, Copy, Flag, Lightbulb, Lock, NotePencil, Play, Prohibit, Target, Warning, X } from "@phosphor-icons/react";
+import { ArrowCounterClockwise, CaretDown, ChatCircleText, Check, CheckCircle, CircleNotch, Copy, Flag, Lightbulb, Lock, NotePencil, Play, Plus, Prohibit, Quotes, Target, Trophy, Warning, X } from "@phosphor-icons/react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { ExperimentsSection } from "@/components/app/experiments-section";
@@ -11,7 +11,7 @@ import { useToast } from "@/components/app/toast";
 import { Card, EmptyState, ErrorBanner, ImpactPill, PageHeader, Segmented, Skeleton, StatStrip, TONE_TILE } from "@/components/app/ui";
 import { buttonClass } from "@/components/ui/button";
 import { api, ApiError, useApi } from "@/lib/api/client";
-import type { Opportunity } from "@/lib/api/types";
+import type { LostQuestion, Opportunity, OpportunityList, PlanStatus } from "@/lib/api/types";
 import { cx } from "@/lib/cx";
 import { pct } from "@/lib/format";
 
@@ -29,9 +29,16 @@ const TYPE_LABELS: Record<string, string> = {
   TECHNICAL_GAP: "Technical gap",
 };
 
+/** Whether the side column has anything to show (question gaps put their detail in the main column). */
+const hasEvidence = (o: Opportunity) => {
+  const e = o.evidence;
+  return Boolean(e.findings?.length || e.discovery_rate != null || e.domains?.length || (!o.questions.length && e.prompts?.length));
+};
+
 function Evidence({ o }: { o: Opportunity }) {
   const e = o.evidence;
-  const prompts = e.prompts ?? [];
+  // Question gaps list their questions in the main column; older rows only carry the plain list.
+  const prompts = o.questions.length ? [] : e.prompts ?? [];
   return (
     <div className="space-y-3 text-[12px]">
       <p className="text-[11px] font-medium text-muted">Evidence</p>
@@ -76,10 +83,10 @@ function Evidence({ o }: { o: Opportunity }) {
               {p}
             </li>
           ))}
-          {prompts.length > 5 && <li className="px-1 text-faint">and {prompts.length - 5} more prompts</li>}
+          {prompts.length > 5 && <li className="px-1 text-faint">and {prompts.length - 5} more questions</li>}
         </ul>
       )}
-      {!e.findings?.length && e.discovery_rate == null && !e.domains?.length && !prompts.length && <p className="text-faint">Based on the answers in your latest scan.</p>}
+      {!hasEvidence(o) && <p className="text-faint">Based on the answers in your latest scan.</p>}
     </div>
   );
 }
@@ -95,12 +102,164 @@ const EFFORT: Record<string, string> = { S: "Quick win", M: "A few hours", L: "B
 
 const share = (c: { recommended: number; answers: number }) => `${c.recommended}/${c.answers}`;
 
-/** The proof: recommendations on this opportunity's prompts before the fix and in the re-test. */
+/** Tone for the headline: leading is calm green, behind is a warning. */
+function StatusHeadline({ status }: { status: PlanStatus }) {
+  const stats = [
+    { label: "AI names you", value: pct(status.mention_rate) },
+    { label: "Your rank", value: `#${status.rank}` },
+    { label: "Answers lost", value: `${status.answers_lost} of ${status.answers_total}` },
+  ];
+  return (
+    <section className={cx("mb-4 rounded-[16px] border p-5", status.leading ? "border-[#bfe5cc] bg-up-soft" : "border-[#f3c4c4] bg-down-soft")}>
+      <div className="flex flex-wrap items-start gap-x-8 gap-y-4">
+        <p className="flex min-w-0 flex-1 basis-80 items-start gap-2.5 text-[15px] font-medium leading-snug text-ink">
+          {status.leading ? <Trophy size={20} weight="fill" className="mt-0.5 shrink-0 text-up-ink" /> : <Warning size={20} weight="fill" className="mt-0.5 shrink-0 text-down-ink" />}
+          {status.headline}
+        </p>
+        <dl className="flex gap-6">
+          {stats.map((s) => (
+            <div key={s.label}>
+              <dt className="text-[11px] text-muted">{s.label}</dt>
+              <dd className="mt-0.5 font-mono text-[18px] font-medium text-ink">{s.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </section>
+  );
+}
+
+/** One lost question: how many engines picked someone else, who won, and why in the engine's own words. */
+function QuestionRow({ q }: { q: LostQuestion }) {
+  return (
+    <li className="rounded-[12px] border border-line bg-surface px-3.5 py-3">
+      <div className="flex items-start gap-2">
+        <ChatCircleText size={14} className="mt-0.5 shrink-0 text-faint" />
+        <p className="min-w-0 flex-1 text-[13px] font-medium leading-snug text-ink">{q.text}</p>
+        <span className="shrink-0 rounded-full bg-down-soft px-2 py-0.5 font-mono text-[11px] text-down-ink" title="Engines that did not recommend you">
+          lost {q.engines_lost}/{q.engines_total}
+        </span>
+      </div>
+      {q.winners.length > 0 && (
+        <ul className="mt-2.5 space-y-2 border-l-2 border-line pl-3">
+          {q.winners.map((w) => (
+            <li key={w.name} className="text-[12px]">
+              <p className="text-ink-2">
+                <span className="font-medium text-ink">{w.name}</span> <span className="text-faint">· {w.engines} of {q.engines_total} engines</span>
+                {w.reason && <span> · {w.reason}</span>}
+              </p>
+              {w.quote && (
+                <p className="mt-0.5 flex items-start gap-1 italic text-muted">
+                  <Quotes size={11} weight="fill" className="mt-0.5 shrink-0 text-faint" />
+                  {w.quote}
+                </p>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      {q.cited_domains.length > 0 && (
+        <p className="mt-2.5 flex flex-wrap items-center gap-1.5 text-[11px] text-faint">
+          AI cited
+          {q.cited_domains.map((d) => (
+            <span key={d} className="rounded-full bg-sunken px-2 py-0.5 text-ink-2">{d}</span>
+          ))}
+        </p>
+      )}
+    </li>
+  );
+}
+
+const SHOWN_QUESTIONS = 2;
+
+/** First two questions, the rest behind a toggle so long gaps stay scannable. */
+function QuestionList({ questions, label }: { questions: LostQuestion[]; label: string }) {
+  const [all, setAll] = useState(false);
+  const rest = questions.length - SHOWN_QUESTIONS;
+  return (
+    <div className="mt-4">
+      <p className="mb-2 text-[11px] font-medium text-muted">{label}</p>
+      <ul className="space-y-2">
+        {(all ? questions : questions.slice(0, SHOWN_QUESTIONS)).map((q) => (
+          <QuestionRow key={q.text} q={q} />
+        ))}
+      </ul>
+      {rest > 0 && (
+        <button type="button" onClick={() => setAll((v) => !v)} aria-expanded={all} className="mt-2 inline-flex items-center gap-1 text-[12px] font-medium text-ink-2 hover:text-ink">
+          <CaretDown size={12} className={cx("transition-transform", all && "rotate-180")} />
+          {all ? "Show fewer" : `Show ${rest} more question${rest === 1 ? "" : "s"}`}
+        </button>
+      )}
+    </div>
+  );
+}
+
+/** Brands AI names that are not tracked yet. Competitors need a website, so the button asks for it first. */
+function UntrackedBrands({ o, projectId, onAdded }: { o: Opportunity; projectId: string; onAdded: () => void }) {
+  const toast = useToast();
+  const [open, setOpen] = useState<string | null>(null);
+  const [website, setWebsite] = useState("");
+  const [busy, setBusy] = useState(false);
+  const brands = o.evidence.brands ?? [];
+
+  async function add(name: string) {
+    let site = website.trim();
+    if (!site) return;
+    if (!/^https?:\/\//.test(site)) site = `https://${site}`;
+    setBusy(true);
+    try {
+      await api(`/projects/${projectId}/competitors`, { method: "POST", json: { name, website: site } });
+      toast.push(`${name} added. It is measured from your next scan.`, "success");
+      setOpen(null);
+      setWebsite("");
+      onAdded();
+    } catch (e) {
+      if (!(e as ApiError).limit) toast.push((e as ApiError).message, "error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <ul className="mt-4 divide-y divide-line rounded-[12px] border border-line bg-surface">
+      {brands.map((b) => (
+        <li key={b.name} className="px-3.5 py-3">
+          <div className="flex items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-[13px] font-medium text-ink">{b.name}</p>
+              <p className="text-[12px] text-muted">Named in {b.answers} answer{b.answers === 1 ? "" : "s"}</p>
+            </div>
+            <button type="button" onClick={() => { setOpen(open === b.name ? null : b.name); setWebsite(""); }} className={buttonClass("secondary", "sm")}>
+              <Plus size={14} /> Add as competitor
+            </button>
+          </div>
+          {b.questions.length > 0 && (
+            <ul className="mt-2 space-y-1 text-[12px] text-ink-2">
+              {b.questions.map((q) => (
+                <li key={q} className="flex items-start gap-1.5"><ChatCircleText size={12} className="mt-0.5 shrink-0 text-faint" />{q}</li>
+              ))}
+            </ul>
+          )}
+          {open === b.name && (
+            <form onSubmit={(e) => { e.preventDefault(); add(b.name); }} className="mt-3 flex gap-2">
+              <input value={website} onChange={(e) => setWebsite(e.target.value)} autoFocus placeholder={`${b.name} website, e.g. example.com`} aria-label={`${b.name} website`} className="min-w-0 flex-1 rounded-[10px] border border-line-strong bg-surface px-3 py-1.5 text-[13px] outline-none focus:border-ink" />
+              <button type="submit" disabled={busy || !website.trim()} className={buttonClass("primary", "sm")}>
+                {busy ? <CircleNotch size={14} className="animate-spin" /> : "Add"}
+              </button>
+            </form>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** The proof: recommendations on this opportunity's questions before the fix and in the re-test. */
 function RetestResult({ retest }: { retest: NonNullable<Opportunity["retest"]> }) {
   if (retest.status === "running")
     return (
       <p className="mt-4 flex items-center gap-2 rounded-[12px] border border-line bg-surface px-4 py-3 text-[13px] text-ink-2">
-        <CircleNotch size={15} className="animate-spin" /> Re-testing {retest.prompts} prompt{retest.prompts === 1 ? "" : "s"} on every engine...
+        <CircleNotch size={15} className="animate-spin" /> Re-testing {retest.prompts} question{retest.prompts === 1 ? "" : "s"} on every engine...
       </p>
     );
   if (retest.status === "failed" || !retest.after) return <p className="mt-4 text-[13px] text-down">The re-test didn&apos;t complete. Try again.</p>;
@@ -129,8 +288,8 @@ function OpportunitiesInner() {
   const tracked = useTracked(); // tracked fixes start on Growth
   const toast = useToast();
   // Poll while a re-test runs, so its result appears without a reload.
-  const { data, setData, loading, error, reload } = useApi<Opportunity[]>(`/projects/${id}/opportunities`, (rows) =>
-    rows?.some((o) => o.retest?.status === "running") ? 3000 : undefined,
+  const { data, setData, loading, error, reload } = useApi<OpportunityList>(`/projects/${id}/opportunities?with_status=true`, (d) =>
+    d?.items.some((o) => o.retest?.status === "running") ? 3000 : undefined,
   );
   useRefreshOnScan(reload);
   const [view, setView] = useState<"todo" | "completed" | "dismissed" | "fixed">("todo");
@@ -151,7 +310,7 @@ function OpportunitiesInner() {
     }
   }
 
-  const replace = (updated: Opportunity) => setData((all) => (all ?? []).map((x) => (x.id === updated.id ? updated : x)));
+  const replace = (updated: Opportunity) => setData((d) => (d ? { ...d, items: d.items.map((x) => (x.id === updated.id ? updated : x)) } : d));
 
   async function setStatus(o: Opportunity, status: Status) {
     try {
@@ -173,7 +332,7 @@ function OpportunitiesInner() {
     }
   }
 
-  /** Mark done and ask this opportunity's prompts again now, to see if the fix worked. */
+  /** Mark done and ask this opportunity's questions again now, to see if the fix worked. */
   async function doneAndRetest(o: Opportunity) {
     try {
       replace(await api<Opportunity>(`/projects/${id}/opportunities/${o.id}/retest`, { method: "POST" }));
@@ -185,7 +344,8 @@ function OpportunitiesInner() {
   }
 
   if (error) return <ErrorBanner message={error.message} />;
-  const all = data ?? [];
+  const all = data?.items ?? [];
+  const status = data?.status ?? null;
   const fixed = all.filter((o) => o.trend === "resolved");
   const live = all.filter((o) => o.trend !== "resolved");
   const inView = (o: Opportunity) =>
@@ -222,6 +382,8 @@ function OpportunitiesInner() {
         )
       ) : (
       <>
+
+      {status && <StatusHeadline status={status} />}
 
       <StatStrip
         stats={[
@@ -296,7 +458,7 @@ function OpportunitiesInner() {
               );
             return (
               <Card key={o.id} className={cx("border-l-[3px]", o.impact === "high" ? "border-l-down" : o.impact === "medium" ? "border-l-amber" : "border-l-line-strong", o.status === "dismissed" && "opacity-70")}>
-                <div id={`opp-${o.id}`} className="grid scroll-mt-24 lg:grid-cols-[1.5fr_1fr]">
+                <div id={`opp-${o.id}`} className={cx("grid scroll-mt-24", hasEvidence(o) && "lg:grid-cols-[1.5fr_1fr]")}>
                   <div className="p-5">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className={cx("grid size-8 place-items-center rounded-[10px]", o.area ? TONE_TILE[AREA_TONE[o.area]] : "bg-sunken text-ink-2")}>
@@ -316,6 +478,25 @@ function OpportunitiesInner() {
                     <h2 className="mt-3 text-[16px] font-medium leading-snug text-ink">{o.title}</h2>
                     <p className="mt-1 text-[13px] text-muted">{o.description}</p>
 
+                    {o.why.length > 0 && (
+                      <div className="mt-4">
+                        <p className="mb-1.5 text-[11px] font-medium text-muted">Why AI picks others</p>
+                        <ul className="space-y-1.5 text-[13px] text-ink-2">
+                          {o.why.map((w) => (
+                            <li key={w} className="flex gap-2">
+                              <span className="mt-[7px] size-1 shrink-0 rounded-full bg-faint" />
+                              {w}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {o.type === "UNTRACKED_COMPETITOR" ? (
+                      <UntrackedBrands o={o} projectId={id} onAdded={reload} />
+                    ) : (
+                      o.questions.length > 0 && <QuestionList questions={o.questions} label={`Questions you lost (${o.questions.length})`} />
+                    )}
+
                     {draft?.id !== o.id && (
                     <div className="mt-4 rounded-[12px] border border-[#e4efbd] bg-mark-soft/30 px-4 py-3 text-[13px]">
                       <p className="flex items-center gap-1.5 font-medium text-ink">
@@ -333,12 +514,12 @@ function OpportunitiesInner() {
                       ) : (
                         <p className="mt-1 text-ink-2">{o.recommended_action}</p>
                       )}
-                      {o.expected_objective && (
+                      {(o.success_metric || o.expected_objective) && (
                         <p className="mt-2.5 flex items-start gap-1.5 text-muted">
                           <Target size={14} className="mt-px shrink-0" />
                           <span>
-                            <span className="font-medium text-ink-2">Goal: </span>
-                            {o.expected_objective}
+                            <span className="font-medium text-ink-2">{o.success_metric ? "How to know it worked: " : "Goal: "}</span>
+                            {o.success_metric ?? o.expected_objective}
                           </span>
                         </p>
                       )}
@@ -360,8 +541,8 @@ function OpportunitiesInner() {
                       {o.trend !== "resolved" && o.status === "in_progress" && (
                         <>
                           <button type="button" onClick={() => (pro || !o.related_prompts.length ? doneAndRetest(o) : askUpgrade("Re-testing a fix right away is on paid plans."))} disabled={o.retest?.status === "running"} className={buttonClass("primary", "sm")}
-                            title={o.related_prompts.length ? `Asks these ${o.related_prompts.length} prompts again now` : undefined}>
-                            <Check size={14} weight="bold" /> {o.related_prompts.length ? `Done, re-test ${o.related_prompts.length} prompts` : "Mark done"} {!pro && o.related_prompts.length > 0 && <ProBadge />}
+                            title={o.related_prompts.length ? `Asks these ${o.related_prompts.length} questions again now` : undefined}>
+                            <Check size={14} weight="bold" /> {o.related_prompts.length ? `Done, re-test ${o.related_prompts.length} questions` : "Mark done"} {!pro && o.related_prompts.length > 0 && <ProBadge />}
                           </button>
                           {o.related_prompts.length > 0 && (
                             <button type="button" onClick={() => setStatus(o, "completed")} className={buttonClass("secondary", "sm")}>
@@ -410,14 +591,30 @@ function OpportunitiesInner() {
                       </div>
                     )}
                   </div>
-                  <div className="border-t border-line bg-[#fafaf9] p-5 lg:border-t-0 lg:border-l">
-                    <Evidence o={o} />
-                  </div>
+                  {hasEvidence(o) && (
+                    <div className="border-t border-line bg-[#fafaf9] p-5 lg:border-t-0 lg:border-l">
+                      <Evidence o={o} />
+                    </div>
+                  )}
                 </div>
               </Card>
             );
           })}
         </div>
+      )}
+
+      {tab === "fixes" && view === "todo" && status && status.switching.length > 0 && (
+        <Card
+          className="mt-6"
+          title="Where your customers would switch"
+          subtitle="When buyers ask AI for alternatives to you, these are the brands it names. You can't win these questions, but you can see who is waiting."
+        >
+          <ul className="space-y-2 p-5">
+            {status.switching.map((q) => (
+              <QuestionRow key={q.text} q={q} />
+            ))}
+          </ul>
+        </Card>
       )}
       </>
       )}

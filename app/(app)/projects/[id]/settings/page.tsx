@@ -165,7 +165,7 @@ function DangerCard({ project }: { project: Project }) {
         <h2 className="flex items-center gap-2 text-[14px] font-medium text-[#b42318]">
           <Warning size={16} className="text-down" /> Delete project
         </h2>
-        <p className="mt-0.5 text-[12px] text-muted">Removes {project.brand_name}, its competitors, prompts, scans, reports and experiments. It cannot be undone.</p>
+        <p className="mt-0.5 text-[12px] text-muted">Removes {project.brand_name}, its competitors, questions, scans, reports and experiments. It cannot be undone.</p>
       </div>
       <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center">
         <input

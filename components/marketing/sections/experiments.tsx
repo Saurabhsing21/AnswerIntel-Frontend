@@ -79,8 +79,8 @@ function Num({ value, start }: { value: number; start: boolean }) {
 
 const steps = [
   { icon: NotePencil, title: "Log the change", body: "New page, new positioning, new coverage." },
-  { icon: ClockClockwise, title: "Keep scanning", body: "The same prompts run every week." },
-  { icon: ChartLineUp, title: "Compare", body: "Before and after, on the prompts you targeted." },
+  { icon: ClockClockwise, title: "Keep scanning", body: "The same questions run every week." },
+  { icon: ChartLineUp, title: "Compare", body: "Before and after, on the questions you targeted." },
 ];
 
 export function Experiments() {
@@ -101,7 +101,7 @@ export function Experiments() {
           <div className="flex flex-wrap items-center gap-2 border-b border-line px-5 py-3.5 text-[12px]">
             <span className="rounded-full border border-dashed border-line-strong px-2 py-0.5 text-muted">Example experiment</span>
             <span className="font-medium text-ink">Rewrote homepage positioning</span>
-            <span className="ml-auto text-muted">12 prompts · 4 weeks</span>
+            <span className="ml-auto text-muted">12 questions · 4 weeks</span>
           </div>
 
           <div className="p-5 md:p-6">
@@ -195,7 +195,7 @@ export function Experiments() {
           </div>
 
           <div className="border-t border-line bg-[#fbfbfa] px-5 py-4">
-            <p className="mb-2.5 text-[12px] text-muted">Targeted prompts</p>
+            <p className="mb-2.5 text-[12px] text-muted">Targeted questions</p>
             <ul className="space-y-2">
               {targeted.map((t, i) => (
                 <li key={t.prompt} className="flex items-center gap-3 rounded-[12px] border border-line bg-surface px-3 py-2.5">
@@ -233,7 +233,7 @@ export function Experiments() {
               Prove that your changes <Mark>worked</Mark>
             </>
           }
-          muted="Most teams ship a fix and hope. SeenLens measures the same prompts before and after, so you know."
+          muted="Most teams ship a fix and hope. SeenLens measures the same questions before and after, so you know."
         />
         <ul className="mt-8 space-y-5">
           {steps.map(({ icon: Icon, title, body }) => (

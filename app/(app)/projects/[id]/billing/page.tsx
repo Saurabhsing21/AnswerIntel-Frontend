@@ -38,10 +38,10 @@ function Meter({ label, used, limit, hint }: { label: string; used: number; limi
 }
 
 function statusLine(b: Billing): string {
-  if (b.state === "free") return `Free trial: ${b.usage.scans_total} of ${b.limits.scans_total ?? 1} free scan used. Choose a plan for weekly tracking, more prompts and every feature.`;
+  if (b.state === "free") return `Free trial: ${b.usage.scans_total} of ${b.limits.scans_total ?? 1} free scan used. Choose a plan for weekly tracking, more questions and every feature.`;
   if (b.state === "trialing") return `Trial until ${date(b.trial_ends_at)}. Subscribe before then to keep scanning.`;
   if (b.state === "past_due") return `Your last payment failed. Update your card by ${date(b.grace_ends_at)} or the workspace becomes read-only.`;
-  if (b.state === "lapsed") return "Read-only. You can view and export everything, but not run scans or add prompts, competitors or people.";
+  if (b.state === "lapsed") return "Read-only. You can view and export everything, but not run scans or add questions, competitors or people.";
   if (b.cancel_at_period_end) return `Canceled. Everything keeps working until ${date(b.current_period_end)}.`;
   return `Billed ${b.interval === "year" ? "yearly" : "monthly"}. Next renewal on ${date(b.current_period_end)}.`;
 }
@@ -154,7 +154,7 @@ function UsageInner() {
                 icon: <ChatsCircle size={18} />,
                 tone: "blue",
               },
-              { label: "Active prompts", value: `${usage.active_prompts}/${limits.active_prompts}`, hint: "shared by every project", icon: <Hash size={18} />, tone: "violet" },
+              { label: "Active questions", value: `${usage.active_prompts}/${limits.active_prompts}`, hint: "shared by every project", icon: <Hash size={18} />, tone: "violet" },
               { label: "Scans today", value: `${usage.scans_today}/${limits.scans_per_day}`, hint: `${usage.scans_30_days} in the last 30 days`, icon: <Lightning size={18} />, tone: "amber" },
               {
                 label: billing.cancel_at_period_end ? "Ends" : billing.state === "trialing" ? "Trial ends" : "Renews",
@@ -173,19 +173,19 @@ function UsageInner() {
                   label="AI answers, last 30 days"
                   used={usage.answers_30_days}
                   limit={limits.answers_per_month}
-                  hint="One answer per active prompt per AI engine, scheduled scans included."
+                  hint="One answer per active question per AI engine, scheduled scans included."
                 />
-                <Meter label="Active prompts" used={usage.active_prompts} limit={limits.active_prompts} hint="One pool for every project." />
+                <Meter label="Active questions" used={usage.active_prompts} limit={limits.active_prompts} hint="One pool for every project." />
                 <Meter label="Scans today" used={usage.scans_today} limit={limits.scans_per_day} />
                 <Meter label="Projects" used={usage.projects} limit={limits.projects} />
               </div>
             </Card>
-            <Card title="By project" subtitle={`Prompts come from the shared pool. Up to ${limits.competitors} competitors each.`} className="h-full">
+            <Card title="By project" subtitle={`Questions come from the shared pool. Up to ${limits.competitors} competitors each.`} className="h-full">
               <table className="w-full text-[13px]">
                 <thead>
                   <tr className="border-b border-line text-left text-[12px] text-muted">
                     <th className="px-5 py-2.5 font-normal">Project</th>
-                    <th className="px-5 py-2.5 text-right font-normal">Active prompts</th>
+                    <th className="px-5 py-2.5 text-right font-normal">Active questions</th>
                     <th className="px-5 py-2.5 text-right font-normal">Competitors</th>
                   </tr>
                 </thead>

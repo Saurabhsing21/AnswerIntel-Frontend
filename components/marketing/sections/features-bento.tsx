@@ -98,7 +98,7 @@ function DiscoverPrompts() {
             </span>
           </motion.li>
         ))}
-        <li className="px-3.5 py-2.5 text-faint">+ 44 more prompts ready to review</li>
+        <li className="px-3.5 py-2.5 text-faint">+ 44 more questions ready to review</li>
       </ul>
     </MiniPanel>
   );
@@ -291,7 +291,7 @@ function ActOnInsights() {
         <span className="rounded-[5px] bg-[#fdf2f2] px-1.5 py-px text-[10px] font-medium text-[#b91c1c]">
           High impact
         </span>
-        <p className="mt-2 font-medium text-ink">Citation gap on startup CRM prompts</p>
+        <p className="mt-2 font-medium text-ink">Citation gap on startup CRM questions</p>
         <p className="mt-1 text-muted">Kiteline is cited by 7 recurring sources. You are cited by 2.</p>
       </div>
       <ul className="border-t border-line p-1.5">
@@ -341,7 +341,7 @@ export function FeaturesBento() {
         <IconTile icon={Sparkle} variant="mark" size="xs" />
         How it works
       </span>
-      <SectionHeading className="mt-5 max-w-[640px]" title="From first prompt to a clear plan" />
+      <SectionHeading className="mt-5 max-w-[640px]" title="From first question to a clear plan" />
       <p className="mt-4 max-w-[560px] text-[17px] leading-relaxed text-muted">
         Set up once in minutes. SeenLens keeps asking, measuring, and telling you what to fix.
       </p>
@@ -351,7 +351,7 @@ export function FeaturesBento() {
           delay={0}
           className="lg:col-span-7"
           title="Discover the questions buyers ask"
-          body="We turn your category, market, and competitors into 30 to 50 realistic prompts."
+          body="We turn your category, market, and competitors into 30 to 50 realistic questions."
         >
           <DiscoverPrompts />
         </Card>
@@ -359,8 +359,8 @@ export function FeaturesBento() {
           delay={0.1}
           className="lg:col-span-5"
           surface="dots"
-          title="Focus on prompts that sell"
-          body="Every prompt is scored for buying intent, so you track what moves revenue."
+          title="Focus on questions that sell"
+          body="Every question is scored for buying intent, so you track what moves revenue."
         >
           <PickPrompts />
         </Card>

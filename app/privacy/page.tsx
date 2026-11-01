@@ -13,7 +13,7 @@ export default function PrivacyPage() {
         { title: "What we collect", body: [
           [
             "Account details: your email address, name if you add one, and a hashed password. We never store your password itself.",
-            "Workspace data: the brands, websites, competitors and prompts you add, and the AI answers and reports we produce for you.",
+            "Workspace data: the brands, websites, competitors and questions you add, and the AI answers and reports we produce for you.",
             "Billing details: handled by Stripe. We see your plan, payment status and invoices, but never your full card number.",
             "Waitlist: the email address you give us.",
             "Usage: privacy-friendly page analytics (Vercel Web Analytics, no cookies) and server logs used for security and debugging.",
@@ -34,7 +34,7 @@ export default function PrivacyPage() {
             "Stripe: payments and invoices.",
             "Resend: sending email.",
             "Vercel: hosting the website and analytics.",
-            "AI providers (through OpenRouter) and DataForSEO: we send them your prompts and brand details to get AI answers. We don't send them your account details.",
+            "AI providers (through OpenRouter) and DataForSEO: we send them your questions and brand details to get AI answers. We don't send them your account details.",
           ],
         ] },
         { title: "How long we keep it", body: [

@@ -45,7 +45,7 @@ export default function ScanDetailPage() {
 
       <StatStrip
         stats={[
-          { label: "Prompts asked", value: prompts.length, hint: "each to 3 engines", icon: <ListMagnifyingGlass size={18} />, tone: "blue" },
+          { label: "Questions asked", value: prompts.length, hint: "each to 3 engines", icon: <ListMagnifyingGlass size={18} />, tone: "blue" },
           { label: "Recommended you", value: won.length, hint: "on at least one engine", icon: <Trophy size={18} />, tone: "green" },
           { label: "Never mentioned", value: missed.length, hint: "on any engine", icon: <Prohibit size={18} />, tone: "red" },
           { label: "Answers", value: data.scan.completed_runs, hint: data.scan.failed_runs ? `${data.scan.failed_runs} failed` : "all succeeded", icon: <CheckCircle size={18} />, tone: "violet" },
@@ -58,7 +58,7 @@ export default function ScanDetailPage() {
           value={filter}
           onChange={setFilter}
           options={[
-            { key: "all", label: "All prompts", count: prompts.length },
+            { key: "all", label: "All questions", count: prompts.length },
             { key: "won", label: "Recommended", count: won.length },
             { key: "missed", label: "Missed everywhere", count: missed.length },
           ]}
@@ -70,7 +70,7 @@ export default function ScanDetailPage() {
       ) : (
         <Card>
           <div className="hidden grid-cols-[1.6fr_repeat(3,minmax(0,1fr))] gap-x-3 border-b border-line px-5 py-2 text-[11px] text-muted md:grid">
-            <span>Prompt</span>
+            <span>Question</span>
             {ENGINES.map((e) => (
               <span key={e.key} className="flex items-center gap-1.5">
                 <EngineIcon engine={e.key} size={12} /> {e.name}

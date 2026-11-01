@@ -33,7 +33,7 @@ const STATE_PILL: Record<BillingState, string> = {
 
 const LIMIT_LABEL: Record<string, string> = {
   projects: "projects",
-  active_prompts: "active prompts",
+  active_prompts: "active questions",
   answers_per_month: "AI answers for the month",
   competitors: "competitors per project",
   seats: "seats",

@@ -25,7 +25,7 @@ function duration(scan: Scan) {
 }
 
 const HOW = [
-  { icon: ChatsCircle, title: "We ask", body: "Every active prompt goes to ChatGPT, Perplexity and Gemini, exactly as a buyer would type it." },
+  { icon: ChatsCircle, title: "We ask", body: "Every active question goes to ChatGPT, Perplexity and Gemini, exactly as a buyer would type it." },
   { icon: ListMagnifyingGlass, title: "We read the answers", body: "Who is mentioned, who is recommended, in what position, with what tone, and which sources are cited." },
   { icon: Scales, title: "We compare", body: "Your numbers against every competitor, then the gaps become ranked opportunities." },
   { icon: Globe, title: "We check your site", body: "Whether AI crawlers can reach and read your pages, so technical blockers show up too." },
@@ -96,7 +96,7 @@ export default function ScansPage() {
         <Skeleton className="h-72" />
       ) : scans.length === 0 ? (
         <Card>
-          <EmptyState icon={<ClockCounterClockwise size={30} />} title="No scans yet" body="Your first scan asks ChatGPT, Perplexity and Gemini every active prompt. It takes about a minute." action={<button type="button" onClick={startScan} disabled={starting} className={buttonClass("primary", "sm")}><Play size={14} weight="fill" /> Run first scan</button>} />
+          <EmptyState icon={<ClockCounterClockwise size={30} />} title="No scans yet" body="Your first scan asks ChatGPT, Perplexity and Gemini every active question. It takes about a minute." action={<button type="button" onClick={startScan} disabled={starting} className={buttonClass("primary", "sm")}><Play size={14} weight="fill" /> Run first scan</button>} />
         </Card>
       ) : (
         <Card>

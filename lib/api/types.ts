@@ -112,6 +112,8 @@ export type Opportunity = {
     discovery_rate?: number;
     branded_rate?: number;
     expected_objective?: string;
+    /** UNTRACKED_COMPETITOR: brands AI names that you do not track. */
+    brands?: { name: string; answers: number; questions: string[] }[];
   };
   status: "open" | "in_progress" | "completed" | "dismissed";
   area: "content" | "third_party" | "positioning" | "technical" | null;
@@ -123,11 +125,38 @@ export type Opportunity = {
   previous_count: number | null;
   steps: string[];
   effort: "S" | "M" | "L" | null;
+  /** Why AI picks others; empty for non-question gaps and locked items. */
+  why: string[];
+  /** Every lost question with who won it; empty for non-question gaps and locked items. */
+  questions: LostQuestion[];
+  success_metric: string | null;
   experiment_id: number | null;
   retest: Retest | null;
   /** Past the free trial's top 3: the kind of gap is shown, the fix is not. */
   locked: boolean;
 };
+
+export type LostQuestion = {
+  text: string;
+  category: string;
+  engines_lost: number;
+  engines_total: number;
+  winners: { name: string; engines: number; reason: string | null; quote: string | null }[];
+  cited_domains: string[];
+};
+
+/** The headline above the action plan: where the brand stands and how many answers it lost. */
+export type PlanStatus = {
+  headline: string;
+  leading: boolean;
+  mention_rate: number;
+  rank: number;
+  answers_lost: number;
+  answers_total: number;
+  /** "Where your customers would switch": questions asking for alternatives to the brand. */
+  switching: LostQuestion[];
+};
+export type OpportunityList = { status: PlanStatus | null; items: Opportunity[] };
 
 export type RetestCount = { answers: number; mentioned: number; recommended: number; scan_id: number };
 export type Retest = { status: "running" | "done" | "failed"; scan_id: number; prompts: number; before: RetestCount | null; after?: RetestCount };

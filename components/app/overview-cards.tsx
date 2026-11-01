@@ -258,7 +258,7 @@ export function AnswersCard({ answers, projectId, onOpen }: { answers: Dashboard
       subtitle="What the engines said in the latest scan"
       action={
         <Link href={`/projects/${projectId}/prompts`} className={seeAll}>
-          All prompts
+          All questions
         </Link>
       }
       className="flex flex-col"

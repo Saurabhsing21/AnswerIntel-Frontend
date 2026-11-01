@@ -8,7 +8,7 @@ import { Mark } from "@/components/ui/mark";
 const points = [
   { icon: ChatsCircle, title: "Every engine, same question", body: "We ask ChatGPT, Perplexity, Gemini and Google exactly what buyers ask." },
   { icon: SealCheck, title: "Mentioned is not recommended", body: "Each answer is read for whether you were named, picked, and ranked." },
-  { icon: CalendarCheck, title: "Every week, automatically", body: "The same prompts run on schedule, so every change is measurable." },
+  { icon: CalendarCheck, title: "Every week, automatically", body: "The same questions run on schedule, so every change is measurable." },
 ];
 
 export function Scan() {

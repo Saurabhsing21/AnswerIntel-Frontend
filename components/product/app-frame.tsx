@@ -30,7 +30,7 @@ const nav = [
     group: "General",
     items: [
       { label: "Overview", icon: House, active: true },
-      { label: "Prompts", icon: Hash },
+      { label: "Questions", icon: Hash },
       { label: "Competitors", icon: Users },
     ],
   },
@@ -140,7 +140,7 @@ export function AppFrame() {
           </div>
           <div className="mt-auto rounded-[10px] border border-line bg-surface p-3 text-[11px]">
             <p className="font-medium text-ink">Next scan</p>
-            <p className="mt-0.5 text-muted">Monday 06:00, 48 prompts</p>
+            <p className="mt-0.5 text-muted">Monday 06:00, 48 questions</p>
             <div className="mt-2.5 flex gap-1.5">
               {(["chatgpt", "perplexity", "gemini", "google"] as Engine[]).map((e) => (
                 <span key={e} className="grid size-6 place-items-center rounded-full border border-line">
@@ -271,7 +271,7 @@ export function AppFrame() {
                       <span className="block text-[12px] font-medium text-ink">{o.title}</span>
                       <span className="block text-[11px] text-muted">{o.evidence}</span>
                     </span>
-                    <span className="ml-auto shrink-0 text-[11px] whitespace-nowrap text-faint">{o.prompts} prompts</span>
+                    <span className="ml-auto shrink-0 text-[11px] whitespace-nowrap text-faint">{o.prompts} questions</span>
                   </li>
                 ))}
               </ul>

@@ -110,7 +110,7 @@ export function HeadToHead() {
             Go <Mark>head-to-head</Mark> with any rival
           </>
         }
-        muted="Pick a competitor and see exactly where they beat you, and on which prompts."
+        muted="Pick a competitor and see exactly where they beat you, and on which questions."
       />
 
       <div ref={ref}>
@@ -275,7 +275,7 @@ export function HeadToHead() {
 
           <div className="flex flex-col rounded-card border border-line-strong bg-surface p-5 md:p-8">
             <div className="flex items-center text-[13px]">
-              <span className="font-medium text-ink">Prompts {rival.name} wins</span>
+              <span className="font-medium text-ink">Questions {rival.name} wins</span>
               <span className="ml-auto rounded-full bg-mark px-2 py-0.5 font-medium text-ink">
                 {rivalWins[rival.id].length} to fix
               </span>
@@ -327,7 +327,7 @@ export function HeadToHead() {
               ))}
             </motion.ul>
             <p className="mt-auto pt-5 text-[13px] leading-relaxed text-muted">
-              Hover a prompt to see why they win it. Each one becomes an opportunity.
+              Hover a question to see why they win it. Each one becomes an opportunity.
             </p>
           </div>
         </div>

@@ -84,7 +84,7 @@ export function PromptLibrary() {
             The questions your buyers <Mark>actually ask</Mark>
           </>
         }
-        muted="We generate 30 to 50 prompts across every way buyers search, then track where each engine puts you."
+        muted="We generate 30 to 50 questions across every way buyers search, then track where each engine puts you."
       />
 
       <motion.div
@@ -97,11 +97,11 @@ export function PromptLibrary() {
         <div className="flex flex-col gap-3 border-b border-line p-3 md:flex-row md:items-center">
           <label className="flex h-10 items-center gap-2 rounded-full border border-line-strong bg-page px-3.5 transition-colors focus-within:border-ink md:w-[280px]">
             <MagnifyingGlass size={15} className="shrink-0 text-muted" />
-            <span className="sr-only">Search prompts</span>
+            <span className="sr-only">Search questions</span>
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search prompts"
+              placeholder="Search questions"
               className="min-w-0 flex-1 bg-transparent text-[14px] text-ink outline-none placeholder:text-faint"
             />
             {query && (
@@ -134,7 +134,7 @@ export function PromptLibrary() {
         </div>
 
         <div className="hidden grid-cols-[1fr_120px_172px_88px] gap-4 border-b border-line px-5 py-2.5 text-[11px] text-muted md:grid">
-          <span>Prompt</span>
+          <span>Question</span>
           <span>Intent</span>
           <span className="flex justify-around">
             {engines.map((e) => (
@@ -150,7 +150,7 @@ export function PromptLibrary() {
           {rows.length === 0 ? (
             <div className="grid min-h-[420px] place-items-center px-6 text-center">
               <div>
-                <p className="text-[15px] font-medium text-ink">No prompts match &quot;{query}&quot;</p>
+                <p className="text-[15px] font-medium text-ink">No questions match &quot;{query}&quot;</p>
                 <p className="mt-1 text-[13px] text-muted">Try &quot;alternative&quot;, &quot;startup&quot;, or clear the search.</p>
               </div>
             </div>
@@ -210,7 +210,7 @@ export function PromptLibrary() {
                               <div className="rounded-[12px] border border-line bg-surface px-4 py-3 text-[13px] leading-relaxed text-ink-2">
                                 <span className="mb-1 flex items-center gap-1.5 text-[11px] text-muted">
                                   <EngineIcon engine={p.seenOn[0] ?? "chatgpt"} size={12} />
-                                  {engineNames[p.seenOn[0] ?? "chatgpt"]} answer, {p.category.toLowerCase()} prompt
+                                  {engineNames[p.seenOn[0] ?? "chatgpt"]} answer, {p.category.toLowerCase()} question
                                 </span>
                                 {snippetFor(p.seenOn)
                                   .split(you.name)
@@ -240,7 +240,7 @@ export function PromptLibrary() {
 
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-line px-5 py-3 text-[12px] text-muted">
           <span>
-            Showing <span className="font-mono text-ink">{rows.length}</span> of {counts[ALL]} sample prompts
+            Showing <span className="font-mono text-ink">{rows.length}</span> of {counts[ALL]} sample questions
           </span>
           <span className="flex items-center gap-1.5"><span className="size-3 rounded-[4px] bg-ink" /> Recommended</span>
           <span className="flex items-center gap-1.5"><span className="size-3 rounded-[4px] bg-mark" /> Mentioned</span>

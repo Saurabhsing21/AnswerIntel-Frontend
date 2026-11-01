@@ -27,7 +27,7 @@ function PromptList({ title, tone, prompts }: { title: string; tone: "win" | "lo
         <span className="font-mono text-faint">{prompts.length}</span>
       </p>
       {prompts.length === 0 ? (
-        <p className="mt-2 text-[12px] text-faint">{tone === "win" ? "No prompts yet where you come out ahead." : "None. You hold your ground on every prompt."}</p>
+        <p className="mt-2 text-[12px] text-faint">{tone === "win" ? "No questions yet where you come out ahead." : "None. You hold your ground on every question."}</p>
       ) : (
         <ul className="mt-2.5 space-y-1.5">
           {prompts.slice(0, 4).map((p) => (
@@ -98,13 +98,13 @@ function CompetitorsInner() {
       <StatStrip
         stats={[
           { label: "Tracked", value: `${competitors?.length ?? 0}/${max ?? "–"}`, hint: "brands you compare against", icon: <UsersThree size={18} />, tone: "blue" },
-          { label: "Prompts you win", value: wins, hint: "you are recommended, they are not", icon: <Trophy size={18} />, tone: "green" },
-          { label: "Prompts you lose", value: losses, hint: "they are recommended, you are not", icon: <Sword size={18} />, tone: "red" },
-          { label: "Biggest threat", value: threat && threat.they_win > 0 ? threat.name : "None", hint: threat && threat.they_win > 0 ? `wins ${threat.they_win} prompts` : "nobody is ahead of you", icon: <Crosshair size={18} />, tone: "amber" },
+          { label: "Questions you win", value: wins, hint: "you are recommended, they are not", icon: <Trophy size={18} />, tone: "green" },
+          { label: "Questions you lose", value: losses, hint: "they are recommended, you are not", icon: <Sword size={18} />, tone: "red" },
+          { label: "Biggest threat", value: threat && threat.they_win > 0 ? threat.name : "None", hint: threat && threat.they_win > 0 ? `wins ${threat.they_win} questions` : "nobody is ahead of you", icon: <Crosshair size={18} />, tone: "amber" },
         ]}
       />
 
-      <Card title="Tracked competitors" subtitle={`${competitors?.length ?? 0} of ${max ?? "–"}. Ordered by how many prompts each one wins over you.`}>
+      <Card title="Tracked competitors" subtitle={`${competitors?.length ?? 0} of ${max ?? "–"}. Ordered by how many questions each one wins over you.`}>
         <div className="flex flex-wrap gap-2 px-5 py-4">
           {(competitors ?? []).length === 0 && <p className="text-[13px] text-muted">No competitors yet. Add the brands buyers compare you with.</p>}
           {[...(competitors ?? [])]

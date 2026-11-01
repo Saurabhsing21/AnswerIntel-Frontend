@@ -83,7 +83,7 @@ export function GetStarted({
   const engineList = (project?.engines ?? []).map((e) => engineNames[e]).join(", ");
   const steps: Step[] = [
     { key: "competitors", title: "Add your competitors", body: "Up to five brands you lose deals to. AI answers are compared against them.", icon: Users, done: counts.competitors > 0, href: `/projects/${projectId}/competitors?add=1`, action: "Add competitors" },
-    { key: "prompts", title: "Generate buyer questions", body: "We write the questions your buyers ask AI, then you edit or switch off any of them.", icon: Hash, done: counts.active_prompts > 0, href: `/projects/${projectId}/prompts`, action: "Generate prompts" },
+    { key: "prompts", title: "Generate buyer questions", body: "We write the questions your buyers ask AI, then you edit or switch off any of them.", icon: Hash, done: counts.active_prompts > 0, href: `/projects/${projectId}/prompts`, action: "Generate questions" },
     { key: "scan", title: "Run your first scan", body: `Every question goes to ${engineList || "each AI engine"}. It takes about a minute.`, icon: Play, done: Boolean(scan && !scanning && scan.status !== "failed"), action: "Run first scan", onAction: onStartScan },
   ];
   const doneCount = steps.filter((s) => s.done).length;

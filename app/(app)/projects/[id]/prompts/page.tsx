@@ -137,8 +137,8 @@ export default function PromptsPage() {
   }
   function added(created: Prompt[], inactive: number) {
     setPrompts((all) => [...(all ?? []), ...created]);
-    const off = inactive ? ` ${inactive} switched off: your plan's prompt limit is full.` : "";
-    toast.push(`${created.length} prompt${created.length === 1 ? "" : "s"} added.${off}`, "success");
+    const off = inactive ? ` ${inactive} switched off: your plan's question limit is full.` : "";
+    toast.push(`${created.length} question${created.length === 1 ? "" : "s"} added.${off}`, "success");
   }
 
   const activeCount = prompts?.filter((p) => p.is_active).length ?? 0;
@@ -151,7 +151,7 @@ export default function PromptsPage() {
         actions={
           <button
             type="button"
-            onClick={() => (pro ? setGenerating(true) : askUpgrade("More prompts are on paid plans. Track up to 160 questions, written to your instructions."))}
+            onClick={() => (pro ? setGenerating(true) : askUpgrade("More questions are on paid plans. Track up to 160 questions, written to your instructions."))}
             className={buttonClass("primary", "sm")}
           >
             <Sparkle size={14} weight="fill" /> Generate more {!pro && <ProBadge />}
@@ -161,7 +161,7 @@ export default function PromptsPage() {
       <StatStrip
         stats={[
           { label: "Active", value: activeCount, hint: "asked on every scan", icon: <ListChecks size={18} />, tone: "blue" },
-          { label: "Total prompts", value: prompts?.length ?? 0, hint: `${(prompts?.length ?? 0) - activeCount} switched off`, icon: <Hash size={18} />, tone: "violet" },
+          { label: "Total questions", value: prompts?.length ?? 0, hint: `${(prompts?.length ?? 0) - activeCount} switched off`, icon: <Hash size={18} />, tone: "violet" },
           { label: "Recommend you", value: scanned.filter((p) => p.recommended_on > 0).length, hint: "on at least one engine", icon: <Trophy size={18} />, tone: "green" },
           { label: "Never mention you", value: scanned.filter((p) => p.seen_on === 0).length, hint: "your biggest gaps", icon: <Prohibit size={18} />, tone: "red" },
         ]}
@@ -171,8 +171,8 @@ export default function PromptsPage() {
         <div className="flex flex-col gap-3 border-b border-line p-3 md:flex-row md:items-center">
           <label className="flex h-9 items-center gap-2 rounded-full border border-line-strong bg-page px-3 md:w-[260px]">
             <MagnifyingGlass size={14} className="text-muted" />
-            <span className="sr-only">Search prompts</span>
-            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search prompts" className="min-w-0 flex-1 bg-transparent text-[13px] outline-none" />
+            <span className="sr-only">Search questions</span>
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search questions" className="min-w-0 flex-1 bg-transparent text-[13px] outline-none" />
           </label>
           <div className="min-w-0 overflow-x-auto">
             <Segmented
@@ -205,7 +205,7 @@ export default function PromptsPage() {
         {loading ? (
           <div className="space-y-2 p-4">{[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-10" />)}</div>
         ) : rows.length === 0 ? (
-          <EmptyState title={prompts?.length ? "No prompts match" : "No prompts yet"} body={prompts?.length ? "Try another search or category." : "Generate prompts to start tracking buyer questions."} />
+          <EmptyState title={prompts?.length ? "No questions match" : "No questions yet"} body={prompts?.length ? "Try another search or category." : "Generate questions to start tracking buyer questions."} />
         ) : (
           <ul className="divide-y divide-line">
             {rows.map((p) => {
@@ -222,7 +222,7 @@ export default function PromptsPage() {
                       <input
                         autoFocus
                         defaultValue={p.text}
-                        aria-label="Edit prompt"
+                        aria-label="Edit question"
                         className={cx(inputClass, "h-8")}
                         onBlur={(e) => saveText(p, e.currentTarget.value)}
                         onKeyDown={(e) => {
@@ -245,10 +245,10 @@ export default function PromptsPage() {
                     <span className="hidden w-10 shrink-0 text-right font-mono text-[12px] text-muted sm:block">
                       {result ? `${result.seen_on}/${result.engines.length}` : "-"}
                     </span>
-                    <button type="button" onClick={() => setEditing(p.id)} title="Edit the question" className="grid size-7 shrink-0 place-items-center rounded-full text-muted hover:bg-sunken hover:text-ink" aria-label="Edit prompt">
+                    <button type="button" onClick={() => setEditing(p.id)} title="Edit the question" className="grid size-7 shrink-0 place-items-center rounded-full text-muted hover:bg-sunken hover:text-ink" aria-label="Edit question">
                       <PencilSimple size={13} />
                     </button>
-                    <button type="button" onClick={() => remove(p)} title="Delete the question" className="grid size-7 shrink-0 place-items-center rounded-full text-muted hover:bg-sunken hover:text-down" aria-label="Delete prompt">
+                    <button type="button" onClick={() => remove(p)} title="Delete the question" className="grid size-7 shrink-0 place-items-center rounded-full text-muted hover:bg-sunken hover:text-down" aria-label="Delete question">
                       <Trash size={13} />
                     </button>
                   </li>
@@ -308,7 +308,7 @@ export default function PromptsPage() {
         )}
         {pro ? (
           <form onSubmit={add} className="flex gap-2 border-t border-line p-3">
-            <input name="text" required minLength={8} className={inputClass} placeholder="Add a question your buyers ask AI" aria-label="New prompt" />
+            <input name="text" required minLength={8} className={inputClass} placeholder="Add a question your buyers ask AI" aria-label="New question" />
             <button type="submit" disabled={busy} className={buttonClass("primary", "sm")}><Plus size={14} weight="bold" /> Add</button>
           </form>
         ) : (

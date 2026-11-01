@@ -78,7 +78,7 @@ export function GeneratePrompts({ projectId, open, onClose, onAdded }: { project
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-label="Generate prompts">
+    <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-label="Generate questions">
       <button type="button" aria-label="Close" onClick={onClose} className="absolute inset-0 bg-black/20" />
       <div className="relative flex h-full w-full max-w-[560px] flex-col border-l border-line-strong bg-surface shadow-2xl">
         <header className="flex items-center gap-2 border-b border-line px-5 py-4">
@@ -88,7 +88,7 @@ export function GeneratePrompts({ projectId, open, onClose, onAdded }: { project
             </button>
           )}
           <Sparkle size={16} weight="fill" className="text-ink" />
-          <span className="text-[14px] font-medium">{suggestions ? "Review new prompts" : "Generate prompts"}</span>
+          <span className="text-[14px] font-medium">{suggestions ? "Review new questions" : "Generate questions"}</span>
           <button type="button" onClick={onClose} className="ml-auto grid size-8 place-items-center rounded-full hover:bg-sunken" aria-label="Close">
             <X size={15} />
           </button>
@@ -98,7 +98,7 @@ export function GeneratePrompts({ projectId, open, onClose, onAdded }: { project
           <form onSubmit={write} className="flex flex-1 flex-col">
             <div className="flex-1 space-y-5 overflow-y-auto px-5 py-5">
               <div>
-                <label htmlFor="instructions" className="text-[14px] font-medium text-ink">What kind of prompts do you want?</label>
+                <label htmlFor="instructions" className="text-[14px] font-medium text-ink">What kind of questions do you want?</label>
                 <p className="mt-0.5 text-[13px] text-muted">Describe a topic, an audience or a buying moment. We write buyer questions around it, using your brand, market and competitors.</p>
                 <textarea
                   id="instructions"

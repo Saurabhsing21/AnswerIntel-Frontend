@@ -13,7 +13,7 @@ import { cx } from "@/lib/cx";
 const ROLE_INFO: Record<Role, { label: string; icon: typeof User; body: string }> = {
   owner: { label: "Owner", icon: Crown, body: "Everything, including billing and who else is an owner." },
   admin: { label: "Admin", icon: ShieldCheck, body: "Manages people and projects, but not ownership." },
-  member: { label: "Member", icon: User, body: "Works on projects: scans, prompts, reports." },
+  member: { label: "Member", icon: User, body: "Works on projects: scans, questions, reports." },
 };
 
 const selectClass = "h-9 rounded-full border border-line-strong bg-surface px-3 text-[13px] text-ink-2 outline-none focus:border-ink";

@@ -81,7 +81,7 @@ export function ResponseDrawer({ projectId, responseId, onClose }: { projectId: 
           ) : (
             <>
               <div>
-                <p className="text-[12px] text-muted">Prompt</p>
+                <p className="text-[12px] text-muted">Question</p>
                 <p className="mt-1 font-display text-[18px] leading-snug tracking-[-0.02em]">&ldquo;{data.prompt}&rdquo;</p>
               </div>
 
