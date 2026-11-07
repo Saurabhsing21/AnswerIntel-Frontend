@@ -1,13 +1,12 @@
-import { BACKEND_URL, errorBody } from "@/lib/api/server";
+import { BACKEND_URL, errorBody, visitorHeaders } from "@/lib/api/server";
 
 // Public: no session. Passes the visitor's address on so the API can limit checks per visitor.
 export async function POST(request: Request) {
   const body = await request.text();
-  const forwarded = request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "";
   try {
     const res = await fetch(`${BACKEND_URL}/api/v1/free-check`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", ...(forwarded ? { "X-Forwarded-For": forwarded } : {}) },
+      headers: { "Content-Type": "application/json", ...visitorHeaders(request) },
       body,
       cache: "no-store",
     });

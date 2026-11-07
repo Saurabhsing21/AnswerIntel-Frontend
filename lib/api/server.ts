@@ -1,5 +1,7 @@
 
-export const BACKEND_URL = (process.env.BACKEND_URL ?? "http://localhost:8000").replace(/\/$/, "");
+// `||`, not `??`: an empty `BACKEND_URL=` line in .env must still fall back to the local API.
+export const BACKEND_URL = (process.env.BACKEND_URL || "http://localhost:8000").replace(/\/$/, "");
+const PROXY_SHARED_SECRET = process.env.PROXY_SHARED_SECRET ?? "";
 export const TOKEN_COOKIE = "ai_session";
 export const REFRESH_COOKIE = "ai_refresh";
 
@@ -37,6 +39,15 @@ export function refreshTokens(refreshToken: string): Promise<Tokens | null> {
     setTimeout(() => inflight.delete(refreshToken), 10_000);
   }
   return pending;
+}
+
+/**
+ * The visitor's address for the API's per-person rate limits. Every call reaches the API from this server, so
+ * without it all visitors would share one limit. Signed with the shared secret: the API ignores it otherwise.
+ */
+export function visitorHeaders(request: Request): Record<string, string> {
+  const ip = (request.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() || request.headers.get("x-real-ip") || "";
+  return PROXY_SHARED_SECRET && ip ? { "X-Client-IP": ip, "X-Proxy-Secret": PROXY_SHARED_SECRET } : {};
 }
 
 export function errorBody(code: string, message: string) {

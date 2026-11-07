@@ -1,4 +1,4 @@
-import { BACKEND_URL, errorBody } from "@/lib/api/server";
+import { BACKEND_URL, errorBody, visitorHeaders } from "@/lib/api/server";
 import { addToWaitlist, resendWaitlistEnabled, sendWaitlistConfirmation } from "@/lib/server/resend";
 
 // Best-effort per-visitor limit for each server instance (serverless instances do not share it).
@@ -56,8 +56,7 @@ export async function POST(request: Request) {
   try {
     const res = await fetch(`${BACKEND_URL}/api/v1/waitlist`, {
       method: "POST",
-      // The visitor's address, so the API rate-limits per person (uvicorn --proxy-headers trusts it from this server).
-      headers: { "Content-Type": "application/json", "X-Forwarded-For": request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "" },
+      headers: { "Content-Type": "application/json", ...visitorHeaders(request) },
       body: JSON.stringify({ email }),
       cache: "no-store",
     });

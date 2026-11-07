@@ -1,4 +1,4 @@
-import { BACKEND_URL, errorBody } from "@/lib/api/server";
+import { BACKEND_URL, visitorHeaders, errorBody } from "@/lib/api/server";
 
 // The account links in emails work without a session, so they can't go through /api/backend.
 const ALLOWED = new Set(["forgot-password", "reset-password", "verify-email"]);
@@ -9,7 +9,7 @@ export async function POST(request: Request, ctx: RouteContext<"/api/auth/public
   try {
     const res = await fetch(`${BACKEND_URL}/api/v1/auth/${action}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-Forwarded-For": request.headers.get("x-forwarded-for") ?? "" },
+      headers: { "Content-Type": "application/json", ...visitorHeaders(request) },
       body: await request.text(),
       cache: "no-store",
     });

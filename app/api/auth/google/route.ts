@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { BACKEND_URL, REFRESH_COOKIE, TOKEN_COOKIE, cookieOptions, errorBody } from "@/lib/api/server";
+import { BACKEND_URL, visitorHeaders, REFRESH_COOKIE, TOKEN_COOKIE, cookieOptions, errorBody } from "@/lib/api/server";
 
 /** "Continue with Google": swaps Google's ID token for a SeenLens session, kept in HttpOnly cookies like a password login. */
 export async function POST(request: Request) {
@@ -7,7 +7,7 @@ export async function POST(request: Request) {
   try {
     const res = await fetch(`${BACKEND_URL}/api/v1/auth/google`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-Forwarded-For": request.headers.get("x-forwarded-for") ?? "" },
+      headers: { "Content-Type": "application/json", ...visitorHeaders(request) },
       body: JSON.stringify({ credential: String(credential ?? "") }),
       cache: "no-store",
     });

@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { BACKEND_URL, REFRESH_COOKIE, TOKEN_COOKIE, cookieOptions, errorBody, refreshTokens } from "@/lib/api/server";
+import { BACKEND_URL, REFRESH_COOKIE, TOKEN_COOKIE, cookieOptions, errorBody, refreshTokens, visitorHeaders } from "@/lib/api/server";
 
 // Same-origin proxy: the browser calls /api/backend/*, the server attaches the
 // session token from the HttpOnly cookie and forwards to the FastAPI backend.
@@ -17,7 +17,7 @@ async function forward(request: Request, ctx: RouteContext<"/api/backend/[...pat
   const call = (bearer: string) =>
     fetch(`${BACKEND_URL}/api/v1/${path.map(encodeURIComponent).join("/")}${search}`, {
       method: request.method,
-      headers: { Authorization: `Bearer ${bearer}`, ...(hasBody ? { "Content-Type": "application/json" } : {}) },
+      headers: { Authorization: `Bearer ${bearer}`, ...visitorHeaders(request), ...(hasBody ? { "Content-Type": "application/json" } : {}) },
       body,
       cache: "no-store",
     });
