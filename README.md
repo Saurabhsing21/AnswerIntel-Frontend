@@ -16,6 +16,14 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Tests
+
+```bash
+npm test            # unit tests (Vitest)
+npm run build && npm run e2e   # Playwright: public pages and security headers
+E2E_BACKEND_URL=http://localhost:8000 npm run e2e   # also the sign-up journey; use an API on a throwaway database
+```
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
