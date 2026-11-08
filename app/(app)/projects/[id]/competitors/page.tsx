@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle, Crosshair, Plus, Sword, Trophy, UsersThree, X, XCircle } from "@phosphor-icons/react";
+import { CheckCircle, Crosshair, PencilSimple, Plus, Sword, Trophy, UsersThree, X, XCircle } from "@phosphor-icons/react";
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { BrandTile } from "@/components/app/brand-tile";
@@ -10,6 +10,7 @@ import { useToast } from "@/components/app/toast";
 import { Card, EmptyState, ErrorBanner, inputClass, PageHeader, Skeleton, StatStrip } from "@/components/app/ui";
 import { buttonClass } from "@/components/ui/button";
 import { api, ApiError, useApi } from "@/lib/api/client";
+import { aliasProblem, parseAliases } from "@/lib/aliases";
 import type { Competitor, CompetitorAnalysis } from "@/lib/api/types";
 import { brandColor } from "@/lib/brand";
 import { cx } from "@/lib/cx";
@@ -51,6 +52,8 @@ function CompetitorsInner() {
   useRefreshOnScan(reload);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [editing, setEditing] = useState<Competitor | null>(null); // the competitor whose other names are being edited
+  const [draft, setDraft] = useState("");
   const max = useProject().billing?.limits.competitors; // set by the workspace's plan
 
   async function add(e: React.FormEvent<HTMLFormElement>) {
@@ -59,13 +62,36 @@ function CompetitorsInner() {
     const f = Object.fromEntries(new FormData(form)) as Record<string, string>;
     let website = f.website.trim();
     if (website && !/^https?:\/\//.test(website)) website = `https://${website}`;
+    const aliases = parseAliases(f.aliases ?? "");
+    const problem = aliasProblem(aliases);
+    if (problem) return setError(problem);
     setBusy(true);
     setError("");
     try {
-      const created = await api<Competitor>(`/projects/${id}/competitors`, { method: "POST", json: { name: f.name, website } });
+      const created = await api<Competitor>(`/projects/${id}/competitors`, { method: "POST", json: { name: f.name, website, aliases } });
       setCompetitors((all) => [...(all ?? []), created]);
       form.reset();
       toast.push(`${created.name} added. It is measured from your next scan.`, "success");
+    } catch (err) {
+      setError((err as ApiError).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function saveAliases(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editing) return;
+    const aliases = parseAliases(draft);
+    const problem = aliasProblem(aliases);
+    if (problem) return setError(problem);
+    setBusy(true);
+    setError("");
+    try {
+      const updated = await api<Competitor>(`/projects/${id}/competitors/${editing.id}`, { method: "PATCH", json: { aliases } });
+      setCompetitors((all) => (all ?? []).map((x) => (x.id === updated.id ? updated : x)));
+      toast.push(`Other names for ${updated.name} saved. The next scan uses them.`, "success");
+      setEditing(null);
     } catch (err) {
       setError((err as ApiError).message);
     } finally {
@@ -117,6 +143,9 @@ function CompetitorsInner() {
                   <span className="font-medium text-ink">{c.name}</span>
                   <span className="text-[12px] text-muted">{host(c.website)}</span>
                   {lost != null && lost > 0 && <span className="rounded-full bg-down-soft px-2 py-0.5 text-[11px] font-medium text-down-ink">wins {lost}</span>}
+                  <button type="button" onClick={() => { setEditing(c); setDraft(c.aliases.join(", ")); setError(""); }} aria-label={`Edit other names for ${c.name}`} title={c.aliases.length ? `Also called: ${c.aliases.join(", ")}` : "Add other names"} className="grid size-6 place-items-center rounded-full text-muted transition-colors hover:bg-sunken hover:text-ink">
+                    <PencilSimple size={12} />
+                  </button>
                   <button type="button" onClick={() => remove(c)} aria-label={`Remove ${c.name}`} title="Stop tracking" className="grid size-6 place-items-center rounded-full text-muted transition-colors hover:bg-sunken hover:text-down">
                     <X size={12} />
                   </button>
@@ -124,10 +153,19 @@ function CompetitorsInner() {
               );
             })}
         </div>
+        {editing && (
+          <form onSubmit={saveAliases} className="flex flex-col gap-2 border-t border-line bg-[#fbfbfa] px-5 py-3.5 sm:flex-row sm:items-center">
+            <label className="shrink-0 text-[13px] font-medium text-ink" htmlFor="competitor-aliases">Other names for {editing.name}</label>
+            <input id="competitor-aliases" autoFocus value={draft} onChange={(e) => setDraft(e.target.value)} className={cx(inputClass, "h-9 flex-1 bg-surface")} placeholder="Separate with commas, for example HubSpot CRM" />
+            <button type="submit" disabled={busy} className={buttonClass("primary", "sm")}>Save</button>
+            <button type="button" onClick={() => setEditing(null)} className={buttonClass("secondary", "sm")}>Cancel</button>
+          </form>
+        )}
         {(competitors?.length ?? 0) < (max ?? Infinity) ? (
           <form onSubmit={add} className="flex flex-col gap-2 border-t border-line bg-[#fbfbfa] px-5 py-3.5 sm:flex-row sm:items-center">
             <input name="name" required autoFocus={params.get("add") === "1"} aria-label="Competitor name" className={cx(inputClass, "h-9 bg-surface sm:w-[220px]")} placeholder="Competitor name" />
             <input name="website" required aria-label="Competitor website" className={cx(inputClass, "h-9 flex-1 bg-surface")} placeholder="competitor.com" />
+            <input name="aliases" aria-label="Other names (optional)" className={cx(inputClass, "h-9 bg-surface sm:w-[220px]")} placeholder="Other names, comma separated" />
             <button type="submit" disabled={busy} className={buttonClass("primary", "sm")}>
               <Plus size={14} weight="bold" /> Add competitor
             </button>

@@ -9,6 +9,7 @@ import { Card, ErrorBanner, Field, inputClass, PageHeader, Skeleton } from "@/co
 import { EnginePicker, useEngines } from "@/components/app/engine-picker";
 import { buttonClass } from "@/components/ui/button";
 import { api, ApiError } from "@/lib/api/client";
+import { aliasProblem, parseAliases } from "@/lib/aliases";
 import type { Project, Schedule } from "@/lib/api/types";
 import { cx } from "@/lib/cx";
 import { formatHour, nextRun, relativeDay, WEEKDAYS } from "@/lib/schedule";
@@ -99,18 +100,21 @@ function ScheduleCard({ projectId, initial, onSaved }: { projectId: string; init
 
 function DetailsCard({ project, onSaved }: { project: Project; onSaved: () => void }) {
   const toast = useToast();
-  const [form, setForm] = useState({ brand_name: project.brand_name, website: project.website, category: project.category, country: project.country, description: project.description ?? "" });
+  const [form, setForm] = useState({ brand_name: project.brand_name, website: project.website, category: project.category, country: project.country, description: project.description ?? "", aliases: project.aliases.join(", ") });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setForm((f) => ({ ...f, [key]: e.target.value }));
-  const dirty = form.brand_name !== project.brand_name || form.website !== project.website || form.category !== project.category || form.country !== project.country || form.description !== (project.description ?? "");
+  const dirty = form.brand_name !== project.brand_name || form.website !== project.website || form.category !== project.category || form.country !== project.country || form.description !== (project.description ?? "") || form.aliases !== project.aliases.join(", ");
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
+    const aliases = parseAliases(form.aliases);
+    const problem = aliasProblem(aliases);
+    if (problem) return setError(problem);
     setSaving(true);
     setError("");
     try {
-      await api(`/projects/${project.id}`, { method: "PUT", json: { ...form, description: form.description || null } });
+      await api(`/projects/${project.id}`, { method: "PUT", json: { ...form, description: form.description || null, aliases } });
       toast.push("Project updated. The next scan uses these details.", "success");
       onSaved();
     } catch (err) {
@@ -129,6 +133,9 @@ function DetailsCard({ project, onSaved }: { project: Project; onSaved: () => vo
           <Field label="Category" hint="For example: CRM software"><input className={inputClass} value={form.category} onChange={set("category")} required /></Field>
           <Field label="Market" hint="Country code, for example US"><input className={inputClass} value={form.country} onChange={set("country")} required /></Field>
         </div>
+        <Field label="Other names" hint="Other ways AI might write your brand, separated by commas. For example: Halden CRM, Halden App.">
+          <input className={inputClass} value={form.aliases} onChange={set("aliases")} placeholder="Halden CRM, Halden App" />
+        </Field>
         <Field label="Description" hint="One sentence on what you do and who it is for.">
           <textarea className={cx(inputClass, "h-24 resize-none py-2")} value={form.description} onChange={set("description")} />
         </Field>

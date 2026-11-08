@@ -3,7 +3,7 @@ import type { Engine } from "@/lib/data";
 export type { Engine };
 export type Verdict = "recommended" | "mentioned" | "absent";
 
-export type Project = { id: string; workspace_id: string; brand_name: string; website: string; description: string | null; category: string; country: string; engines: Engine[] };
+export type Project = { id: string; workspace_id: string; brand_name: string; website: string; description: string | null; category: string; country: string; engines: Engine[]; aliases: string[] };
 
 export type Role = "owner" | "admin" | "member";
 export type Workspace = { id: string; name: string; role: Role };
@@ -66,7 +66,7 @@ export type Billing = {
 };
 
 export type Schedule = { enabled: boolean; frequency: string; day_of_week: number; hour: number; last_run_at: string | null };
-export type Competitor = { id: number; name: string; website: string };
+export type Competitor = { id: number; name: string; website: string; aliases: string[] };
 
 export type Prompt = {
   id: number;
