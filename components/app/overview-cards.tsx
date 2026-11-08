@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ArrowRight, CalendarCheck, ChartLine, FileText, Flask, Handshake, Target, Wrench } from "@phosphor-icons/react";
+import { Check, ArrowRight, CalendarCheck, ChartLine, CheckCircle, FileText, Flask, Handshake, Target, Warning, Wrench } from "@phosphor-icons/react";
 import Link from "next/link";
 import { BrandTile } from "@/components/app/brand-tile";
 import { Sparkline } from "@/components/app/charts";
@@ -159,6 +159,20 @@ export const AREA_LABEL = { content: "Content", third_party: "Third-party presen
 
 const EFFORT_LABEL: Record<string, string> = { S: "Quick win", M: "A few hours", L: "Bigger project" };
 
+/** Whether the loss repeated across scans. Only question gaps know, so other kinds of gap show nothing. */
+export function ConfirmedBadge({ confirmed }: { confirmed?: boolean }) {
+  if (confirmed == null) return null;
+  return confirmed ? (
+    <span className="inline-flex items-center gap-1 rounded-full bg-up-soft px-2 py-0.5 text-[11px] font-medium text-up-ink" title="Lost in at least two scans">
+      <CheckCircle size={11} weight="fill" /> Confirmed
+    </span>
+  ) : (
+    <span className="inline-flex items-center gap-1 rounded-full bg-amber-soft px-2 py-0.5 text-[11px] font-medium text-amber-ink" title="Seen in one scan so far. A second scan will confirm or clear it.">
+      <Warning size={11} weight="fill" /> Not confirmed yet
+    </span>
+  );
+}
+
 /** This week's 3 actions, with progress: the habit loop that brings people back each week. */
 export function ThisWeekCard({ plan, projectId }: { plan: Dashboard["this_week"]; projectId: string }) {
   const total = plan.items.length;
@@ -187,8 +201,9 @@ export function ThisWeekCard({ plan, projectId }: { plan: Dashboard["this_week"]
                   <span className="min-w-0 flex-1">
                     <span className={cx("block text-[13px] font-medium", done ? "text-muted line-through" : "text-ink")}>{o.title}</span>
                     <span className="mt-0.5 block truncate text-[12px] text-muted">{o.steps[0] ?? o.recommended_action}</span>
-                    <span className="mt-1.5 flex items-center gap-2">
+                    <span className="mt-1.5 flex flex-wrap items-center gap-2">
                       <ImpactPill impact={o.impact} />
+                      <ConfirmedBadge confirmed={o.evidence.confirmed} />
                       {o.effort && <span className="text-[11px] text-faint">{EFFORT_LABEL[o.effort]}</span>}
                       {o.status === "in_progress" && <span className="text-[11px] font-medium text-ink">In progress</span>}
                     </span>
@@ -229,8 +244,9 @@ export function OpportunitiesCard({ items, projectId }: { items: Opportunity[]; 
                     <Icon size={18} />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="flex items-center gap-2">
+                    <span className="flex flex-wrap items-center gap-2">
                       <ImpactPill impact={o.impact} />
+                      <ConfirmedBadge confirmed={o.evidence.confirmed} />
                       {o.area && <span className="text-[11px] text-faint">{AREA_LABEL[o.area]}</span>}
                     </span>
                     <span className="mt-1 block truncate text-[13px] font-medium text-ink">{o.title}</span>

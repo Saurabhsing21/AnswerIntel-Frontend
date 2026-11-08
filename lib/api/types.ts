@@ -120,13 +120,19 @@ export type Opportunity = {
     expected_objective?: string;
     /** UNTRACKED_COMPETITOR: brands AI names that you do not track. */
     brands?: { name: string; answers: number; questions: string[] }[];
+    /** Question gaps: lost in at least two scans of the same question. Absent on other kinds of gap. */
+    confirmed?: boolean;
+    /** Question gaps: e.g. "Lost in 3 of 3 scans, on 2 of 2 engines". */
+    consistency?: string;
+    /** CITATION_GAP: the exact pages AI cited. */
+    pages?: CitedPage[];
   };
   status: "open" | "in_progress" | "completed" | "dismissed";
   area: "content" | "third_party" | "positioning" | "technical" | null;
   expected_objective: string | null;
   related_prompts: string[];
-  /** Compared with the previous scan; "resolved" = no longer found, the fix worked. */
-  trend: "new" | "open" | "better" | "worse" | "resolved";
+  /** Compared with the previous scan; "improving" = gone in one scan, "resolved" = gone in two in a row, the fix worked. */
+  trend: "new" | "open" | "better" | "worse" | "improving" | "resolved";
   first_seen_scan_id: number | null;
   previous_count: number | null;
   steps: string[];
@@ -142,6 +148,8 @@ export type Opportunity = {
   locked: boolean;
 };
 
+export type CitedPage = { url: string; domain: string; source_type: string | null; count: number };
+
 export type LostQuestion = {
   text: string;
   category: string;
@@ -149,6 +157,12 @@ export type LostQuestion = {
   engines_total: number;
   winners: { name: string; engines: number; reason: string | null; quote: string | null }[];
   cited_domains: string[];
+  /** The newer fields are missing on rows stored before they existed. */
+  scans_lost?: number;
+  scans_seen?: number;
+  /** Ids of the lost AI answers; open one with ResponseDrawer. */
+  response_ids?: number[];
+  cited_pages?: CitedPage[];
 };
 
 /** The headline above the action plan: where the brand stands and how many answers it lost. */
@@ -165,7 +179,15 @@ export type PlanStatus = {
 export type OpportunityList = { status: PlanStatus | null; items: Opportunity[] };
 
 export type RetestCount = { answers: number; mentioned: number; recommended: number; scan_id: number };
-export type Retest = { status: "running" | "done" | "failed"; scan_id: number; prompts: number; before: RetestCount | null; after?: RetestCount };
+export type Retest = {
+  status: "running" | "done" | "failed";
+  scan_id: number;
+  prompts: number;
+  before: RetestCount | null;
+  after?: RetestCount;
+  /** Mention rate moved beyond sampling noise ("better"/"worse") or not ("too_early"). Only "better" completes the fix. */
+  verdict?: "better" | "worse" | "too_early";
+};
 
 export type ReportType = "weekly" | "monthly" | "manual";
 export type ReportSummary = {

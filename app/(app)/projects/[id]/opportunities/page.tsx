@@ -1,19 +1,21 @@
 "use client";
 
-import { ArrowCounterClockwise, CaretDown, ChatCircleText, Check, CheckCircle, CircleNotch, Copy, Flag, Lightbulb, Lock, NotePencil, Play, Plus, Prohibit, Quotes, Target, Trophy, Warning, X } from "@phosphor-icons/react";
+import { ArrowCounterClockwise, ArrowUpRight, CaretDown, ChatCircleText, Check, CheckCircle, CircleNotch, Copy, Flag, Lightbulb, Lock, NotePencil, Play, Plus, Prohibit, Quotes, Target, Trophy, Warning, X } from "@phosphor-icons/react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { ExperimentsSection } from "@/components/app/experiments-section";
 import { askUpgrade, ProBadge, usePro, useTracked } from "@/components/app/pro-lock";
 import { useRefreshOnScan } from "@/components/app/project-context";
-import { AREA_ICON, AREA_LABEL, AREA_TONE } from "@/components/app/overview-cards";
+import { ResponseDrawer } from "@/components/app/response-drawer";
+import { AREA_ICON, AREA_LABEL, AREA_TONE, ConfirmedBadge } from "@/components/app/overview-cards";
 import { useToast } from "@/components/app/toast";
 import { Card, EmptyState, ErrorBanner, ImpactPill, PageHeader, Segmented, Skeleton, StatStrip, TONE_TILE } from "@/components/app/ui";
 import { buttonClass } from "@/components/ui/button";
 import { api, ApiError, useApi } from "@/lib/api/client";
 import type { LostQuestion, Opportunity, OpportunityList, PlanStatus } from "@/lib/api/types";
+import { pageLabel, retestVerdictLabel } from "@/lib/confidence";
 import { cx } from "@/lib/cx";
-import { pct, plainQuote } from "@/lib/format";
+import { pct, plainQuote, SOURCE_LABELS } from "@/lib/format";
 
 type Status = Opportunity["status"];
 type Area = NonNullable<Opportunity["area"]>;
@@ -32,7 +34,7 @@ const TYPE_LABELS: Record<string, string> = {
 /** Whether the side column has anything to show (question gaps put their detail in the main column). */
 const hasEvidence = (o: Opportunity) => {
   const e = o.evidence;
-  return Boolean(e.findings?.length || e.discovery_rate != null || e.domains?.length || (!o.questions.length && e.prompts?.length));
+  return Boolean(e.findings?.length || e.discovery_rate != null || e.pages?.length || e.domains?.length || (!o.questions.length && e.prompts?.length));
 };
 
 function Evidence({ o }: { o: Opportunity }) {
@@ -45,7 +47,7 @@ function Evidence({ o }: { o: Opportunity }) {
       {e.findings?.map((f) => (
         <div key={f.code} className="rounded-[10px] border border-line bg-surface px-3 py-2">
           <p className="flex items-center gap-1.5 font-medium text-ink">
-            <Warning size={13} className={f.impact === "high" ? "text-down" : "text-[#a16207]"} />
+            <Warning size={13} className={f.impact === "high" ? "text-down" : f.impact === "low" ? "text-faint" : "text-[#a16207]"} />
             {f.message}
           </p>
           <p className="mt-0.5 text-muted">{f.action}</p>
@@ -69,7 +71,18 @@ function Evidence({ o }: { o: Opportunity }) {
           ))}
         </div>
       )}
-      {e.domains?.map((d) => (
+      {e.pages?.map((p) => (
+        <p key={p.url} className="flex items-center gap-2 rounded-[10px] border border-line bg-surface px-3 py-2">
+          <a href={p.url} target="_blank" rel="noreferrer noopener" className="inline-flex min-w-0 items-center gap-1 text-ink underline-offset-2 hover:underline">
+            <span className="truncate">{pageLabel(p.url)}</span> <ArrowUpRight size={11} className="shrink-0" />
+          </a>
+          <span className="ml-auto shrink-0 pl-2 text-right text-muted">
+            {p.source_type && SOURCE_LABELS[p.source_type] ? `${SOURCE_LABELS[p.source_type]} · ` : ""}
+            <span className="font-mono">{p.count}x</span>
+          </span>
+        </p>
+      ))}
+      {!e.pages?.length && e.domains?.map((d) => (
         <p key={d.domain} className="flex items-center rounded-[10px] border border-line bg-surface px-3 py-2">
           <span className="truncate text-ink">{d.domain}</span>
           <span className="ml-auto pl-3 font-mono text-muted">{d.citations} citations</span>
@@ -96,6 +109,7 @@ const TREND: Record<Opportunity["trend"], { label: string; className: string } |
   open: { label: "Still open", className: "bg-sunken text-ink-2" },
   better: { label: "Getting better", className: "bg-up-soft text-up-ink" },
   worse: { label: "Got worse", className: "bg-down-soft text-down-ink" },
+  improving: { label: "Improving, confirming next scan", className: "bg-up-soft text-up-ink" },
   resolved: { label: "Fixed", className: "bg-up-soft text-up-ink" },
 };
 const EFFORT: Record<string, string> = { S: "Quick win", M: "A few hours", L: "Bigger project" };
@@ -130,7 +144,8 @@ function StatusHeadline({ status }: { status: PlanStatus }) {
 }
 
 /** One lost question: how many engines picked someone else, who won, and why in the engine's own words. */
-function QuestionRow({ q }: { q: LostQuestion }) {
+function QuestionRow({ q, onOpen }: { q: LostQuestion; onOpen: (responseId: number) => void }) {
+  const answers = q.response_ids ?? [];
   return (
     <li className="rounded-[12px] border border-line bg-surface px-3.5 py-3">
       <div className="flex items-start gap-2">
@@ -140,14 +155,21 @@ function QuestionRow({ q }: { q: LostQuestion }) {
           lost {q.engines_lost}/{q.engines_total}
         </span>
       </div>
+      {q.scans_lost != null && q.scans_seen != null && (
+        <p className="mt-1 pl-[22px] text-[11px] text-faint">Lost in {q.scans_lost} of {q.scans_seen} scan{q.scans_seen === 1 ? "" : "s"}</p>
+      )}
       {q.winners.length > 0 && (
         <ul className="mt-2.5 space-y-2 border-l-2 border-line pl-3">
           {q.winners.map((w) => (
             <li key={w.name} className="text-[12px]">
               <p className="text-ink-2">
                 <span className="font-medium text-ink">{w.name}</span> <span className="text-faint">· {w.engines} of {q.engines_total} engines</span>
-                {w.reason && <span> · {w.reason}</span>}
               </p>
+              {w.reason && (
+                <p className="mt-0.5 text-muted">
+                  <span className="text-faint">Summary:</span> {w.reason}
+                </p>
+              )}
               {w.quote && (
                 <p className="mt-0.5 flex items-start gap-1 italic text-muted">
                   <Quotes size={11} weight="fill" className="mt-0.5 shrink-0 text-faint" />
@@ -158,11 +180,35 @@ function QuestionRow({ q }: { q: LostQuestion }) {
           ))}
         </ul>
       )}
-      {q.cited_domains.length > 0 && (
+      {q.cited_pages?.length ? (
+        <div className="mt-2.5 text-[11px] text-faint">
+          <p>AI cited</p>
+          <ul className="mt-1 space-y-0.5">
+            {q.cited_pages.map((p) => (
+              <li key={p.url} className="flex min-w-0 items-center gap-1.5">
+                <a href={p.url} target="_blank" rel="noreferrer noopener" className="inline-flex min-w-0 items-center gap-1 text-ink-2 underline-offset-2 hover:underline">
+                  <span className="truncate">{pageLabel(p.url)}</span> <ArrowUpRight size={10} className="shrink-0" />
+                </a>
+                {p.count > 1 && <span className="shrink-0 font-mono">{p.count}x</span>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : q.cited_domains.length > 0 && (
         <p className="mt-2.5 flex flex-wrap items-center gap-1.5 text-[11px] text-faint">
           AI cited
           {q.cited_domains.map((d) => (
             <span key={d} className="rounded-full bg-sunken px-2 py-0.5 text-ink-2">{d}</span>
+          ))}
+        </p>
+      )}
+      {answers.length > 0 && (
+        <p className="mt-2.5 flex flex-wrap items-center gap-1.5 text-[11px] text-faint">
+          See the answers
+          {answers.map((id, i) => (
+            <button key={id} type="button" onClick={() => onOpen(id)} aria-label={`Open lost answer ${i + 1} of ${answers.length}`} className="grid size-5 place-items-center rounded-full bg-sunken font-mono text-ink-2 hover:bg-line">
+              {i + 1}
+            </button>
           ))}
         </p>
       )}
@@ -173,7 +219,7 @@ function QuestionRow({ q }: { q: LostQuestion }) {
 const SHOWN_QUESTIONS = 2;
 
 /** First two questions, the rest behind a toggle so long gaps stay scannable. */
-function QuestionList({ questions, label }: { questions: LostQuestion[]; label: string }) {
+function QuestionList({ questions, label, onOpen }: { questions: LostQuestion[]; label: string; onOpen: (responseId: number) => void }) {
   const [all, setAll] = useState(false);
   const rest = questions.length - SHOWN_QUESTIONS;
   return (
@@ -181,7 +227,7 @@ function QuestionList({ questions, label }: { questions: LostQuestion[]; label: 
       <p className="mb-2 text-[11px] font-medium text-muted">{label}</p>
       <ul className="space-y-2">
         {(all ? questions : questions.slice(0, SHOWN_QUESTIONS)).map((q) => (
-          <QuestionRow key={q.text} q={q} />
+          <QuestionRow key={q.text} q={q} onOpen={onOpen} />
         ))}
       </ul>
       {rest > 0 && (
@@ -264,18 +310,23 @@ function RetestResult({ retest }: { retest: NonNullable<Opportunity["retest"]> }
     );
   if (retest.status === "failed" || !retest.after) return <p className="mt-4 text-[13px] text-down">The re-test didn&apos;t complete. Try again.</p>;
   const { before, after } = retest;
-  const rate = (c: { recommended: number; answers: number }) => (c.answers ? c.recommended / c.answers : 0);
-  const delta = before ? rate(after) - rate(before) : null;
-  const tone = delta == null || Math.abs(delta) < 0.05 ? "flat" : delta > 0 ? "up" : "down";
+  // The backend decides; a re-test stored before verdicts existed shows its counts without a judgement.
+  const verdict = retestVerdictLabel(retest.verdict);
+  const tone = verdict?.tone ?? "flat";
+  const named = (c: { mentioned: number; answers: number }) => `${c.mentioned}/${c.answers}`;
   return (
     <div className={cx("mt-4 rounded-[12px] border px-4 py-3 text-[13px]", tone === "up" ? "border-[#bfe5cc] bg-up-soft" : tone === "down" ? "border-[#f3c4c4] bg-down-soft" : "border-line bg-surface")}>
-      <p className="font-medium text-ink">
-        {tone === "up" ? "It worked." : tone === "down" ? "Recommendations went down." : "No clear change yet."}{" "}
-        <span className="font-normal text-ink-2">
-          Recommended in {before ? <span className="font-mono">{share(before)}</span> : "?"} answers before, <span className="font-mono">{share(after)}</span> in the re-test.
-        </span>
+      <p className="font-medium text-ink">{verdict ? verdict.label : "Re-test finished"}</p>
+      <p className="mt-1 text-ink-2">
+        AI named you in {before ? <span className="font-mono">{named(before)}</span> : "?"} answers before, <span className="font-mono">{named(after)}</span> in the re-test.
+        {" "}Recommended in {before ? <span className="font-mono">{share(before)}</span> : "?"} before, <span className="font-mono">{share(after)}</span> now.
       </p>
-      {tone !== "up" && <p className="mt-1 text-[12px] text-muted">AI engines can take a few weeks to pick up new pages. The weekly scan keeps checking.</p>}
+      {tone !== "up" && (
+        <p className="mt-1 text-[12px] text-muted">
+          {retest.verdict === "too_early" ? "The fix stays open until a re-test clearly shows it worked. " : ""}
+          AI engines can take a few weeks to pick up new pages. The weekly scan keeps checking.
+        </p>
+      )}
     </div>
   );
 }
@@ -297,6 +348,7 @@ function OpportunitiesInner() {
 
   const [draft, setDraft] = useState<{ id: number; markdown: string } | null>(null);
   const [drafting, setDrafting] = useState<number | null>(null);
+  const [response, setResponse] = useState<number | null>(null);
 
   async function makeDraft(o: Opportunity) {
     setDrafting(o.id);
@@ -467,6 +519,7 @@ function OpportunitiesInner() {
                       <ImpactPill impact={o.impact} />
                       <span className="rounded-full bg-sunken px-2 py-0.5 text-[11px] text-ink-2">{TYPE_LABELS[o.type] ?? o.type}</span>
                       {o.effort && <span className="rounded-full border border-line px-2 py-0.5 text-[11px] text-ink-2">{EFFORT[o.effort]}</span>}
+                      <ConfirmedBadge confirmed={o.evidence.confirmed} />
                       {TREND[o.trend] && (
                         <span className={cx("rounded-full px-2 py-0.5 text-[11px] font-medium", TREND[o.trend]!.className)}>
                           {TREND[o.trend]!.label}
@@ -477,6 +530,7 @@ function OpportunitiesInner() {
                     </div>
                     <h2 className="mt-3 text-[16px] font-medium leading-snug text-ink">{o.title}</h2>
                     <p className="mt-1 text-[13px] text-muted">{o.description}</p>
+                    {o.evidence.consistency && <p className="mt-1 text-[12px] text-faint">{o.evidence.consistency}</p>}
 
                     {o.why.length > 0 && (
                       <div className="mt-4">
@@ -494,7 +548,7 @@ function OpportunitiesInner() {
                     {o.type === "UNTRACKED_COMPETITOR" ? (
                       <UntrackedBrands o={o} projectId={id} onAdded={reload} />
                     ) : (
-                      o.questions.length > 0 && <QuestionList questions={o.questions} label={`Questions you lost (${o.questions.length})`} />
+                      o.questions.length > 0 && <QuestionList questions={o.questions} label={`Questions you lost (${o.questions.length})`} onOpen={setResponse} />
                     )}
 
                     {draft?.id !== o.id && (
@@ -611,13 +665,14 @@ function OpportunitiesInner() {
         >
           <ul className="space-y-2 p-5">
             {status.switching.map((q) => (
-              <QuestionRow key={q.text} q={q} />
+              <QuestionRow key={q.text} q={q} onOpen={setResponse} />
             ))}
           </ul>
         </Card>
       )}
       </>
       )}
+      <ResponseDrawer projectId={id} responseId={response} onClose={() => setResponse(null)} />
     </>
   );
 }
