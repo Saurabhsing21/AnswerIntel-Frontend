@@ -185,7 +185,7 @@ export type Retest = {
   prompts: number;
   before: RetestCount | null;
   after?: RetestCount;
-  /** Mention rate moved beyond sampling noise ("better"/"worse") or not ("too_early"). Only "better" completes the fix. */
+  /** The gap's rate (recommended on comparison questions, named elsewhere) moved beyond sampling noise ("better"/"worse") or not ("too_early"). Only "better" completes the fix. */
   verdict?: "better" | "worse" | "too_early";
 };
 
