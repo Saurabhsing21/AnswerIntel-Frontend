@@ -213,7 +213,7 @@ function EnginesCard({ project, onSaved }: { project: Project; onSaved: () => vo
       <div className="space-y-4 p-5">
         {options ? <EnginePicker engines={options} value={value} onChange={setValue} wide /> : <Skeleton className="h-[220px]" />}
         <div className="flex items-center gap-3 border-t border-line pt-4">
-          <span className="text-[12px] text-muted">More engines use more of your monthly AI answers.</span>
+          <span className="text-[12px] text-muted">More engines use more of your monthly credits.</span>
           <button type="button" onClick={save} disabled={busy || !changed || chosen.length === 0} className={cx(buttonClass("primary", "sm"), "ml-auto")}>
             {busy ? <CircleNotch size={14} className="animate-spin" /> : <FloppyDisk size={14} />} Save
           </button>

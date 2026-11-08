@@ -7,11 +7,9 @@ import { EngineIcon } from "@/components/product/engine-icon";
 import { useApi } from "@/lib/api/client";
 import type { EngineOption } from "@/lib/api/types";
 import { cx } from "@/lib/cx";
-import { PLANS } from "@/lib/billing/plans";
+import { creditsFor, monthlyCredits, PLANS } from "@/lib/billing/plans";
+import { formatCredits } from "@/lib/format";
 import { siteHref } from "@/lib/urls";
-
-/** Weekly tracking runs about 4.3 times a month. */
-export const RUNS_PER_MONTH = 4.3;
 
 /** The engine catalog, with a retry when it fails to load. */
 export function useEngines() {
@@ -27,6 +25,17 @@ function useUpgradeHref() {
 }
 
 const planName = (key: string) => PLANS.find((p) => p.key === key)?.name;
+
+/** An engine's name with what one of its answers costs, so the choice shows its price. */
+function EngineLabel({ name, engine, muted }: { name: string; engine: string; muted?: boolean }) {
+  const credits = creditsFor(engine);
+  return (
+    <span className="min-w-0 flex-1">
+      <span className={cx("block truncate text-[14px] leading-tight font-medium", muted ? "text-muted" : "text-ink")}>{name}</span>
+      <span className="block truncate text-[11px] leading-tight text-muted tabular-nums">{formatCredits(credits)} {credits === 1 ? "credit" : "credits"} per answer</span>
+    </span>
+  );
+}
 
 /** Pick the AI engines a project scans. `value` holds engine keys. Every engine is listed: ones the plan doesn't
  * include show a lock and the plan that unlocks them, and engines that aren't live yet show "Coming soon". */
@@ -68,7 +77,7 @@ export function EnginePicker({ engines, value, onChange, wide }: {
               <li key={e.key}>
                 <div className={cx(row, "border-line bg-[#fbfbfa]")}>
                   {icon}
-                  <span className="min-w-0 flex-1 truncate text-[14px] font-medium text-muted">{e.name}</span>
+                  <EngineLabel name={e.name} engine={e.key} muted />
                   <LockSimple size={13} weight="bold" className="shrink-0 text-muted" aria-label="Locked" />
                   {upgrade ? (
                     <Link href={upgradeHref} className="shrink-0 text-[11px] font-medium text-ink underline underline-offset-2">
@@ -98,7 +107,7 @@ export function EnginePicker({ engines, value, onChange, wide }: {
                 )}
               >
                 {icon}
-                <span className="min-w-0 flex-1 truncate text-[14px] font-medium text-ink">{e.name}</span>
+                {e.available ? <EngineLabel name={e.name} engine={e.key} /> : <span className="min-w-0 flex-1 truncate text-[14px] font-medium text-ink">{e.name}</span>}
                 {!e.available ? (
                   <span className="rounded-full bg-sunken px-2 py-0.5 text-[11px] text-muted">{e.key === "google" ? "Needs setup" : "Coming soon"}</span>
                 ) : (
@@ -122,15 +131,15 @@ export function EnginePicker({ engines, value, onChange, wide }: {
   );
 }
 
-/** How many AI answers this choice uses against the plan's allowance: a month of weekly scans, or one free scan. */
-export function AnswerEstimate({ prompts, engines, allowance, trial }: { prompts: number; engines: number; allowance?: number; trial?: boolean }) {
-  const total = trial ? prompts * engines : Math.round(prompts * engines * RUNS_PER_MONTH);
+/** How many credits this choice uses against the plan's allowance: a month of weekly scans, or one free scan. */
+export function CreditEstimate({ prompts, engines, allowance, trial }: { prompts: number; engines: string[]; allowance?: number; trial?: boolean }) {
+  const total = monthlyCredits(prompts, engines, trial ? 1 : undefined);
   const over = allowance != null && total > allowance;
   return (
     <p className={cx("text-[12px]", over ? "text-down" : "text-muted")}>
-      {prompts} questions × {engines} engines{trial ? " = " : ", weekly ≈ "}
-      <span className="font-medium tabular-nums">{total.toLocaleString()}</span> AI answers{trial ? " in your free scan" : " a month"}
-      {allowance != null && <> of your {allowance.toLocaleString()}</>}
+      {prompts} questions × {engines.length} engines{trial ? " = " : ", weekly ≈ "}
+      <span className="font-medium tabular-nums">{formatCredits(total)}</span> credits{trial ? " in your free scan" : " a month"}
+      {allowance != null && <> of your {formatCredits(allowance)}</>}
       {over && `. Switch off some ${trial ? "engines" : "questions or engines"} to stay within your ${trial ? "free trial" : "plan"}.`}
     </p>
   );

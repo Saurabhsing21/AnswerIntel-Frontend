@@ -17,8 +17,8 @@ export type PlanLimits = {
   projects: number;
   /** One pool shared by every project in the workspace. */
   active_prompts: number;
-  /** AI answers (prompt × engine) in any 30 days. */
-  answers_per_month: number;
+  /** Credits in any 30 days: every answer (prompt × engine) costs its engine's credits. */
+  credits_per_month: number;
   competitors: number;
   scans_per_day: number;
   /** null = unlimited */
@@ -58,7 +58,8 @@ export type Billing = {
     scans_today: number;
     scans_30_days: number;
     scans_total: number;
-    answers_30_days: number;
+    /** Can be fractional (an answer from a light engine costs 0.25). */
+    credits_30_days: number;
     active_prompts: number;
     per_project: { id: string; brand_name: string; active_prompts: number; competitors: number }[];
   };
@@ -88,6 +89,8 @@ export type Scan = {
   total_runs: number;
   completed_runs: number;
   failed_runs: number;
+  /** What this scan cost against the plan, in credits. */
+  credits: number;
   progress: number;
   error_message: string | null;
   started_at: string | null;

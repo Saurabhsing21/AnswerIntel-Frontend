@@ -3,6 +3,9 @@ export const pct = (v: number | null | undefined) => (v == null ? "-" : `${Math.
 export const pts = (v: number | null | undefined) =>
   v == null ? null : `${v > 0 ? "+" : ""}${Math.round(v * 1000) / 10} pts`;
 
+/** Credits can be fractional (an answer from a light engine costs 0.25): show at most one decimal. */
+export const formatCredits = (v: number) => v.toLocaleString(undefined, { maximumFractionDigits: 1 });
+
 export const pos = (v: number | null | undefined) => (v == null ? "-" : `#${v.toFixed(1)}`);
 
 export function timeAgo(iso: string | null | undefined) {

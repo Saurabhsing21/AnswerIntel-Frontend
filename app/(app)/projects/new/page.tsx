@@ -4,7 +4,7 @@ import { ArrowLeft, Check, CircleNotch, Lock, MagnifyingGlass, Plus, Sparkle } f
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { BrandTile } from "@/components/app/brand-tile";
-import { AnswerEstimate, EnginePicker, useEngines } from "@/components/app/engine-picker";
+import { CreditEstimate, EnginePicker, useEngines } from "@/components/app/engine-picker";
 import { askUpgrade } from "@/components/app/pro-lock";
 import { useProject } from "@/components/app/project-context";
 import { PoolFullNotice } from "@/components/app/pool-full";
@@ -12,9 +12,10 @@ import { ErrorBanner, inputClass } from "@/components/app/ui";
 import { ButtonArrow, buttonClass } from "@/components/ui/button";
 import { api, ApiError, type PoolDetails } from "@/lib/api/client";
 import type { Competitor, Project, Prompt } from "@/lib/api/types";
+import { monthlyCredits } from "@/lib/billing/plans";
 import { brandColor } from "@/lib/brand";
 import { cx } from "@/lib/cx";
-import { CATEGORY_LABELS } from "@/lib/format";
+import { CATEGORY_LABELS, formatCredits } from "@/lib/format";
 
 const STEPS = ["Brand", "Competitors", "AI engines", "Questions"];
 // The markets the engines can answer for (backend/app/providers/google_ai.py).
@@ -303,7 +304,7 @@ function NewProjectWizard() {
   }
 
   const active = prompts.filter((p) => p.is_active).length;
-  const allowance = billing?.limits.answers_per_month;
+  const allowance = billing?.limits.credits_per_month;
   const trial = billing?.state === "free";
   const typical = Math.min(TYPICAL_PROMPTS, billing?.limits.active_prompts ?? TYPICAL_PROMPTS);
 
@@ -508,7 +509,7 @@ function NewProjectWizard() {
               ) : (
                 <div className="grid gap-2 sm:grid-cols-2">{Array.from({ length: 8 }, (_, i) => <div key={i} className="h-[52px] animate-pulse rounded-[12px] bg-sunken" />)}</div>
               )}
-              <AnswerEstimate prompts={typical} engines={chosenEngines.length} allowance={allowance} trial={trial} />
+              <CreditEstimate prompts={typical} engines={chosenEngines} allowance={allowance} trial={trial} />
             </div>
             <StepFoot error={error}>
               <button type="button" onClick={() => setStep(1)} className="inline-flex items-center gap-1.5 text-[13px] font-medium text-muted hover:text-ink">
@@ -545,14 +546,14 @@ function NewProjectWizard() {
                   <Plus size={14} weight="bold" />
                 </button>
               </form>
-              <AnswerEstimate prompts={active} engines={chosenEngines.length} allowance={allowance} trial={trial} />
+              <CreditEstimate prompts={active} engines={chosenEngines} allowance={allowance} trial={trial} />
             </div>
             <StepFoot error={error}>
               <button type="button" onClick={() => setStep(2)} className="inline-flex items-center gap-1.5 text-[13px] font-medium text-muted hover:text-ink">
                 <ArrowLeft size={13} /> Back
               </button>
               <span className="text-[13px] text-muted">
-                <span className="font-medium text-ink tabular-nums">{active * chosenEngines.length}</span> answers in this scan
+                <span className="font-medium text-ink tabular-nums">{formatCredits(monthlyCredits(active, chosenEngines, 1))}</span> credits in this scan
               </span>
               <button type="button" onClick={startScan} disabled={!!busy || !active} className={cx(buttonClass("primary"), "ml-auto")}>
                 {busy && <CircleNotch size={14} className="animate-spin" />}

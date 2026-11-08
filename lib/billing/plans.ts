@@ -18,8 +18,11 @@ export const ENGINE_CREDITS: Record<string, number> = {
 /** Credits one answer from this engine costs. */
 export const creditsFor = (engine: string): number => ENGINE_CREDITS[engine] ?? 1;
 
+/** Weekly tracking runs about 4.3 times a month. */
+export const RUNS_PER_MONTH = 4.3;
+
 /** Credits a month of weekly scans uses: prompts × the credits of every engine × the runs in a month. */
-export const monthlyCredits = (prompts: number, engines: string[], runsPerMonth = 4.3): number =>
+export const monthlyCredits = (prompts: number, engines: string[], runsPerMonth = RUNS_PER_MONTH): number =>
   prompts * engines.reduce((sum, e) => sum + creditsFor(e), 0) * runsPerMonth;
 
 const STARTER_ENGINES: Engine[] = ["chatgpt_search", "perplexity"];

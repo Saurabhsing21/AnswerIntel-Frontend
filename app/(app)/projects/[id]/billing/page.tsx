@@ -12,6 +12,7 @@ import { ApiError } from "@/lib/api/client";
 import type { Billing } from "@/lib/api/types";
 import { openPortal } from "@/lib/billing/checkout";
 import { cx } from "@/lib/cx";
+import { formatCredits } from "@/lib/format";
 
 const date = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" }) : "n/a");
 
@@ -26,7 +27,7 @@ function Meter({ label, used, limit, hint }: { label: string; used: number; limi
       <div className="flex items-baseline justify-between gap-3 text-[13px]">
         <span className="text-ink-2">{label}</span>
         <span className={cx("font-mono tabular-nums", share >= 1 ? "text-down" : "text-muted")}>
-          {used.toLocaleString()} / {limit == null ? "unlimited" : limit.toLocaleString()}
+          {formatCredits(used)} / {limit == null ? "unlimited" : limit.toLocaleString()}
         </span>
       </div>
       <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-sunken">
@@ -148,9 +149,9 @@ function UsageInner() {
           <StatStrip
             stats={[
               {
-                label: "AI answers, 30 days",
-                value: `${usage.answers_30_days.toLocaleString()}/${limits.answers_per_month.toLocaleString()}`,
-                hint: `${Math.max(0, limits.answers_per_month - usage.answers_30_days).toLocaleString()} left`,
+                label: "Credits, last 30 days",
+                value: `${formatCredits(usage.credits_30_days)}/${formatCredits(limits.credits_per_month)}`,
+                hint: `${formatCredits(Math.max(0, limits.credits_per_month - usage.credits_30_days))} left`,
                 icon: <ChatsCircle size={18} />,
                 tone: "blue",
               },
@@ -170,10 +171,10 @@ function UsageInner() {
             <Card title="Limits" subtitle="Shared by every project and person" className="h-full">
               <div className="space-y-5 p-5">
                 <Meter
-                  label="AI answers, last 30 days"
-                  used={usage.answers_30_days}
-                  limit={limits.answers_per_month}
-                  hint="One answer per active question per AI engine, scheduled scans included."
+                  label="Credits, last 30 days"
+                  used={usage.credits_30_days}
+                  limit={limits.credits_per_month}
+                  hint="Each answer costs credits by engine: 1 credit is one ChatGPT Search answer. Scheduled scans included."
                 />
                 <Meter label="Active questions" used={usage.active_prompts} limit={limits.active_prompts} hint="One pool for every project." />
                 <Meter label="Scans today" used={usage.scans_today} limit={limits.scans_per_day} />
