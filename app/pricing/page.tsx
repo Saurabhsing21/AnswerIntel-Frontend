@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Reveal } from "@/components/marketing/effects/reveal";
 import { PricingCards } from "@/components/marketing/pricing-cards";
-import { PricingCompare } from "@/components/marketing/pricing-compare";
+import { CreditsTable, PricingCompare } from "@/components/marketing/pricing-compare";
 import { PricingFaq } from "@/components/marketing/pricing-faq";
 import { Section, SectionHeading } from "@/components/marketing/section";
 import { Footer } from "@/components/marketing/sections/footer";
@@ -51,6 +51,15 @@ export default async function PricingPage({ searchParams }: PageProps<"/pricing"
           </Reveal>
           <div className="mt-10">
             <PricingCompare />
+          </div>
+        </Section>
+
+        <Section id="credits">
+          <Reveal>
+            <SectionHeading title="How credits work" muted="1 credit = 1 ChatGPT Search answer. Every answer a scan asks for costs credits by engine, counted over the last 30 days." className="max-w-[680px]" />
+          </Reveal>
+          <div className="mt-10">
+            <CreditsTable />
           </div>
         </Section>
 

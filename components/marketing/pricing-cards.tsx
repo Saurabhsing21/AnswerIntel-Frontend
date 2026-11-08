@@ -3,6 +3,7 @@
 import { Check } from "@phosphor-icons/react";
 import { useState } from "react";
 import { Reveal } from "@/components/marketing/effects/reveal";
+import { EngineLogos } from "@/components/marketing/engine-logos";
 import { ButtonArrow, buttonClass } from "@/components/ui/button";
 import { FEATURED, type Interval, PLANS } from "@/lib/billing/plans";
 import { WAITLIST_ONLY } from "@/lib/flags";
@@ -63,6 +64,7 @@ export function PricingCards({ toggleClassName }: { toggleClassName?: string }) 
                 <p className={cx("relative mt-1.5 text-[13px]", dark ? "text-white/50" : "text-faint")}>
                   {period === "year" ? `$${plan.yearly} billed yearly` : "Billed monthly"}
                 </p>
+                <EngineLogos engines={plan.engines} dark={dark} className="relative mt-4" />
 
                 <p className={cx("relative mt-5 border-t pt-5 text-[14px] leading-snug", dark ? "border-white/10 text-white/65" : "border-line text-muted")}>{plan.audience}</p>
                 <a
