@@ -85,8 +85,8 @@ export function CreditsTable() {
             <tr key={engine} className={cx("text-[14px]", i > 0 && "border-t border-line")}>
               <th scope="row" className="px-5 py-3 font-normal text-ink">
                 <span className="flex items-center gap-3">
-                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-sunken text-ink">
-                    <EngineIcon engine={engine} size={16} mono />
+                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-white text-[#0d0d0d] ring-1 ring-line">
+                    <EngineIcon engine={engine} size={16} />
                   </span>
                   {engineNames[engine]}
                 </span>
