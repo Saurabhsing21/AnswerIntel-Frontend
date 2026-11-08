@@ -1,7 +1,6 @@
 import { Check, Minus } from "@phosphor-icons/react/ssr";
 import { EngineLogos } from "@/components/marketing/engine-logos";
-import { EngineIcon, engineNames } from "@/components/product/engine-icon";
-import { COMPARISON, ENGINE_CREDITS, FEATURED, PLANS } from "@/lib/billing/plans";
+import { COMPARISON, FEATURED, PLANS } from "@/lib/billing/plans";
 import type { Engine } from "@/lib/data";
 import { WAITLIST_ONLY } from "@/lib/flags";
 import { cx } from "@/lib/cx";
@@ -68,36 +67,3 @@ export function PricingCompare() {
   );
 }
 
-/** What one answer costs on each engine, in credits: turns a plan's monthly credits into prompts and engines. */
-export function CreditsTable() {
-  return (
-    <div className="max-w-[640px] overflow-hidden rounded-[18px] border border-line-strong bg-surface">
-      <table className="w-full text-left">
-        <caption className="sr-only">Credits one answer costs, by AI engine</caption>
-        <thead className="sr-only">
-          <tr>
-            <th scope="col">AI engine</th>
-            <th scope="col">Credits per answer</th>
-          </tr>
-        </thead>
-        <tbody>
-          {(Object.keys(ENGINE_CREDITS) as Engine[]).map((engine, i) => (
-            <tr key={engine} className={cx("text-[14px]", i > 0 && "border-t border-line")}>
-              <th scope="row" className="px-5 py-3 font-normal text-ink">
-                <span className="flex items-center gap-3">
-                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-white text-[#0d0d0d] ring-1 ring-line">
-                    <EngineIcon engine={engine} size={16} />
-                  </span>
-                  {engineNames[engine]}
-                </span>
-              </th>
-              <td className="px-5 py-3 text-right tabular-nums text-ink">
-                {ENGINE_CREDITS[engine]} <span className="text-muted">{ENGINE_CREDITS[engine] === 1 ? "credit" : "credits"}</span>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}

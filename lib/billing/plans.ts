@@ -29,7 +29,7 @@ const STARTER_ENGINES: Engine[] = ["chatgpt_search", "perplexity"];
 const GROWTH_ENGINES: Engine[] = [...STARTER_ENGINES, "claude"];
 const PRO_ENGINES: Engine[] = [...GROWTH_ENGINES, "gemini", "deepseek", "llama", "mistral"];
 /** Engines that search the live web (`web_search` in backend/app/providers/models.py); the rest answer from memory. */
-const WEB_SEARCH_ENGINES: Engine[] = ["chatgpt_search", "perplexity", "gemini"];
+export const WEB_SEARCH_ENGINES: Engine[] = ["chatgpt_search", "perplexity", "gemini"];
 
 const count = (n: number) => n.toLocaleString("en-US");
 
