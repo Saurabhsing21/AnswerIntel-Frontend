@@ -12,7 +12,7 @@ import { ErrorBanner, inputClass } from "@/components/app/ui";
 import { ButtonArrow, buttonClass } from "@/components/ui/button";
 import { api, ApiError, type PoolDetails } from "@/lib/api/client";
 import type { Competitor, Project, Prompt } from "@/lib/api/types";
-import { monthlyCredits } from "@/lib/billing/plans";
+import { MAX_PROMPTS, monthlyCredits } from "@/lib/billing/plans";
 import { brandColor } from "@/lib/brand";
 import { cx } from "@/lib/cx";
 import { CATEGORY_LABELS, formatCredits } from "@/lib/format";
@@ -529,7 +529,7 @@ function NewProjectWizard() {
             <div className="space-y-4 px-7 pb-7">
               {trial && prompts.some((p) => !p.is_active) && (
                 <p className="rounded-[10px] bg-mark-soft/60 px-3 py-2 text-[12px] text-ink-2">
-                  Your free scan asks the {active} ticked questions, the ones closest to a purchase. Swap any of them; plans track up to 160.
+                  Your free scan asks the {active} ticked questions, the ones closest to a purchase. Swap any of them; plans track up to {MAX_PROMPTS}.
                 </p>
               )}
               {full && (!full.onlyWhileEmpty || !active) && (
@@ -627,7 +627,7 @@ function PromptGroups({ prompts, onToggle, full }: { prompts: Prompt[]; onToggle
                   {full && !p.is_active ? (
                     <button
                       type="button"
-                      onClick={() => askUpgrade("Your plan's question limit is reached. Paid plans track up to 160 questions.", "active_prompts")}
+                      onClick={() => askUpgrade(`Your plan's question limit is reached. Paid plans track up to ${MAX_PROMPTS} questions.`, "active_prompts")}
                       aria-label="Locked: upgrade to add this question"
                       className="grid size-4 shrink-0 place-items-center text-muted"
                     >

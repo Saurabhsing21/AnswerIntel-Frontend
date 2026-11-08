@@ -7,6 +7,7 @@ import { EngineIcon } from "@/components/product/engine-icon";
 import { ButtonArrow, buttonClass } from "@/components/ui/button";
 import { Mark } from "@/components/ui/mark";
 import type { Engine, FreeCheck } from "@/lib/api/types";
+import { MAX_PROMPTS } from "@/lib/billing/plans";
 import { cx } from "@/lib/cx";
 import { appHref } from "@/lib/urls";
 import { ease } from "@/lib/motion";
@@ -284,7 +285,7 @@ function ResultView({ check, onReset }: { check: FreeCheck; onReset: () => void 
           <div className="rounded-[24px] border border-line-strong bg-surface p-6">
             <p className="text-[17px] font-medium text-ink">This was 5 questions, once.</p>
             <p className="mt-1.5 text-[14px] leading-relaxed text-muted">
-              SeenLens tracks up to 160 questions on ChatGPT, Perplexity, Gemini and Google AI every week, against your competitors, and tells you what to fix.
+              SeenLens tracks up to {MAX_PROMPTS} questions on ChatGPT, Perplexity, Claude and Gemini every week, against your competitors, and tells you what to fix.
             </p>
             <a href={appHref(`/register?${new URLSearchParams({ brand: check.brand_name, website: check.website, category: check.category, country: check.country })}`)} className={cx(buttonClass("primary"), "mt-5 w-full")}>
               Run your free full scan

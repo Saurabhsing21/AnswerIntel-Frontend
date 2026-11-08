@@ -16,6 +16,7 @@ import { useToast } from "@/components/app/toast";
 import { Card, EmptyState, ErrorBanner, PageHeader, Segmented, Skeleton, StatStrip, VerdictPill, inputClass } from "@/components/app/ui";
 import { buttonClass } from "@/components/ui/button";
 import { api, ApiError, useApi, type PoolDetails } from "@/lib/api/client";
+import { MAX_PROMPTS } from "@/lib/billing/plans";
 import type { Engine, EngineResult, Opportunity, Prompt } from "@/lib/api/types";
 import { CATEGORY_LABELS } from "@/lib/format";
 import { cx } from "@/lib/cx";
@@ -157,7 +158,7 @@ export default function PromptsPage() {
         actions={
           <button
             type="button"
-            onClick={() => (pro ? setGenerating(true) : askUpgrade("More questions are on paid plans. Track up to 160 questions, written to your instructions."))}
+            onClick={() => (pro ? setGenerating(true) : askUpgrade(`More questions are on paid plans. Track up to ${MAX_PROMPTS} questions, written to your instructions.`))}
             className={buttonClass("primary", "sm")}
           >
             <Sparkle size={14} weight="fill" /> Generate more {!pro && <ProBadge />}

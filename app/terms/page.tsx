@@ -16,7 +16,7 @@ export default function TermsPage() {
         ] },
         { title: "Plans and payment", body: [
           "New accounts get a free trial of one scan for one brand, with no card needed. After that, SeenLens is a paid service with monthly and yearly plans. Prices are shown on our pricing page and charged in advance through Stripe. Plans renew automatically until you cancel.",
-          "Each plan has limits, such as questions, AI answers a month and projects. When you reach a limit, some actions wait until your allowance refills or until you move to a bigger plan.",
+          "Each plan has limits, such as questions, credits a month and projects. When you reach a limit, some actions wait until your allowance refills or until you move to a bigger plan.",
           "If a payment fails, you have 7 days to update your card. After that the workspace becomes read-only until you pay.",
         ] },
         { title: "Cancelling", body: [

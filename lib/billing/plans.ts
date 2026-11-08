@@ -28,6 +28,8 @@ export const monthlyCredits = (prompts: number, engines: string[], runsPerMonth 
 const STARTER_ENGINES: Engine[] = ["chatgpt_search", "perplexity"];
 const GROWTH_ENGINES: Engine[] = [...STARTER_ENGINES, "claude"];
 const PRO_ENGINES: Engine[] = [...GROWTH_ENGINES, "gemini", "deepseek", "llama", "mistral"];
+/** Engines that search the live web (`web_search` in backend/app/providers/models.py); the rest answer from memory. */
+const WEB_SEARCH_ENGINES: Engine[] = ["chatgpt_search", "perplexity", "gemini"];
 
 const count = (n: number) => n.toLocaleString("en-US");
 
@@ -58,7 +60,7 @@ export const PLANS: readonly PlanInfo[] = [
     prompts: 50,
     credits: 650,
     engines: STARTER_ENGINES,
-    includes: ["50 prompts", "650 credits a month", "Live web search, like the real apps", "Weekly automatic tracking", "2 projects", "20 competitors per project", "Unlimited seats"],
+    includes: ["50 prompts", "650 credits a month", "Both engines search the live web", "Weekly automatic tracking", "2 projects", "20 competitors per project", "Unlimited seats"],
   },
   {
     key: "growth",
@@ -69,7 +71,7 @@ export const PLANS: readonly PlanInfo[] = [
     prompts: 120,
     credits: 1650,
     engines: GROWTH_ENGINES,
-    includes: ["120 prompts", "1,650 credits a month", "Live web search, like the real apps", "Weekly automatic tracking", "4 projects", "50 competitors per project", "Experiments with before and after"],
+    includes: ["120 prompts", "1,650 credits a month", "ChatGPT Search and Perplexity search the live web; Claude answers from memory", "Weekly automatic tracking", "4 projects", "50 competitors per project", "Experiments with before and after"],
   },
   {
     key: "pro",
@@ -80,9 +82,12 @@ export const PLANS: readonly PlanInfo[] = [
     prompts: 200,
     credits: 3300,
     engines: PRO_ENGINES,
-    includes: ["200 prompts", "3,300 credits a month", "Live web search, like the real apps", "Weekly automatic tracking", "10 projects", "100 competitors per project", "Experiments with before and after"],
+    includes: ["200 prompts", "3,300 credits a month", "ChatGPT Search, Perplexity and Gemini search the live web; the rest answer from memory", "Weekly automatic tracking", "10 projects", "100 competitors per project", "Experiments with before and after"],
   },
 ];
+
+/** The most prompts any plan tracks, for "plans track up to N questions". */
+export const MAX_PROMPTS = Math.max(...PLANS.map((p) => p.prompts));
 
 /** The plan we steer people to: highlighted on the website and preselected when subscribing. */
 export const FEATURED: PaidPlan = "growth";
@@ -98,7 +103,7 @@ export const COMPARISON: ComparisonGroup[] = [
     title: "Tracking coverage",
     rows: [
       { label: "AI engines", values: perPlan((p) => p.engines) },
-      { label: "Live web search", hint: "answers match what people see in the apps", values: [true, true, true] },
+      { label: "Live web search", hint: "the other engines answer from memory", values: perPlan((p) => p.engines.filter((e) => WEB_SEARCH_ENGINES.includes(e))) },
       { label: "Prompts", hint: "one pool shared by every project", values: perPlan((p) => count(p.prompts)) },
       { label: "Credits a month", hint: "1 credit = 1 ChatGPT Search answer", values: perPlan((p) => count(p.credits)) },
       { label: "Tracking frequency", values: ["Weekly, automatic", "Weekly, automatic", "Weekly, automatic"] },
@@ -165,7 +170,7 @@ export const COMPARISON: ComparisonGroup[] = [
 
 export const PRICING_FAQ = [
   { q: "Is there a free trial?", a: "Yes. Every new account gets one free scan of one brand: up to 10 buyer questions on ChatGPT Search, with the full results. No card needed. After that, plans start at $20 a month and you can cancel any time." },
-  { q: "Do your answers match what I see in ChatGPT?", a: "As closely as we can: ChatGPT and Gemini answer with their own live web search, Perplexity always searches, and Google AI answers come straight from Google search results. Answers still vary from run to run, so every rate shows how much it can move by chance." },
+  { q: "Do your answers match what I see in ChatGPT?", a: "As closely as we can: ChatGPT Search and Gemini answer with their own live web search, and Perplexity always searches. Claude, DeepSeek, Llama and Mistral answer from what they learned in training, without searching. Answers still vary from run to run, so every rate shows how much it can move by chance." },
   { q: "What is a credit?", a: `Your monthly allowance. One answer from ChatGPT Search costs 1 credit, and other engines cost less or more: Perplexity and Claude 0.5, DeepSeek, Llama and Mistral 0.25, Gemini 1.25. Tracking 50 prompts weekly on ChatGPT Search and Perplexity uses about ${count(Math.round(monthlyCredits(50, STARTER_ENGINES)))} credits a month, well inside Starter's ${count(PLANS[0].credits)}. On-demand scans use the same credits.` },
   { q: "What happens when I run out of credits?", a: "New scans wait until older ones are more than 30 days old, so your credits come back as you go: they are counted over the last 30 days, not per calendar month. Engines use different credits, so lighter engines stretch further. You can switch off prompts or engines you no longer need, or move to a bigger plan any time." },
   { q: "Can I change plans later?", a: "Yes. Upgrade or downgrade from Manage billing in the app. Stripe prorates the difference automatically." },

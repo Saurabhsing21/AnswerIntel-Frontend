@@ -206,7 +206,7 @@ export function UpgradePrompt() {
         </div>
         {(trial || error.limit !== "subscription") && (
           <ul className="space-y-2.5 px-6 pt-5 text-[13px] text-ink-2">
-            {["Weekly tracking on every AI engine, including Claude and Google AI", "Every fix with steps, drafts and a re-test to prove it worked", "Up to 200 questions, 100 competitors, reports and alerts"].map((line) => (
+            {["Weekly tracking on more AI engines, including Claude and Gemini", "Every fix with steps, drafts and a re-test to prove it worked", "Up to 200 questions, 100 competitors, reports and alerts"].map((line) => (
               <li key={line} className="flex items-start gap-2.5">
                 <Check size={15} weight="bold" className="mt-px shrink-0 text-up" /> {line}
               </li>

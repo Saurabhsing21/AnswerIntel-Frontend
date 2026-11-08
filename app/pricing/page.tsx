@@ -32,7 +32,7 @@ export default async function PricingPage({ searchParams }: PageProps<"/pricing"
               Pricing for <Mark delay={0.3}>every stage</Mark>
             </h1>
             <p className="mx-auto mt-4 max-w-[560px] text-[16px] leading-relaxed text-muted">
-              See how ChatGPT, Perplexity, Gemini and Google AI recommend your brand, and what to fix first. One plan per workspace, shared by your team.
+              See how ChatGPT, Perplexity, Claude and Gemini recommend your brand, and what to fix first. One plan per workspace, shared by your team.
             </p>
             {FREE_CHECK && (
               <a href="/check" className="mt-3 inline-block text-[14px] font-medium text-ink underline decoration-mark decoration-2 underline-offset-4">

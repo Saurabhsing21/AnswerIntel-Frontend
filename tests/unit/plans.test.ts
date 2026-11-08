@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { COMPARISON, ENGINE_CREDITS, PLANS, PRICING_FAQ } from "@/lib/billing/plans";
+import { COMPARISON, ENGINE_CREDITS, MAX_PROMPTS, PLANS, PRICING_FAQ } from "@/lib/billing/plans";
 
 // The numbers in backend/app/billing/plans.py. The website must quote the same ones.
 const BACKEND = {
@@ -27,5 +27,15 @@ describe("plans", () => {
     const text = JSON.stringify([PLANS, COMPARISON, PRICING_FAQ]);
     expect(text).not.toMatch(/AI answers a month/i);
     expect(PLANS.map((p) => p.includes.find((i) => i.includes("credits")))).toEqual(["650 credits a month", "1,650 credits a month", "3,300 credits a month"]);
+  });
+
+  it("only promise live web search on the engines that search (web_search in backend/app/providers/models.py)", () => {
+    const row = COMPARISON.flatMap((g) => g.rows).find((r) => r.label === "Live web search");
+    expect(row?.values).toEqual([["chatgpt_search", "perplexity"], ["chatgpt_search", "perplexity"], ["chatgpt_search", "perplexity", "gemini"]]);
+    expect(JSON.stringify([PLANS, COMPARISON, PRICING_FAQ])).not.toMatch(/like the real apps|Google/);
+  });
+
+  it("quote the top plan's prompts as the most any plan tracks", () => {
+    expect(MAX_PROMPTS).toBe(BACKEND.pro.prompts);
   });
 });
