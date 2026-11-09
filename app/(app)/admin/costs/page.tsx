@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { Card, EmptyState, ErrorBanner, PageHeader, Segmented, Skeleton, StatStrip } from "@/components/app/ui";
 import { useApi } from "@/lib/api/client";
@@ -148,13 +147,12 @@ export default function AdminCostsPage() {
             </Table>
           </Card>
 
-          <Card title="Recent scans" subtitle="The latest 20, with what each one cost. Open one for its full breakdown.">
+          <Card title="Recent scans" subtitle="The latest 20, with what each one cost">
             <Table left={2} head={["Brand", "Status", "Spend", "Calls", "Searches"]} empty="No scans yet.">
               {data.recent_scans.map((s) => (
-                <tr key={s.id} className="hover:bg-sunken/60">
+                <tr key={s.id}>
                   <td className={td}>
-                    <Link href={`/admin/runs/${s.id}`} className="font-medium text-ink underline-offset-2 hover:underline">{s.brand}</Link>
-                    <span className="text-muted"> · {s.kind}, {new Date(s.created_at).toLocaleString()}</span>
+                    {s.brand} <span className="text-muted">· {s.kind}, {new Date(s.created_at).toLocaleString()}</span>
                   </td>
                   <td className={`${td} text-muted`}>{s.status}</td>
                   <td className={`${td} ${num}`}>{usd(s.cost)}</td>
