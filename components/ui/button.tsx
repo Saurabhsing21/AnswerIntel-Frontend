@@ -24,7 +24,7 @@ export function buttonClass(variant: Variant = "primary", size: Size = "md") {
   );
 }
 
-/** Arrow that nudges right on hover; part of every SeenLens action. */
+/** Arrow that nudges right on hover; part of every SeenLense action. */
 export function ButtonArrow() {
   return (
     <ArrowRight

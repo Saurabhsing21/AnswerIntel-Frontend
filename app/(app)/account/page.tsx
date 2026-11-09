@@ -159,7 +159,7 @@ function Sessions() {
   return (
     <Card title="Sessions" subtitle="Lost a laptop or shared a computer?">
       <div className="space-y-3 p-5">
-        <p className="text-[13px] text-muted">Sign out of SeenLens on every device, including this one.</p>
+        <p className="text-[13px] text-muted">Sign out of SeenLense on every device, including this one.</p>
         {error && <ErrorBanner message={error} />}
         <button
           type="button"
@@ -186,7 +186,7 @@ function YourData() {
     if (!res.ok) throw new ApiError(res.status, "EXPORT_FAILED", "We couldn't prepare your export. Please try again.");
     const link = document.createElement("a");
     link.href = URL.createObjectURL(await res.blob());
-    link.download = /filename="([^"]+)"/.exec(res.headers.get("content-disposition") ?? "")?.[1] ?? "seenlens-export.json";
+    link.download = /filename="([^"]+)"/.exec(res.headers.get("content-disposition") ?? "")?.[1] ?? "seenlense-export.json";
     link.click();
     URL.revokeObjectURL(link.href);
   }

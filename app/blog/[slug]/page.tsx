@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: PageProps<"/blog/[slug]">): P
   const post = getPost((await params).slug);
   if (!post) return {};
   return {
-    title: `${post.title} - SeenLens`,
+    title: `${post.title} - SeenLense`,
     description: post.description,
     alternates: { canonical: `/blog/${post.slug}` },
     authors: [{ name: post.author }],
@@ -58,7 +58,7 @@ export default async function PostPage({ params }: PageProps<"/blog/[slug]">) {
       <Nav />
       <main id="top" className="mx-auto max-w-[720px] px-5 pt-14 pb-24 md:px-8 md:pt-20">
         <Link href="/blog" className="text-[13px] font-medium tracking-wide text-muted uppercase hover:text-ink">
-          ← The SeenLens journal
+          ← The SeenLense journal
         </Link>
         <h1 className="mt-4 font-display text-[36px] leading-[1.08] font-semibold tracking-[-0.03em] md:text-[46px]">{post.title}</h1>
         <p className="mt-4 text-[18px] leading-relaxed text-ink-2">{post.description}</p>

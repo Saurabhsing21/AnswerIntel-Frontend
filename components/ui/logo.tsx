@@ -1,6 +1,6 @@
 import { cx } from "@/lib/cx";
 
-/** The SeenLens mark: a lens with a lime highlight at its centre, the thing AI answers either show or miss. */
+/** The SeenLense mark: a lens with a lime highlight at its centre, the thing AI answers either show or miss. */
 export function LogoMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 32 32" aria-hidden className={cx("shrink-0", className)}>
@@ -22,7 +22,7 @@ export function Logo({ size = "md" }: { size?: "md" | "lg" }) {
           size === "lg" ? "text-[22px]" : "text-[18px]",
         )}
       >
-        SeenLens
+        SeenLense
       </span>
     </span>
   );

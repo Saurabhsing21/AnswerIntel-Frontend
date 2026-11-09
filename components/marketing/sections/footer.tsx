@@ -34,7 +34,7 @@ export function Footer() {
         </nav>
       </div>
       <div className="mx-auto flex max-w-[1200px] flex-wrap gap-x-5 gap-y-2 px-5 pt-10 text-[13px] text-muted md:px-8">
-        <span>© 2026 SeenLens</span>
+        <span>© 2026 SeenLense</span>
         <a href="/terms" className="hover:text-ink">Terms</a>
         <a href="/privacy" className="hover:text-ink">Privacy</a>
         <a href="/refunds" className="hover:text-ink">Refunds</a>
@@ -43,7 +43,7 @@ export function Footer() {
         aria-hidden
         className="mt-2 text-center font-display text-[19vw] leading-[0.8] font-semibold tracking-[-0.06em] text-ink/[0.05] select-none"
       >
-        SeenLens
+        SeenLense
       </p>
     </footer>
   );

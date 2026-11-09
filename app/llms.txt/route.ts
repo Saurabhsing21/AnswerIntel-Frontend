@@ -7,9 +7,9 @@ export const dynamic = "force-static";
 
 // llms.txt (llmstxt.org): a plain summary of the site for AI assistants, built from the same data as the pages.
 export function GET() {
-  const text = `# SeenLens
+  const text = `# SeenLense
 
-> SeenLens is an AI search visibility tool for founders and small teams. It asks ChatGPT, Perplexity, Gemini and other AI assistants the questions buyers ask, records every answer, and shows how often a brand is mentioned, recommended and cited compared to its competitors, why competitors win, and what to fix next.
+> SeenLense is an AI search visibility tool for founders and small teams. It asks ChatGPT, Perplexity, Gemini and other AI assistants the questions buyers ask, records every answer, and shows how often a brand is mentioned, recommended and cited compared to its competitors, why competitors win, and what to fix next.
 
 Website: ${PUBLIC_URL}
 Contact: saurabh@seenlense.com
@@ -20,7 +20,7 @@ ${PLANS.map((p) => `- ${p.name}: $${p.monthly}/month or $${p.yearly}/year. ${p.a
 
 ## Pages
 
-- [Home](${PUBLIC_URL}/): what SeenLens does and how it works
+- [Home](${PUBLIC_URL}/): what SeenLense does and how it works
 - [Pricing](${PUBLIC_URL}/pricing): plans, credits and limits
 - [Blog](${PUBLIC_URL}/blog): guides on AI search visibility and generative engine optimization
 

@@ -5,7 +5,7 @@ import { Nav } from "@/components/marketing/sections/nav";
 import { formatDate, getPosts } from "@/lib/blog";
 
 export const metadata: Metadata = {
-  title: "Blog - SeenLens",
+  title: "Blog - SeenLense",
   description: "Guides on AI search visibility: how ChatGPT, Perplexity and Gemini pick the brands they recommend, and how to become one of them.",
   alternates: { canonical: "/blog" },
 };
@@ -16,7 +16,7 @@ export default function BlogPage() {
     <>
       <Nav />
       <main id="top" className="mx-auto max-w-[760px] px-5 pt-14 pb-24 md:px-8 md:pt-20">
-        <p className="text-[13px] font-medium tracking-wide text-muted uppercase">The SeenLens journal</p>
+        <p className="text-[13px] font-medium tracking-wide text-muted uppercase">The SeenLense journal</p>
         <h1 className="mt-3 font-display text-[40px] leading-[1.05] font-semibold tracking-[-0.03em] md:text-[52px]">
           Notes on getting recommended by AI
         </h1>

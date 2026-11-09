@@ -10,7 +10,7 @@ export function PostCta() {
         Does ChatGPT recommend you, or your competitor?
       </p>
       <p className="mt-2 text-[15px] leading-relaxed text-muted">
-        SeenLens asks ChatGPT, Perplexity and Gemini the questions your buyers ask and shows who they recommend, which
+        SeenLense asks ChatGPT, Perplexity and Gemini the questions your buyers ask and shows who they recommend, which
         sources they trust and what to fix.
       </p>
       <a href={WAITLIST_ONLY ? "/#waitlist" : appHref("/register")} className={`${buttonClass()} mt-5`}>

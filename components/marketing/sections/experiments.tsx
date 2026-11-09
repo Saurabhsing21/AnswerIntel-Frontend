@@ -233,7 +233,7 @@ export function Experiments() {
               Prove that your changes <Mark>worked</Mark>
             </>
           }
-          muted="Most teams ship a fix and hope. SeenLens measures the same questions before and after, so you know."
+          muted="Most teams ship a fix and hope. SeenLense measures the same questions before and after, so you know."
         />
         <ul className="mt-8 space-y-5">
           {steps.map(({ icon: Icon, title, body }) => (

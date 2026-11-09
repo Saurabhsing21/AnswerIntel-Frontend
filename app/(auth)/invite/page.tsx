@@ -28,7 +28,7 @@ function Invite() {
   if (state === "signed-out") {
     const next = `invite=${encodeURIComponent(token)}`;
     return (
-      <AuthCard title="You're invited to SeenLens" body="Create an account or log in with the email address the invitation was sent to.">
+      <AuthCard title="You're invited to SeenLense" body="Create an account or log in with the email address the invitation was sent to.">
         <div className="grid gap-2">
           <Link href={`/register?${next}`} className={cx(buttonClass("primary"), "w-full")}>Create account</Link>
           <Link href={`/login?${next}`} className={cx(buttonClass("secondary"), "w-full")}>Log in</Link>

@@ -28,7 +28,7 @@ function Verify() {
   if (result.error) return <AuthCard title="This link didn't work" body={`${result.error} You can send a new one from your account settings.`} />;
   return (
     <AuthCard title="Email confirmed" body={`${result.email} is confirmed. Reports and alerts will go there.`}>
-      <Link href="/projects" className={cx(buttonClass("primary"), "w-full")}>Open SeenLens <ButtonArrow /></Link>
+      <Link href="/projects" className={cx(buttonClass("primary"), "w-full")}>Open SeenLense <ButtonArrow /></Link>
     </AuthCard>
   );
 }
