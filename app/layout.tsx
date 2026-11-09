@@ -1,6 +1,7 @@
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
+import { PUBLIC_URL } from "@/lib/urls";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -22,6 +23,9 @@ export const metadata: Metadata = {
   title: "SeenLens - AI visibility intelligence for founders",
   description:
     "See how ChatGPT, Perplexity, Gemini and Google AI recommend your brand, why competitors win, and what to fix next.",
+  metadataBase: new URL(PUBLIC_URL),
+  openGraph: { siteName: "SeenLens", type: "website", locale: "en_US" },
+  twitter: { card: "summary" },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

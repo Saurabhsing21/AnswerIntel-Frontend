@@ -7,6 +7,8 @@ const trim = (url: string | undefined) => (url ?? "").replace(/\/$/, "");
 export const SITE_URL = trim(process.env.NEXT_PUBLIC_SITE_URL);
 export const APP_URL = trim(process.env.NEXT_PUBLIC_APP_URL);
 export const SPLIT_HOSTS = Boolean(SITE_URL && APP_URL && SITE_URL !== APP_URL);
+/** The public website address for canonical links, the sitemap and structured data. */
+export const PUBLIC_URL = SITE_URL || "https://seenlense.com";
 
 /** A dashboard path, absolute when the dashboard is on its own host. */
 export const appHref = (path: string) => (SPLIT_HOSTS ? `${APP_URL}${path}` : path);

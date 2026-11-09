@@ -32,6 +32,7 @@ const product = [
 const links = [
   { label: "How it works", href: "/#how-it-works" },
   { label: "Pricing", href: "/pricing" },
+  { label: "Blog", href: "/blog" },
   ...(FREE_CHECK ? [{ label: "Free check", href: "/check" }] : []),
   { label: "FAQ", href: "/#faq" },
 ];

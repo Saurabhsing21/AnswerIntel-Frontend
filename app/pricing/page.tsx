@@ -13,6 +13,7 @@ import { FREE_CHECK } from "@/lib/flags";
 export const metadata: Metadata = {
   title: "Pricing - SeenLens",
   description: "SeenLens plans from $20 a month: track how ChatGPT, Perplexity and Gemini recommend your brand against competitors.",
+  alternates: { canonical: "/pricing" },
 };
 
 export default async function PricingPage({ searchParams }: PageProps<"/pricing">) {
