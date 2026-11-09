@@ -1,7 +1,7 @@
 import { Footer } from "@/components/marketing/sections/footer";
 import { Nav } from "@/components/marketing/sections/nav";
 
-export const CONTACT_EMAIL = "hello@gitsaurabh.in";
+export const CONTACT_EMAIL = "saurabh@seenlense.com";
 export const UPDATED = "October 24, 2026";
 
 export type LegalSection = { title: string; body: (string | string[])[] };

@@ -33,7 +33,7 @@ export async function addToWaitlist(email: string): Promise<boolean> {
 export async function sendWaitlistConfirmation(email: string): Promise<void> {
   const from = process.env.EMAIL_FROM;
   if (!from) return;
-  const site = process.env.SITE_URL ?? "https://seenlens.vercel.app";
+  const site = process.env.SITE_URL ?? "https://seenlense.com";
   await call("/emails", {
     method: "POST",
     body: JSON.stringify({ from, to: [email], subject: "You're on the SeenLens waitlist", html: confirmationHtml(site) }),

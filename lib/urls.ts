@@ -1,5 +1,5 @@
 /**
- * The website and the dashboard live on separate hosts: seenlens.com and app.seenlens.com
+ * The website and the dashboard live on separate hosts: seenlense.com and app.seenlense.com
  * (locally localhost:3100 and app.localhost:3100). With neither variable set, everything stays on one host.
  */
 const trim = (url: string | undefined) => (url ?? "").replace(/\/$/, "");
