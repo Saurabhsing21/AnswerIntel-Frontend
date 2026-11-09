@@ -130,23 +130,25 @@ export function AuthForm({ mode, plan, interval = "month", invite, prefill }: { 
         </div>
       </div>
 
-      <aside className="hidden flex-col justify-between bg-night p-12 text-white lg:flex" aria-label="What SeenLens does">
-        <div className="flex items-center gap-2" aria-hidden>
+      <aside className="relative hidden flex-col justify-between overflow-hidden bg-night p-12 text-white lg:flex" aria-label="What SeenLens does">
+        <div aria-hidden className="pointer-events-none absolute -top-24 -right-16 size-80 rounded-full bg-mark/20 blur-[120px]" />
+        <div aria-hidden className="pointer-events-none absolute bottom-0 left-1/4 size-72 rounded-full bg-mark/10 blur-[120px]" />
+        <div className="relative flex items-center gap-2" aria-hidden>
           {(["chatgpt", "perplexity", "gemini"] as const).map((engine) => (
-            <span key={engine} className="grid size-9 place-items-center rounded-full bg-white/10">
-              <EngineIcon engine={engine} size={16} mono />
+            <span key={engine} className="grid size-9 place-items-center rounded-full bg-white text-[#0d0d0d] ring-1 ring-white/10">
+              <EngineIcon engine={engine} size={16} />
             </span>
           ))}
         </div>
-        <div>
+        <div className="relative">
           <h2 className="max-w-[460px] text-balance font-display text-[34px] leading-[1.1] font-semibold tracking-[-0.035em]">
-            Know when AI recommends your competitors instead of you.
+            Know when AI recommends your competitors <span className="text-mark">instead of you.</span>
           </h2>
           <ul className="mt-10 space-y-6">
             {POINTS.map(({ icon: Icon, title, body }) => (
               <li key={title} className="flex max-w-[480px] items-start gap-4">
-                <span className="grid size-10 shrink-0 place-items-center rounded-[12px] bg-white/10 text-white">
-                  <Icon size={20} />
+                <span className="grid size-10 shrink-0 place-items-center rounded-[12px] bg-mark/15 text-mark ring-1 ring-mark/20">
+                  <Icon size={20} weight="bold" />
                 </span>
                 <span>
                   <span className="block text-[15px] font-medium">{title}</span>
@@ -156,7 +158,10 @@ export function AuthForm({ mode, plan, interval = "month", invite, prefill }: { 
             ))}
           </ul>
         </div>
-        <p className="text-[13px] text-white/50">Asks ChatGPT, Perplexity and Gemini the questions your buyers ask.</p>
+        <p className="relative flex items-center gap-2 text-[13px] text-white/50">
+          <span aria-hidden className="size-1.5 rounded-full bg-mark" />
+          Asks ChatGPT, Perplexity and Gemini the questions your buyers ask.
+        </p>
       </aside>
     </div>
   );
