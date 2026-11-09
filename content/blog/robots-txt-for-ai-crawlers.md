@@ -1,6 +1,7 @@
 ---
 title: "robots.txt for AI Crawlers: Which Bots to Allow"
 description: The AI crawlers from OpenAI, Anthropic, Perplexity, Google and others, what each one does, and a robots.txt you can copy if you want AI assistants to recommend your brand.
+category: Technical
 date: 2026-11-09
 author: Saurabh Singh
 ---

@@ -160,18 +160,46 @@ body {
   display: block;
   overflow-x: auto;
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 16px;
+  background: var(--color-surface);
   font-size: 15px;
   line-height: 1.5;
+  margin-top: 1.6em;
+  margin-bottom: 1.6em;
 }
 .prose-blog th,
 .prose-blog td {
-  border-bottom: 1px solid var(--color-line-strong);
-  padding: 0.6em 0.8em;
+  border-bottom: 1px solid var(--color-line);
+  padding: 0.75em 1em;
   text-align: left;
   vertical-align: top;
 }
+.prose-blog tr:last-child td {
+  border-bottom: 0;
+}
 .prose-blog th {
+  background: var(--color-sunken);
   color: var(--color-ink);
+  font-size: 13px;
   font-weight: 600;
+}
+.prose-blog td:first-child {
+  color: var(--color-ink);
+  font-weight: 500;
+}
+.prose-blog > p:first-child {
+  font-size: 19px;
+  color: var(--color-ink);
+}
+.prose-blog h2#faq ~ h3 {
+  margin-top: 1.4em;
+  padding-top: 1.2em;
+  border-top: 1px solid var(--color-line);
+}
+.prose-blog h2#faq + h3 {
+  padding-top: 0;
+  border-top: 0;
 }

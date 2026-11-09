@@ -1,6 +1,7 @@
 ---
 title: What Is AI Search Visibility (and How to Measure It)
 description: AI search visibility is how often AI assistants like ChatGPT, Perplexity and Gemini mention, recommend and cite your brand when buyers ask about your category. Here is how to measure it in five numbers.
+category: Guide
 date: 2026-11-09
 author: Saurabh Singh
 ---

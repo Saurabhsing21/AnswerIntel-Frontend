@@ -4,7 +4,7 @@ import { Marked, type Tokens } from "marked";
 
 /**
  * Blog posts are Markdown files in content/blog: the file name is the slug, and a small front matter block holds
- * title, description, date (YYYY-MM-DD) and author. A "## FAQ" section with "### Question" headings also becomes
+ * title, description, category, date (YYYY-MM-DD) and author. A "## FAQ" section with "### Question" headings also becomes
  * FAQ structured data.
  */
 const DIR = path.join(process.cwd(), "content/blog");
@@ -13,6 +13,7 @@ export type Post = {
   slug: string;
   title: string;
   description: string;
+  category: string;
   date: string;
   author: string;
   minutes: number;
@@ -60,6 +61,7 @@ function parse(slug: string, file: string): Post {
     slug,
     title: meta.title,
     description: meta.description,
+    category: meta.category ?? "Guide",
     date: meta.date,
     author: meta.author,
     minutes: Math.max(1, Math.round(body.split(/\s+/).length / 220)),
@@ -82,3 +84,9 @@ export const getPost = (slug: string) => getPosts().find((p) => p.slug === slug)
 
 export const formatDate = (date: string) =>
   new Date(`${date}T00:00:00Z`).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
+
+/** The article split before its second section, where the in-article call to action goes. */
+export function splitForCta(html: string): [string, string] {
+  const second = html.indexOf("<h2", html.indexOf("<h2") + 1);
+  return second > 0 ? [html.slice(0, second), html.slice(second)] : [html, ""];
+}

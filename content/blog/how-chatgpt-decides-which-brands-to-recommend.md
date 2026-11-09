@@ -1,6 +1,7 @@
 ---
 title: How ChatGPT Decides Which Brands to Recommend
 description: ChatGPT recommends brands from two places, what the model learned in training and what it finds in a live web search. Here is how each works and what you can change.
+category: How AI works
 date: 2026-11-09
 author: Saurabh Singh
 ---
