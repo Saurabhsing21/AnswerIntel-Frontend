@@ -8,68 +8,70 @@ import { MathUtils, type Group } from "three";
 const LIME = "#d7f36b";
 
 /**
- * The SeenLense mascot: a glossy ink body wearing one big lens. The body turns to follow the pointer anywhere on the
- * page, so it reads as "watching what AI says". The environment is built from local light panels (no HDR download).
+ * The SeenLense mascot: a chunky glossy lime bot with a dark visor, two glowing eyes, stubby feet and an antenna that
+ * ends in a small magnifier lens. It turns to follow the pointer anywhere on the page and blinks now and then. The
+ * environment is built from local light panels (no HDR download).
  */
 function Body({ still }: { still: boolean }) {
   const ref = useRef<Group>(null);
+  const eyes = useRef<Group>(null);
   useFrame((state, delta) => {
     if (!ref.current || still) return;
     const x = MathUtils.clamp(state.pointer.x, -1.5, 1.5);
     const y = MathUtils.clamp(state.pointer.y, -1.5, 1.5);
-    ref.current.rotation.y = MathUtils.damp(ref.current.rotation.y, x * 0.45, 4, delta);
-    ref.current.rotation.x = MathUtils.damp(ref.current.rotation.x, -y * 0.3, 4, delta);
+    ref.current.rotation.y = MathUtils.damp(ref.current.rotation.y, -0.35 + x * 0.45, 4, delta);
+    ref.current.rotation.x = MathUtils.damp(ref.current.rotation.x, -y * 0.25, 4, delta);
+    // a quick blink every few seconds
+    if (eyes.current) eyes.current.scale.y = state.clock.elapsedTime % 4.2 < 0.12 ? 0.1 : 1;
   });
 
+  const ink = <meshPhysicalMaterial color="#141414" roughness={0.18} metalness={0.2} clearcoat={1} clearcoatRoughness={0.05} />;
+
   return (
-    <group ref={ref}>
+    <group ref={ref} rotation={[0, -0.35, 0]}>
       {/* body */}
-      <mesh castShadow>
+      <mesh castShadow scale={[1.15, 0.95, 1]}>
         <sphereGeometry args={[1, 64, 64]} />
-        <meshPhysicalMaterial color="#1b1b1b" roughness={0.28} metalness={0.15} clearcoat={1} clearcoatRoughness={0.12} />
+        <meshPhysicalMaterial color="#d7f36b" emissive="#c4e04f" emissiveIntensity={0.18} roughness={0.25} clearcoat={1} clearcoatRoughness={0.1} />
       </mesh>
 
-      {/* the lens: metal rim, lime iris, dark pupil, catch-light */}
-      <group position={[0, 0.08, 1.0]}>
+      {/* visor with two glowing eyes */}
+      <mesh position={[0, 0.08, 0.84]} rotation={[0, 0, Math.PI / 2]} scale={[1, 1, 0.6]}>
+        <capsuleGeometry args={[0.36, 0.7, 16, 48]} />
+        {ink}
+      </mesh>
+      <group ref={eyes} position={[0, 0.08, 1.07]}>
+        {[-0.24, 0.24].map((x) => (
+          <mesh key={x} position={[x, 0, 0]}>
+            <capsuleGeometry args={[0.075, 0.13, 8, 24]} />
+            <meshBasicMaterial color="#ffffff" />
+          </mesh>
+        ))}
+      </group>
+
+      {/* stubby feet */}
+      {[-0.45, 0.45].map((x) => (
+        <mesh key={x} castShadow position={[x, -0.92, 0.15]} scale={[1.35, 0.6, 1.2]}>
+          <sphereGeometry args={[0.24, 32, 32]} />
+          {ink}
+        </mesh>
+      ))}
+
+      {/* antenna ending in a little magnifier lens */}
+      <mesh position={[0.18, 1.08, -0.05]} rotation={[0, 0, -0.35]}>
+        <capsuleGeometry args={[0.05, 0.32, 8, 16]} />
+        {ink}
+      </mesh>
+      <group position={[0.36, 1.4, -0.05]} rotation={[0, 0, -0.35]}>
         <mesh>
-          <torusGeometry args={[0.5, 0.09, 32, 96]} />
-          <meshStandardMaterial color="#e5e5e5" metalness={1} roughness={0.18} />
+          <torusGeometry args={[0.15, 0.045, 16, 48]} />
+          {ink}
         </mesh>
-        <mesh position={[0, 0, 0.04]}>
-          <circleGeometry args={[0.44, 64]} />
-          <meshStandardMaterial color={LIME} emissive={LIME} emissiveIntensity={0.35} roughness={0.35} />
-        </mesh>
-        <mesh position={[0, 0, 0.05]}>
-          <circleGeometry args={[0.19, 48]} />
-          <meshStandardMaterial color="#0d0d0d" roughness={0.2} />
-        </mesh>
-        <mesh position={[0.1, 0.1, 0.06]}>
-          <circleGeometry args={[0.065, 32]} />
-          <meshBasicMaterial color="#ffffff" />
+        <mesh>
+          <circleGeometry args={[0.12, 32]} />
+          <meshStandardMaterial color="#d7f36b" emissive="#d7f36b" emissiveIntensity={0.6} side={2} />
         </mesh>
       </group>
-
-      {/* magnifier handle with a lime tip */}
-      <group position={[0.78, -0.78, 0.15]} rotation={[0, 0, Math.PI / 4]}>
-        <mesh castShadow position={[0, -0.25, 0]}>
-          <capsuleGeometry args={[0.11, 0.45, 8, 24]} />
-          <meshPhysicalMaterial color="#262626" roughness={0.3} clearcoat={1} />
-        </mesh>
-        <mesh position={[0, -0.6, 0]}>
-          <sphereGeometry args={[0.15, 32, 32]} />
-          <meshStandardMaterial color={LIME} roughness={0.3} />
-        </mesh>
-      </group>
-
-      {/* small antenna, so it reads as a character and not an object */}
-      <mesh position={[-0.25, 1.02, 0]} rotation={[0, 0, 0.25]}>
-        <cylinderGeometry args={[0.025, 0.025, 0.28, 12]} />
-        <meshStandardMaterial color="#3a3a3a" />
-      </mesh>
-      <mesh position={[-0.29, 1.18, 0]}>
-        <sphereGeometry args={[0.07, 24, 24]} />
-        <meshStandardMaterial color={LIME} emissive={LIME} emissiveIntensity={0.5} />
-      </mesh>
     </group>
   );
 }
@@ -77,18 +79,18 @@ function Body({ still }: { still: boolean }) {
 export default function LensMascot({ still = false }: { still?: boolean }) {
   return (
     <Canvas
-      camera={{ position: [0, 0, 5.4], fov: 32 }}
+      camera={{ position: [0, 0.15, 5.6], fov: 32 }}
       dpr={[1, 2]}
       gl={{ antialias: true, alpha: true }}
       eventSource={typeof document === "undefined" ? undefined : document.body}
       eventPrefix="client"
     >
-      <ambientLight intensity={0.35} />
+      <ambientLight intensity={0.6} />
       <directionalLight position={[3, 4, 5]} intensity={1.6} castShadow />
       <Float enabled={!still} speed={1.6} rotationIntensity={0.25} floatIntensity={0.6} floatingRange={[-0.08, 0.08]}>
         <Body still={still} />
       </Float>
-      <ContactShadows position={[0, -1.3, 0]} opacity={0.3} scale={3.2} blur={2.4} far={1.6} />
+      <ContactShadows position={[0, -1.12, 0]} opacity={0.35} scale={3.4} blur={2.2} far={1.4} />
       <Environment resolution={256}>
         <Lightformer intensity={3} position={[0, 4, 3]} scale={[6, 2, 1]} />
         <Lightformer intensity={1.5} position={[3, 2, 4]} scale={[1.5, 1.5, 1]} />

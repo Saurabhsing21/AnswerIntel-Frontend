@@ -1,34 +1,23 @@
 import { cx } from "@/lib/cx";
 
-/**
- * The SeenLense mark: the mascot's lens on a glossy ink tile. Gradients give it depth; every copy uses the same
- * definitions, so repeated ids on one page are harmless.
- */
+/** The SeenLense mark: the mascot's head, a lime bot with a dark visor and a lens on its antenna. */
 export function LogoMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 32 32" aria-hidden className={cx("shrink-0", className)}>
       <defs>
-        <linearGradient id="sl-tile" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#3a3a3a" />
-          <stop offset="1" stopColor="#0e0e0e" />
-        </linearGradient>
-        <linearGradient id="sl-rim" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#ffffff" />
-          <stop offset="1" stopColor="#a3a3a3" />
-        </linearGradient>
-        <radialGradient id="sl-iris" cx="0.38" cy="0.35" r="0.75">
-          <stop offset="0" stopColor="#f2ffc2" />
-          <stop offset="0.55" stopColor="#d7f36b" />
+        <radialGradient id="sl-head" cx="0.35" cy="0.3" r="0.8">
+          <stop offset="0" stopColor="#efffb0" />
+          <stop offset="0.5" stopColor="#d7f36b" />
           <stop offset="1" stopColor="#a8c93a" />
         </radialGradient>
       </defs>
-      <rect width="32" height="32" rx="9" fill="url(#sl-tile)" />
-      <rect x="0.5" y="0.5" width="31" height="31" rx="8.5" fill="none" stroke="#ffffff" strokeOpacity="0.14" />
-      <path d="M20.2 20.2l5.3 5.3" stroke="url(#sl-rim)" strokeWidth="3" strokeLinecap="round" />
-      <circle cx="14.5" cy="14.5" r="7.4" fill="none" stroke="url(#sl-rim)" strokeWidth="2.6" />
-      <circle cx="14.5" cy="14.5" r="5.6" fill="url(#sl-iris)" />
-      <circle cx="14.5" cy="14.5" r="2.3" fill="#111111" />
-      <circle cx="15.7" cy="13.3" r="0.9" fill="#ffffff" />
+      <path d="M19.5 8.2l2.6-3.6" stroke="#141414" strokeWidth="1.8" strokeLinecap="round" />
+      <circle cx="23.4" cy="3.6" r="2.4" fill="#d7f36b" stroke="#141414" strokeWidth="1.4" />
+      <ellipse cx="16" cy="18" rx="14" ry="12.5" fill="url(#sl-head)" />
+      <rect x="6" y="13.2" width="20" height="8.6" rx="4.3" fill="#141414" />
+      <rect x="10.6" y="15.4" width="2.4" height="4.2" rx="1.2" fill="#ffffff" />
+      <rect x="19" y="15.4" width="2.4" height="4.2" rx="1.2" fill="#ffffff" />
+      <ellipse cx="11" cy="9.6" rx="3.2" ry="1.6" fill="#ffffff" fillOpacity="0.45" />
     </svg>
   );
 }
