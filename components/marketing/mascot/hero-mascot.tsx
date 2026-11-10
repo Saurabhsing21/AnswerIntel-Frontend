@@ -66,7 +66,7 @@ export function HeroMascot() {
       </Floating>
 
       {/* right: the mascot and three verdicts */}
-      <div className="absolute top-[40px] right-[10px] size-[240px]">
+      <div className="absolute top-[10px] right-[0px] h-[300px] w-[270px]">
         <LensMascot still={Boolean(reduce)} />
       </div>
       <svg className="absolute top-[270px] right-[20px] h-[260px] w-[220px]" viewBox="0 0 220 260" fill="none">
