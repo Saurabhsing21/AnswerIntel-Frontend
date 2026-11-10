@@ -21,7 +21,8 @@ export function Reveal({
       className={className}
       initial={reduce ? false : { opacity: 0, y }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
+      // "some": start as soon as any part shows, so a tall block peeking in at the fold is never left blank.
+      viewport={{ once: true, amount: "some" }}
       transition={{ duration: 0.6, delay, ease }}
     >
       {children}
