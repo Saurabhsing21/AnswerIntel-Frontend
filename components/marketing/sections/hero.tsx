@@ -1,4 +1,5 @@
 import { Reveal } from "@/components/marketing/effects/reveal";
+import { HeroMascot } from "@/components/marketing/mascot/hero-mascot";
 import { TrialCta } from "@/components/marketing/trial-cta";
 import { WaitlistForm } from "@/components/marketing/waitlist-form";
 import { AppFrame } from "@/components/product/app-frame";
@@ -20,7 +21,8 @@ export function Hero() {
           className={`pointer-events-none absolute inset-y-0 ${side} hidden w-px bg-[linear-gradient(to_bottom,transparent_0%,rgb(0_0_0/0.07)_220px)] md:block`}
         />
       ))}
-      <div className="mx-auto flex max-w-[860px] flex-col items-center text-center">
+      <HeroMascot />
+      <div className="relative mx-auto flex max-w-[860px] flex-col items-center text-center">
         <Reveal>
           <span className="inline-flex items-center gap-2 rounded-full border border-line-strong bg-surface py-1 pr-3.5 pl-1 text-[13px] text-ink-2 shadow-[0_1px_2px_rgb(0_0_0/0.04)]">
             <span className="flex -space-x-1">
