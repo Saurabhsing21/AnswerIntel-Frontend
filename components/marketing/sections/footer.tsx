@@ -1,3 +1,4 @@
+import { CONTACT_EMAIL } from "@/components/marketing/legal-page";
 import { Logo } from "@/components/ui/logo";
 
 const links = [
@@ -38,6 +39,7 @@ export function Footer() {
         <a href="/terms" className="hover:text-ink">Terms</a>
         <a href="/privacy" className="hover:text-ink">Privacy</a>
         <a href="/refunds" className="hover:text-ink">Refunds</a>
+        <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-ink">Contact: {CONTACT_EMAIL}</a>
       </div>
       <p
         aria-hidden
