@@ -121,8 +121,8 @@ export function PricingCards({ toggleClassName, country }: { toggleClassName?: s
         {PLANS.map((plan, i) => {
           const dark = plan.key === FEATURED;
           const priceId = tiers.find((t) => t.plan === plan.key)?.priceId[period];
-          // Paddle's own formatted total; only the waitlist site (no checkout) shows the list price.
-          const price = WAITLIST_ONLY ? `$${period === "month" ? plan.monthly : plan.yearly}` : (priceId && prices[priceId]) || "…";
+          // Our USD list price shows at once; Paddle's total for the visitor's country replaces it when it loads.
+          const price = (priceId && prices[priceId]) || `$${(period === "month" ? plan.monthly : plan.yearly).toFixed(2)}`;
           return (
             <Reveal key={plan.key} delay={0.06 * i} className="h-full">
               <article
