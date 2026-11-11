@@ -18,7 +18,11 @@ const TIERS: Record<Environments, Tier[]> = {
     { plan: "growth", priceId: { month: "pri_01m75kjmr04p61q73qft13wgk2", year: "pri_01m75kjn04492etszp3dabg078" } },
     { plan: "pro", priceId: { month: "pri_01m75kjnhcz2zvtgsfer4drbcp", year: "pri_01m75kjnsf1rpryc1k04f10ypg" } },
   ],
-  production: [], // fill in from the live catalog before going live
+  production: [
+    { plan: "starter", priceId: { month: "pri_01m75rwqctkgr9dd573eyr8a64", year: "pri_01m75rwqpavvhdedt53799xrtx" } },
+    { plan: "growth", priceId: { month: "pri_01m75rwrbrzmjfwdw67t6zw0wc", year: "pri_01m75rwrnd297wwnma04eb46s3" } },
+    { plan: "pro", priceId: { month: "pri_01m75rwsbbbbj75wdffgytvc66", year: "pri_01m75rwsmwek4t318z9gdda9rv" } },
+  ],
 };
 
 /** Never guess the environment: a missing or wrong value would charge against the wrong Paddle account. */
