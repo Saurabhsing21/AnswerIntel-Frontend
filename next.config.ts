@@ -4,14 +4,14 @@ const dev = process.env.NODE_ENV !== "production";
 
 // Next.js inlines its own bootstrap scripts, so scripts need 'unsafe-inline' without a nonce setup. The rest is
 // strict: no framing, no plugins, no foreign forms, and only the third parties the site actually uses
-// (Google sign-in, Sentry error reports, Paddle checkout).
+// (Google sign-in, Sentry error reports, Paddle checkout and Paddle Retain, served from profitwell.com).
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/client https://cdn.paddle.com${dev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/client https://cdn.paddle.com https://public.profitwell.com${dev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style https://cdn.paddle.com",
-  "img-src 'self' data: blob: https://*.paddle.com",
+  "img-src 'self' data: blob: https://*.paddle.com https://*.profitwell.com",
   "font-src 'self' data:",
-  "connect-src 'self' https://accounts.google.com/gsi/ https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://*.ingest.de.sentry.io https://*.paddle.com",
+  "connect-src 'self' https://accounts.google.com/gsi/ https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://*.ingest.de.sentry.io https://*.paddle.com https://*.profitwell.com",
   "frame-src https://accounts.google.com/gsi/ https://*.paddle.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
