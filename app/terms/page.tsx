@@ -8,7 +8,7 @@ export default function TermsPage() {
   return (
     <LegalPage
       title="Terms of Service"
-      intro="These terms cover your use of SeenLense, a service that asks AI engines questions about your market and reports how they mention your brand and your competitors. By creating an account you agree to them."
+      intro="These terms cover your use of SeenLense, a service that asks AI engines questions about your market and reports how they mention your brand and your competitors. SeenLense is operated by Saurabh Singh, trading as SeenLense. By creating an account you agree to them."
       sections={[
         { title: "Your account", body: [
           "You need an account to use SeenLense. Give us accurate details, keep your password safe and tell us if you think someone else has used your account. You are responsible for what happens under your account.",
