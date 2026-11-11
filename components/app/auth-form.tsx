@@ -5,8 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api, ApiError } from "@/lib/api/client";
-import type { Workspace } from "@/lib/api/types";
-import { startCheckout } from "@/lib/billing/checkout";
 import { type Interval, type PaidPlan, PLANS } from "@/lib/billing/plans";
 import { ButtonArrow, buttonClass } from "@/components/ui/button";
 import { ErrorBanner, Field, inputClass, PasswordInput } from "@/components/app/ui";
@@ -43,14 +41,9 @@ export function AuthForm({ mode, plan, interval = "month", invite, prefill }: { 
         return;
       }
       if (chosen) {
-        // Came from the pricing section: pay straight away. If Checkout can't start, the app asks again.
-        try {
-          const [workspace] = await api<Workspace[]>("/workspaces");
-          await startCheckout(workspace.id, chosen.key, interval, "/projects/new");
-          return;
-        } catch {
-          // fall through to the app, which shows the subscribe step
-        }
+        // Came from the pricing section: pay straight away. The subscribe page asks for the phone Cashfree needs.
+        window.location.replace(`/subscribe?plan=${chosen.key}&interval=${interval}`);
+        return;
       }
       router.push(prefill ? `/projects/new?${prefill}` : "/projects");
       router.refresh();

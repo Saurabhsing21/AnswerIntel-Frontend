@@ -15,7 +15,7 @@ export default function TermsPage() {
           "Accounts belong to people. Plans, projects and data belong to workspaces. The owners of a workspace decide who else can access it.",
         ] },
         { title: "Plans and payment", body: [
-          "New accounts get a free trial of one scan for one brand, with no card needed. After that, SeenLense is a paid service with monthly and yearly plans. Prices are shown on our pricing page and charged in advance through Stripe. Plans renew automatically until you cancel.",
+          "New accounts get a free trial of one scan for one brand, with no card needed. After that, SeenLense is a paid service with monthly and yearly plans. Prices are shown on our pricing page and charged in advance through Cashfree. Plans renew automatically until you cancel.",
           "Each plan has limits, such as questions, credits a month and projects. When you reach a limit, some actions wait until your allowance refills or until you move to a bigger plan.",
           "If a payment fails, you have 7 days to update your card. After that the workspace becomes read-only until you pay.",
         ] },

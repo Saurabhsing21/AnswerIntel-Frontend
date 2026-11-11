@@ -4,18 +4,18 @@ const dev = process.env.NODE_ENV !== "production";
 
 // Next.js inlines its own bootstrap scripts, so scripts need 'unsafe-inline' without a nonce setup. The rest is
 // strict: no framing, no plugins, no foreign forms, and only the third parties the site actually uses
-// (Google sign-in, Sentry error reports).
+// (Google sign-in, Sentry error reports, Cashfree checkout).
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/client${dev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/client https://sdk.cashfree.com${dev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
-  "connect-src 'self' https://accounts.google.com/gsi/ https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://*.ingest.de.sentry.io",
+  "connect-src 'self' https://accounts.google.com/gsi/ https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://*.ingest.de.sentry.io https://sdk.cashfree.com https://*.cashfree.com",
   "frame-src https://accounts.google.com/gsi/",
   "frame-ancestors 'none'",
   "base-uri 'self'",
-  "form-action 'self'",
+  "form-action 'self' https://*.cashfree.com",
   "object-src 'none'",
   ...(dev ? [] : ["upgrade-insecure-requests"]),
 ].join("; ");

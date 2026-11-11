@@ -47,6 +47,8 @@ export type Billing = {
   can_manage: boolean;
   billing_enabled: boolean;
   has_billing_account: boolean;
+  /** Cashfree needs a phone on every subscription; false until the first checkout asks for one. */
+  has_billing_phone: boolean;
   trial_ends_at: string | null;
   current_period_end: string | null;
   cancel_at_period_end: boolean;

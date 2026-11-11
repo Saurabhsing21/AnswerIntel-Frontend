@@ -67,7 +67,7 @@ export default async function PricingPage({ searchParams }: PageProps<"/pricing"
 
         <Section innerClassName="grid gap-10 lg:grid-cols-[1fr_1.5fr] lg:gap-16">
           <div className="lg:sticky lg:top-28 lg:self-start">
-            <SectionHeading title="Billing questions" muted="Payments run on Stripe. You get an invoice for every charge." />
+            <SectionHeading title="Billing questions" muted="Payments run on Cashfree, a PCI DSS compliant payment gateway." />
           </div>
           <PricingFaq />
         </Section>
