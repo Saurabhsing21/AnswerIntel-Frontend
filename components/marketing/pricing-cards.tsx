@@ -1,14 +1,22 @@
 "use client";
 
 import { Check } from "@phosphor-icons/react";
-import { useState } from "react";
+import type { Paddle } from "@paddle/paddle-js";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import { Reveal } from "@/components/marketing/effects/reveal";
 import { EngineLogos } from "@/components/marketing/engine-logos";
 import { ButtonArrow, buttonClass } from "@/components/ui/button";
+import { loadPaddle, paddleTiers, type Tier } from "@/lib/billing/paddle";
 import { FEATURED, type Interval, PLANS } from "@/lib/billing/plans";
 import { WAITLIST_ONLY } from "@/lib/flags";
 import { cx } from "@/lib/cx";
 import { appHref } from "@/lib/urls";
+
+const LOAD_ERROR = "Prices could not load. Please refresh, or email us if this keeps happening.";
+
+const FEATURED_BUTTON =
+  "group inline-flex h-11 items-center justify-center gap-2 rounded-full bg-mark pr-4 pl-5 text-[15px] font-medium text-ink transition-[background-color,transform] duration-150 hover:bg-[#cbe85a] active:scale-[0.98]";
 
 export function PeriodToggle({ value, onChange }: { value: Interval; onChange: (v: Interval) => void }) {
   return (
@@ -32,18 +40,89 @@ export function PeriodToggle({ value, onChange }: { value: Interval; onChange: (
   );
 }
 
-/** The three plans as compact cards with a monthly/yearly switch. Buttons start sign-up with the plan chosen. */
-export function PricingCards({ toggleClassName }: { toggleClassName?: string }) {
+/**
+ * Paddle's prices for the visitor's country (price id -> formatted total, tax included where the country expects it),
+ * and the signed-in user's email for checkout. `country` comes from the CDN; without it Paddle uses the visitor's IP.
+ */
+function usePaddle(country: string | undefined) {
+  const [paddle, setPaddle] = useState<Paddle>();
+  const [setup] = useState<{ tiers: Tier[]; error?: unknown }>(() => {
+    if (WAITLIST_ONLY) return { tiers: [] };
+    try {
+      return { tiers: paddleTiers() };
+    } catch (error) {
+      return { tiers: [], error };
+    }
+  });
+  const [prices, setPrices] = useState<Record<string, string>>({});
+  const [account, setAccount] = useState<{ email: string; workspaceId?: string }>();
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (WAITLIST_ONLY || setup.error) {
+      if (setup.error) console.error(setup.error);
+      return;
+    }
+    const all = setup.tiers;
+    loadPaddle()
+      .then(async (p) => {
+        if (!p) throw new Error("Paddle.js did not load.");
+        setPaddle(p);
+        const preview = await p.PricePreview({
+          items: all.flatMap((t) => [t.priceId.month, t.priceId.year]).map((priceId) => ({ priceId, quantity: 1 })),
+          ...(country && { address: { countryCode: country } }),
+        });
+        setPrices(Object.fromEntries(preview.data.details.lineItems.map((item) => [item.price.id, item.formattedTotals.total])));
+      })
+      .catch((e) => {
+        console.error(e);
+        setError(LOAD_ERROR);
+      });
+    // Signed in (same host as the app): prefill the email and tie the checkout to the workspace they own.
+    fetch("/api/backend/auth/me")
+      .then((r) => (r.ok ? r.json() : null))
+      .then(async (me) => {
+        if (!me?.email) return;
+        const workspaces: { id: string; role: string }[] = await fetch("/api/backend/workspaces").then((r) => (r.ok ? r.json() : []));
+        setAccount({ email: me.email, workspaceId: workspaces.find((w) => w.role === "owner")?.id });
+      })
+      .catch(() => undefined);
+  }, [country, setup]);
+
+  return { paddle, tiers: setup.tiers, prices, account, error: setup.error ? LOAD_ERROR : error };
+}
+
+/** The three plans as compact cards with a monthly/yearly switch. Subscribe opens Paddle's checkout for the price shown. */
+export function PricingCards({ toggleClassName, country }: { toggleClassName?: string; country?: string }) {
   const [period, setPeriod] = useState<Interval>("month");
+  const { paddle, tiers, prices, account, error } = usePaddle(country);
+
+  function subscribe(plan: string, priceId: string) {
+    // A payment has to land on a workspace, so people without an account sign up first and pay right after.
+    if (!account?.workspaceId) {
+      window.location.assign(appHref(`/register?plan=${plan}&interval=${period}`));
+      return;
+    }
+    paddle?.Checkout.open({
+      items: [{ priceId, quantity: 1 }],
+      customer: { email: account.email },
+      customData: { workspace_id: account.workspaceId },
+      settings: { displayMode: "overlay", variant: "one-page", successUrl: `${window.location.origin}/welcome` },
+    });
+  }
+
   return (
     <>
       <div className={cx("flex", toggleClassName)}>
         <PeriodToggle value={period} onChange={setPeriod} />
       </div>
+      {error && <p role="alert" className="mt-4 text-center text-[14px] text-down">{error}</p>}
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
         {PLANS.map((plan, i) => {
           const dark = plan.key === FEATURED;
-          const price = period === "month" ? plan.monthly : plan.yearly / 12;
+          const priceId = tiers.find((t) => t.plan === plan.key)?.priceId[period];
+          // Paddle's own formatted total; only the waitlist site (no checkout) shows the list price.
+          const price = WAITLIST_ONLY ? `$${period === "month" ? plan.monthly : plan.yearly}` : (priceId && prices[priceId]) || "…";
           return (
             <Reveal key={plan.key} delay={0.06 * i} className="h-full">
               <article
@@ -58,27 +137,31 @@ export function PricingCards({ toggleClassName }: { toggleClassName?: string }) 
                   {dark && <span className="rounded-full bg-mark px-2 py-0.5 text-[11px] font-medium text-ink">Most popular</span>}
                 </header>
                 <p className="relative mt-2 flex items-baseline gap-1">
-                  <span className="font-display text-[42px] leading-none font-semibold tracking-[-0.04em] tabular-nums">${price}</span>
-                  <span className={cx("text-[16px]", dark ? "text-white/60" : "text-muted")}>/mo</span>
+                  <span className="font-display text-[42px] leading-none font-semibold tracking-[-0.04em] tabular-nums">{price}</span>
+                  <span className={cx("text-[16px]", dark ? "text-white/60" : "text-muted")}>/{period}</span>
                 </p>
                 <p className={cx("relative mt-1.5 text-[13px]", dark ? "text-white/50" : "text-faint")}>
-                  {period === "year" ? `$${plan.yearly} billed yearly` : "Billed monthly"}
+                  {period === "year" ? "Billed yearly" : "Billed monthly"}
                 </p>
                 <EngineLogos engines={plan.engines} dark={dark} className="relative mt-4" />
 
                 <p className={cx("relative mt-5 border-t pt-5 text-[14px] leading-snug", dark ? "border-white/10 text-white/65" : "border-line text-muted")}>{plan.audience}</p>
-                <a
-                  href={WAITLIST_ONLY ? "/#waitlist" : appHref(`/subscribe?plan=${plan.key}&interval=${period}`)}
-                  className={cx(
-                    "relative mt-5 w-full",
-                    dark
-                      ? "group inline-flex h-11 items-center justify-center gap-2 rounded-full bg-mark pr-4 pl-5 text-[15px] font-medium text-ink transition-[background-color,transform] duration-150 hover:bg-[#cbe85a] active:scale-[0.98]"
-                      : buttonClass("secondary"),
-                  )}
-                >
-                  {WAITLIST_ONLY ? "Join waitlist" : "Get started"}
-                  <ButtonArrow />
-                </a>
+                {WAITLIST_ONLY ? (
+                  <Link href="/#waitlist" className={cx("relative mt-5 w-full", dark ? FEATURED_BUTTON : buttonClass("secondary"))}>
+                    Join waitlist
+                    <ButtonArrow />
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => priceId && subscribe(plan.key, priceId)}
+                    disabled={!paddle || !priceId}
+                    className={cx("relative mt-5 w-full disabled:opacity-60", dark ? FEATURED_BUTTON : buttonClass("secondary"))}
+                  >
+                    Subscribe
+                    <ButtonArrow />
+                  </button>
+                )}
 
                 <p className={cx("relative mt-6 text-[13px]", dark ? "text-white/50" : "text-muted")}>This includes:</p>
                 <ul className="relative mt-3 space-y-2.5 text-[14px]">

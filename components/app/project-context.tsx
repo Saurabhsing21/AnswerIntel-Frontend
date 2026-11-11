@@ -104,12 +104,6 @@ function ScopedProvider({
   const { reload: reloadScans } = scansQ;
   const { reload: reloadBilling } = billingQ;
 
-  // Back from Cashfree checkout: ask the API to read the payment from Cashfree now instead of waiting for the webhook.
-  useEffect(() => {
-    if (!workspaceId || new URLSearchParams(window.location.search).get("checkout") !== "success") return;
-    api(`/workspaces/${workspaceId}/billing/sync`, { method: "POST" }).then(reloadBilling, () => undefined);
-  }, [workspaceId, reloadBilling]);
-
   const scans = scansQ.data ?? [];
   const latestScan = scans[0] ?? null;
   const scanKey = `${latestScan?.id ?? 0}:${latestScan?.status ?? "none"}`;

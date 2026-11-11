@@ -16,5 +16,5 @@ export const appHref = (path: string) => (SPLIT_HOSTS ? `${APP_URL}${path}` : pa
 export const siteHref = (path: string) => (SPLIT_HOSTS ? `${SITE_URL}${path}` : path);
 
 /** Paths served by the dashboard host; everything else belongs to the website. */
-export const APP_PATHS = ["/projects", "/workspaces", "/account", "/login", "/register", "/forgot-password", "/reset-password", "/verify-email", "/invite", "/subscribe", "/billing"];
+export const APP_PATHS = ["/projects", "/workspaces", "/account", "/login", "/register", "/forgot-password", "/reset-password", "/verify-email", "/invite", "/subscribe"];
 export const isAppPath = (pathname: string) => APP_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));

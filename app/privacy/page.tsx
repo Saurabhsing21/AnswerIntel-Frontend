@@ -14,7 +14,7 @@ export default function PrivacyPage() {
           [
             "Account details: your email address, name if you add one, and a hashed password. We never store your password itself.",
             "Workspace data: the brands, websites, competitors and questions you add, and the AI answers and reports we produce for you.",
-            "Billing details: handled by Cashfree. We see your plan and payment status, and keep the phone number Cashfree requires for payments, but never your full card number.",
+            "Billing details: handled by Paddle, our reseller and merchant of record. We see your plan, payment status and invoices, but never your full card number.",
             "Waitlist: the email address you give us.",
             "Usage: privacy-friendly page analytics (Vercel Web Analytics, no cookies) and server logs used for security and debugging.",
           ],
@@ -31,7 +31,7 @@ export default function PrivacyPage() {
         { title: "Who we share it with", body: [
           "We use these service providers, only for the purposes above:",
           [
-            "Cashfree: payments.",
+            "Paddle: payments, invoices and sales tax, as merchant of record.",
             "Resend: sending email.",
             "Vercel: hosting the website and analytics.",
             "AI providers (through OpenRouter) and DataForSEO: we send them your questions and brand details to get AI answers. We don't send them your account details.",

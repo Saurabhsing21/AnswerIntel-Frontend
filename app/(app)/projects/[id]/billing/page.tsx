@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ChatsCircle, CircleNotch, CreditCard, Hash, Lightning, Minus } from "@phosphor-icons/react";
+import { Check, ChatsCircle, CircleNotch, CreditCard, Hash, Lightning, Minus, Receipt } from "@phosphor-icons/react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { PlanChooser, StatePill } from "@/components/app/billing";
@@ -10,14 +10,14 @@ import { Card, ErrorBanner, PageHeader, Segmented, Skeleton, StatStrip } from "@
 import { buttonClass } from "@/components/ui/button";
 import { ApiError } from "@/lib/api/client";
 import type { Billing } from "@/lib/api/types";
-import { cancelSubscription } from "@/lib/billing/checkout";
+import { openPortal } from "@/lib/billing/checkout";
 import { cx } from "@/lib/cx";
 import { formatCredits } from "@/lib/format";
 
 const date = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" }) : "n/a");
 
-/** Has a live Cashfree subscription, so it can be changed or canceled here. */
-const subscribed = (b: Billing) => !["none", "free", "trial"].includes(b.plan) && !["canceled", "incomplete_expired"].includes(b.status ?? "");
+/** Has a live Paddle subscription, so its plan can be changed here (and the rest in Paddle's portal). */
+const subscribed = (b: Billing) => !["none", "free", "trial"].includes(b.plan) && !["canceled", "paused"].includes(b.status ?? "");
 
 /** `limit` null = unlimited: the count is shown without a bar. */
 function Meter({ label, used, limit, hint }: { label: string; used: number; limit: number | null; hint?: string }) {
@@ -41,7 +41,7 @@ function Meter({ label, used, limit, hint }: { label: string; used: number; limi
 function statusLine(b: Billing): string {
   if (b.state === "free") return `Free trial: ${b.usage.scans_total} of ${b.limits.scans_total ?? 1} free scan used. Choose a plan for weekly tracking, more questions and every feature.`;
   if (b.state === "trialing") return `Trial until ${date(b.trial_ends_at)}. Subscribe before then to keep scanning.`;
-  if (b.state === "past_due") return `Your last payment failed. Make sure your card or bank account can be charged by ${date(b.grace_ends_at)}, or the workspace becomes read-only.`;
+  if (b.state === "past_due") return `Your last payment failed. Update your card by ${date(b.grace_ends_at)} or the workspace becomes read-only.`;
   if (b.state === "lapsed") return "Read-only. You can view and export everything, but not run scans or add questions, competitors or people.";
   if (b.cancel_at_period_end) return `Canceled. Everything keeps working until ${date(b.current_period_end)}.`;
   return `Billed ${b.interval === "year" ? "yearly" : "monthly"}. Next renewal on ${date(b.current_period_end)}.`;
@@ -53,7 +53,6 @@ function UsageInner() {
   const router = useRouter();
   const { billing, reloadBilling, workspaces } = useProject();
   const [busy, setBusy] = useState(false);
-  const [confirmCancel, setConfirmCancel] = useState(false);
   const [error, setError] = useState("");
   const returned = params.get("checkout") === "success";
   const workspace = workspaces.find((w) => w.id === billing?.workspace_id);
@@ -67,18 +66,16 @@ function UsageInner() {
     return () => window.clearInterval(t);
   }, [waiting, reloadBilling]);
 
-  async function cancel() {
+  async function manage() {
     if (!billing) return;
     setBusy(true);
     setError("");
     try {
-      await cancelSubscription(billing.workspace_id);
-      reloadBilling();
+      await openPortal(billing.workspace_id);
     } catch (e) {
       setError((e as ApiError).message);
+      setBusy(false);
     }
-    setBusy(false);
-    setConfirmCancel(false);
   }
 
   if (!billing) return <Skeleton className="h-72" />;
@@ -100,6 +97,13 @@ function UsageInner() {
       <PageHeader
         title={workspace?.name ?? "Workspace"}
         description="Your plan, what you've used, and the people who share it."
+        actions={
+          billing.can_manage && billing.has_billing_account ? (
+            <button type="button" onClick={manage} disabled={busy} className={buttonClass("secondary", "sm")}>
+              {busy ? <CircleNotch size={14} className="animate-spin" /> : <Receipt size={14} />} Manage billing
+            </button>
+          ) : undefined
+        }
       />
       <div className="mb-4">
         <Segmented
@@ -200,31 +204,16 @@ function UsageInner() {
           </div>
 
           {live && billing.can_manage && (
-            <Card title="Change plan" subtitle="Upgrades are paid now and start a new billing period. Downgrades apply right away and the lower price is charged from your next renewal.">
+            <Card title="Change plan" subtitle="Takes effect now. Paddle charges or credits the difference for the rest of this billing period.">
               <div className="p-5">
                 <PlanChooser key={`${billing.plan}-${billing.interval}`} billing={billing} returnPath={`/projects/${id}/billing`} action="Switch plan" change />
-                <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-line pt-4 text-[13px]">
-                  {confirmCancel ? (
-                    <>
-                      <span className="flex-1 text-ink-2">Stop renewals? Everything keeps working until {date(billing.current_period_end)}.</span>
-                      <button type="button" onClick={cancel} disabled={busy} className={buttonClass("primary", "sm")}>
-                        {busy && <CircleNotch size={14} className="animate-spin" />} Cancel subscription
-                      </button>
-                      <button type="button" onClick={() => setConfirmCancel(false)} disabled={busy} className={buttonClass("secondary", "sm")}>Keep it</button>
-                    </>
-                  ) : (
-                    <button type="button" onClick={() => setConfirmCancel(true)} className="text-muted underline-offset-2 hover:text-ink hover:underline">
-                      Cancel subscription
-                    </button>
-                  )}
-                </div>
               </div>
             </Card>
           )}
 
           {!live && billing.can_manage && (
             <Card
-              title={billing.state === "free" ? "Upgrade from the free trial" : billing.cancel_at_period_end && billing.state === "active" ? "Resubscribe" : "Renew your subscription"}
+              title={billing.state === "free" ? "Upgrade from the free trial" : "Renew your subscription"}
               subtitle={billing.state === "free" ? "Keep this project and its results. Weekly scans start right away." : "Pick up where you left off. Your data is all still here."}
             >
               <div className="p-5">

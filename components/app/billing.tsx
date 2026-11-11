@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useProject } from "@/components/app/project-context";
-import { ErrorBanner, Field, inputClass, Segmented } from "@/components/app/ui";
+import { ErrorBanner, Segmented } from "@/components/app/ui";
 import { buttonClass } from "@/components/ui/button";
 import { ApiError, PLAN_LIMIT_EVENT } from "@/lib/api/client";
 import type { Billing, BillingState } from "@/lib/api/types";
@@ -62,7 +62,7 @@ function bannerFor(billing: Billing): { tone: "amber" | "red"; text: string; cta
   }
   if (billing.state === "past_due") {
     const by = billing.grace_ends_at ? ` by ${new Date(billing.grace_ends_at).toLocaleDateString(undefined, { month: "long", day: "numeric" })}` : "";
-    return { tone: "amber", text: `Your last payment failed. Make sure your card or bank account can be charged${by} to keep scanning.`, cta: "See billing" };
+    return { tone: "amber", text: `Your last payment failed. Update your card${by} to keep scanning.`, cta: "Update payment" };
   }
   const days = daysUntil(billing.trial_ends_at);
   if (billing.state === "trialing" && days <= 7) {
@@ -223,42 +223,26 @@ export function UpgradePrompt() {
   );
 }
 
-/** Cashfree's format: digits with an optional leading +, country code included. Spaces, dashes and brackets are dropped. */
-export const cleanPhone = (raw: string) => raw.replace(/[\s()-]/g, "");
-export const validPhone = (phone: string) => /^\+?[0-9]{8,15}$/.test(phone);
-
-/** Cashfree requires a phone on every subscription: asked once, at the first checkout. */
-export function PhoneField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  return (
-    <Field label="Phone number" hint="With country code, e.g. +1 415 555 0123. Our payment provider requires it for payment alerts.">
-      <input type="tel" autoComplete="tel" className={inputClass} value={value} onChange={(e) => onChange(e.target.value)} placeholder="+1 415 555 0123" />
-    </Field>
-  );
-}
-
-/** Pick a plan and go to Cashfree's checkout (subscribe step, renewing a lapsed plan), or with `change`, switch a live
+/** Pick a plan and open Paddle's checkout (subscribe step, renewing a lapsed plan), or with `change`, switch a live
  * subscription to another plan or period. */
 export function PlanChooser({ billing, returnPath, action = "Continue to payment", change = false }: { billing: Billing; returnPath: string; action?: string; change?: boolean }) {
   const { reloadBilling } = useProject();
   const current = change && billing.interval ? { plan: billing.plan as PaidPlan, interval: billing.interval } : null;
   const [plan, setPlan] = useState<PaidPlan>(current?.plan ?? FEATURED);
   const [period, setPeriod] = useState<Interval>(current?.interval ?? "month");
-  const [phone, setPhone] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const askPhone = !change && !billing.has_billing_phone;
   const unchanged = current?.plan === plan && current.interval === period;
 
   async function pay() {
-    if (askPhone && !validPhone(cleanPhone(phone))) return setError("Enter your phone number with its country code.");
     setBusy(true);
     setError("");
     try {
       if (change) {
-        await changePlan(billing.workspace_id, plan, period, returnPath);
+        await changePlan(billing.workspace_id, plan, period);
         reloadBilling();
-        setBusy(false);
-      } else await startCheckout(billing.workspace_id, plan, period, returnPath, askPhone ? cleanPhone(phone) : undefined);
+      } else await startCheckout(billing.workspace_id, plan, period, returnPath); // opens over the page
+      setBusy(false);
     } catch (e) {
       setError((e as ApiError).code === "BILLING_NOT_CONFIGURED" ? "Payments are not set up on this server yet." : (e as ApiError).message);
       setBusy(false);
@@ -293,7 +277,6 @@ export function PlanChooser({ billing, returnPath, action = "Continue to payment
           );
         })}
       </div>
-      {askPhone && <div className="mt-4"><PhoneField value={phone} onChange={setPhone} /></div>}
       {error && <div className="mt-3"><ErrorBanner message={error} /></div>}
       <button type="button" onClick={pay} disabled={busy || unchanged || !billing.can_manage} className={cx(buttonClass("primary"), "mt-4 w-full")}>
         {busy && <CircleNotch size={16} className="animate-spin" />}

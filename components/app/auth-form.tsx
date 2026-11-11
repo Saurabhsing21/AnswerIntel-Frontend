@@ -41,7 +41,7 @@ export function AuthForm({ mode, plan, interval = "month", invite, prefill }: { 
         return;
       }
       if (chosen) {
-        // Came from the pricing section: pay straight away. The subscribe page asks for the phone Cashfree needs.
+        // Came from the pricing section: pay straight away. The subscribe page opens checkout for the new workspace.
         window.location.replace(`/subscribe?plan=${chosen.key}&interval=${interval}`);
         return;
       }

@@ -19,7 +19,7 @@ export default function RefundsPage() {
           `If something went wrong, such as a double charge or a long outage, email ${CONTACT_EMAIL} and we will put it right.`,
         ] },
         { title: "Changing plans", body: [
-          "You can upgrade or downgrade from the billing page in the app. An upgrade is paid when you make it and starts a new billing period. A downgrade applies right away, and the lower price is charged from your next renewal.",
+          "You can upgrade or downgrade from the billing page in the app. Changes take effect right away, and you pay or are credited only the difference for the rest of the billing period.",
         ] },
         { title: "Failed payments", body: [
           "If a payment fails, you have 7 days to make sure your card or bank account can be charged before the workspace becomes read-only. Nothing is deleted.",

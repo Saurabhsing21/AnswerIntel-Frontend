@@ -1,38 +1,30 @@
 "use client";
 
 import { api } from "@/lib/api/client";
+import { loadPaddle, paddleTiers } from "@/lib/billing/paddle";
 import type { Interval, PaidPlan } from "@/lib/billing/plans";
 
-/** Open Cashfree's hosted checkout for a workspace. Throws ApiError when the API refuses (PHONE_REQUIRED: ask for one). */
-export async function startCheckout(workspaceId: string, plan: PaidPlan, interval: Interval, returnPath: string, phone?: string) {
-  const session = await api<CheckoutSession>(`/workspaces/${workspaceId}/billing/checkout`, {
-    method: "POST",
-    json: { plan, interval, return_path: returnPath, ...(phone ? { phone } : {}) },
+/** Open Paddle's checkout over the page for a workspace. The webhook switches the plan on; the page then shows it. */
+export async function startCheckout(workspaceId: string, plan: PaidPlan, interval: Interval, returnPath: string) {
+  const priceId = paddleTiers().find((t) => t.plan === plan)?.priceId[interval];
+  const [paddle, me] = await Promise.all([loadPaddle(), api<{ email: string }>("/auth/me")]);
+  if (!paddle || !priceId) throw new Error("Could not load the payment page. Please try again.");
+  const back = `${window.location.origin}${returnPath}${returnPath.includes("?") ? "&" : "?"}checkout=success`;
+  paddle.Checkout.open({
+    items: [{ priceId, quantity: 1 }],
+    customer: { email: me.email },
+    customData: { workspace_id: workspaceId },
+    settings: { displayMode: "overlay", variant: "one-page", successUrl: back },
   });
-  await openCheckout(session);
 }
 
-type CheckoutSession = { session_id: string; mode: "sandbox" | "production" };
-
-async function openCheckout({ session_id, mode }: CheckoutSession) {
-  // Loaded only here: importing the SDK injects Cashfree's script into the page.
-  const { load } = await import("@cashfreepayments/cashfree-js");
-  const cashfree = await load({ mode });
-  if (!cashfree) throw new Error("Could not load the payment page. Please try again.");
-  const result = await cashfree.subscriptionsCheckout({ subsSessionId: session_id, redirectTarget: "_self" });
-  if (result?.error) throw new Error(result.error.message);
+/** Switch a live subscription to another plan or period. Paddle charges or credits the prorated difference. */
+export async function changePlan(workspaceId: string, plan: PaidPlan, interval: Interval) {
+  return api<{ plan: PaidPlan; interval: Interval }>(`/workspaces/${workspaceId}/billing/change`, { method: "POST", json: { plan, interval } });
 }
 
-/** A cheaper plan changes in place. A dearer one opens Cashfree's checkout (a mandate can't be raised), and the old
- * subscription is canceled once the new one is paid. */
-export async function changePlan(workspaceId: string, plan: PaidPlan, interval: Interval, returnPath: string) {
-  const result = await api<{ plan: PaidPlan; interval: Interval } | CheckoutSession>(`/workspaces/${workspaceId}/billing/change`, {
-    method: "POST",
-    json: { plan, interval, return_path: returnPath },
-  });
-  if ("session_id" in result) await openCheckout(result);
-}
-
-export async function cancelSubscription(workspaceId: string) {
-  return api<{ status: string; current_period_end: string | null }>(`/workspaces/${workspaceId}/billing/cancel`, { method: "POST" });
+/** Paddle's customer portal: invoices, payment method and cancel. */
+export async function openPortal(workspaceId: string) {
+  const { url } = await api<{ url: string }>(`/workspaces/${workspaceId}/billing/portal`, { method: "POST" });
+  window.location.assign(url);
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { Reveal } from "@/components/marketing/effects/reveal";
 import { PricingCards } from "@/components/marketing/pricing-cards";
 import { CreditsExplainer } from "@/components/marketing/credits-explainer";
@@ -18,6 +19,8 @@ export const metadata: Metadata = {
 
 export default async function PricingPage({ searchParams }: PageProps<"/pricing">) {
   const { subscribe } = await searchParams; // sent here by the app when the workspace has no plan yet
+  // Vercel's geo header picks the visitor's local prices; without it Paddle works the country out from their IP.
+  const country = (await headers()).get("x-vercel-ip-country") ?? undefined;
   return (
     <>
       <Nav />
@@ -43,7 +46,7 @@ export default async function PricingPage({ searchParams }: PageProps<"/pricing"
             )}
           </Reveal>
           <div className="mt-8">
-            <PricingCards toggleClassName="justify-center" />
+            <PricingCards toggleClassName="justify-center" country={country} />
           </div>
         </Section>
 
@@ -67,7 +70,7 @@ export default async function PricingPage({ searchParams }: PageProps<"/pricing"
 
         <Section innerClassName="grid gap-10 lg:grid-cols-[1fr_1.5fr] lg:gap-16">
           <div className="lg:sticky lg:top-28 lg:self-start">
-            <SectionHeading title="Billing questions" muted="Payments run on Cashfree, a PCI DSS compliant payment gateway." />
+            <SectionHeading title="Billing questions" muted="Payments run on Paddle, our reseller and merchant of record. Every charge comes with an invoice." />
           </div>
           <PricingFaq />
         </Section>
