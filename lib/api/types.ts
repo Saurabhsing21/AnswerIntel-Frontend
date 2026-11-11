@@ -47,6 +47,8 @@ export type Billing = {
   can_manage: boolean;
   billing_enabled: boolean;
   has_billing_account: boolean;
+  /** Paddle's customer id, for Paddle Retain (`pwCustomer`). */
+  paddle_customer_id: string | null;
   trial_ends_at: string | null;
   current_period_end: string | null;
   cancel_at_period_end: boolean;

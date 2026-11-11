@@ -3,6 +3,7 @@
 import { usePathname, useParams } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { api, ApiError, useApi } from "@/lib/api/client";
+import { loadPaddle } from "@/lib/billing/paddle";
 import type { Billing, Project, Scan, Schedule, Workspace } from "@/lib/api/types";
 import { useToast } from "@/components/app/toast";
 
@@ -103,6 +104,17 @@ function ScopedProvider({
   const [starting, setStarting] = useState(false);
   const { reload: reloadScans } = scansQ;
   const { reload: reloadBilling } = billingQ;
+
+  // Paddle Retain (payment recovery, cancellation flows) identifies the customer by Paddle's own customer id.
+  const paddleCustomerId = billingQ.data?.paddle_customer_id;
+  useEffect(() => {
+    if (!paddleCustomerId) return;
+    try {
+      loadPaddle().then((p) => p?.Update({ pwCustomer: { id: paddleCustomerId } }), (e) => console.error(e));
+    } catch (e) {
+      console.error(e); // Paddle not configured on this deployment
+    }
+  }, [paddleCustomerId]);
 
   const scans = scansQ.data ?? [];
   const latestScan = scans[0] ?? null;
