@@ -32,7 +32,7 @@ export function PeriodToggle({ value, onChange }: { value: Interval; onChange: (
         >
           {key === "month" ? "Monthly" : "Yearly"}
           {key === "year" && (
-            <span className={cx("rounded-full px-1.5 py-px text-[11px] font-medium", value === key ? "bg-mark text-ink" : "bg-mark-soft text-ink")}>Save 20%</span>
+            <span className={cx("rounded-full px-1.5 py-px text-[11px] font-medium", value === key ? "bg-mark text-ink" : "bg-mark-soft text-ink")}>Save 10%</span>
           )}
         </button>
       ))}

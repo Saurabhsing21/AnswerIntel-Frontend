@@ -16,7 +16,7 @@ Contact: saurabh@seenlense.com
 
 ## Pricing
 
-${PLANS.map((p) => `- ${p.name}: $${p.monthly}/month or $${p.yearly}/year. ${p.audience} ${p.prompts} tracked prompts, ${p.credits} credits a month.`).join("\n")}
+${PLANS.map((p) => `- ${p.name}: $${p.monthly}/month or $${p.yearly}/year. ${p.audience} ${p.prompts} tracked prompts, ${p.credits} credits a month (${p.creditsYearly} on yearly).`).join("\n")}
 
 ## Pages
 
