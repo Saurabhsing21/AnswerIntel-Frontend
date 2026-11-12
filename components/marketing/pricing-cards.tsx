@@ -8,7 +8,8 @@ import { Reveal } from "@/components/marketing/effects/reveal";
 import { EngineLogos } from "@/components/marketing/engine-logos";
 import { ButtonArrow, buttonClass } from "@/components/ui/button";
 import { loadPaddle, paddleTiers, type Tier } from "@/lib/billing/paddle";
-import { FEATURED, type Interval, PLANS } from "@/lib/billing/plans";
+import { FEATURED, type Interval, planIncludes, PLANS } from "@/lib/billing/plans";
+import { usePricingPeriod } from "@/components/marketing/pricing-period";
 import { WAITLIST_ONLY } from "@/lib/flags";
 import { cx } from "@/lib/cx";
 import { appHref } from "@/lib/urls";
@@ -94,7 +95,7 @@ function usePaddle(country: string | undefined) {
 
 /** The three plans as compact cards with a monthly/yearly switch. Subscribe opens Paddle's checkout for the price shown. */
 export function PricingCards({ toggleClassName, country }: { toggleClassName?: string; country?: string }) {
-  const [period, setPeriod] = useState<Interval>("month");
+  const [period, setPeriod] = usePricingPeriod();
   const { paddle, tiers, prices, account, error } = usePaddle(country);
 
   function subscribe(plan: string, priceId: string) {
@@ -165,7 +166,7 @@ export function PricingCards({ toggleClassName, country }: { toggleClassName?: s
 
                 <p className={cx("relative mt-6 text-[13px]", dark ? "text-white/50" : "text-muted")}>This includes:</p>
                 <ul className="relative mt-3 space-y-2.5 text-[14px]">
-                  {plan.includes.map((item) => (
+                  {planIncludes(plan, period).map((item) => (
                     <li key={item} className="flex items-start gap-2.5">
                       <Check size={15} weight="bold" className={cx("mt-0.5 shrink-0", dark ? "text-mark" : "text-ink")} />
                       <span className={dark ? "text-white/85" : "text-ink-2"}>{item}</span>
