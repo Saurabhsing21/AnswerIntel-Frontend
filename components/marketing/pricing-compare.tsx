@@ -1,6 +1,9 @@
-import { Check, Minus } from "@phosphor-icons/react/ssr";
+"use client";
+
+import { Check, Minus } from "@phosphor-icons/react";
 import { EngineLogos } from "@/components/marketing/engine-logos";
-import { COMPARISON, FEATURED, PLANS } from "@/lib/billing/plans";
+import { usePricingPeriod } from "@/components/marketing/pricing-period";
+import { comparison, FEATURED, PLANS } from "@/lib/billing/plans";
 import type { Engine } from "@/lib/data";
 import { WAITLIST_ONLY } from "@/lib/flags";
 import { cx } from "@/lib/cx";
@@ -15,8 +18,9 @@ function Value({ value }: { value: boolean | string | Engine[] }) {
   return <span className="text-[14px] text-ink">{value}</span>;
 }
 
-/** Plan-by-plan breakdown, grouped like the product: discover, measure, act, report. */
+/** Plan-by-plan breakdown, grouped like the product: discover, measure, act, report. Follows the cards' billing period. */
 export function PricingCompare() {
+  const [period] = usePricingPeriod();
   return (
     // Scrolls sideways on small screens; on desktop it must not, or the plan header could not stick.
     <div className="overflow-x-auto lg:overflow-visible">
@@ -27,10 +31,10 @@ export function PricingCompare() {
           {PLANS.map((p) => (
             <div key={p.key} className="flex flex-col items-center gap-2 px-3 py-4 text-center">
               <p className="text-[15px] font-medium text-ink">
-                {p.name} <span className="font-normal text-muted">· ${p.monthly}/mo</span>
+                {p.name} <span className="font-normal text-muted">· ${period === "month" ? p.monthly : p.yearly}/{period}</span>
               </p>
               <a
-                href={WAITLIST_ONLY ? "/#waitlist" : appHref(`/subscribe?plan=${p.key}&interval=month`)}
+                href={WAITLIST_ONLY ? "/#waitlist" : appHref(`/subscribe?plan=${p.key}&interval=${period}`)}
                 className={cx(
                   "inline-flex h-8 items-center rounded-full px-4 text-[13px] font-medium transition-colors",
                   p.key === FEATURED ? "bg-ink text-white hover:bg-[#2b2b2b]" : "border border-line-strong bg-surface text-ink hover:border-[rgb(0_0_0/0.22)]",
@@ -42,7 +46,7 @@ export function PricingCompare() {
           ))}
         </div>
 
-        {COMPARISON.map((group) => (
+        {comparison(period).map((group) => (
           <section key={group.title} className="mt-10">
             <h3 className="mb-3 font-display text-[22px] font-semibold tracking-[-0.02em]">{group.title}</h3>
             <div className="overflow-hidden rounded-[18px] border border-line-strong bg-surface">

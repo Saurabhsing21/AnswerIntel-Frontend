@@ -10,7 +10,7 @@ import { buttonClass } from "@/components/ui/button";
 import { ApiError, PLAN_LIMIT_EVENT } from "@/lib/api/client";
 import type { Billing, BillingState } from "@/lib/api/types";
 import { changePlan, startCheckout } from "@/lib/billing/checkout";
-import { daysUntil, FEATURED, type Interval, type PaidPlan, PLANS } from "@/lib/billing/plans";
+import { daysUntil, FEATURED, type Interval, type PaidPlan, planIncludes, PLANS } from "@/lib/billing/plans";
 import { cx } from "@/lib/cx";
 import { formatCredits } from "@/lib/format";
 import { siteHref } from "@/lib/urls";
@@ -272,7 +272,7 @@ export function PlanChooser({ billing, returnPath, action = "Continue to payment
                 ${period === "month" ? p.monthly : p.yearly}
                 <span className="font-sans text-[12px] text-muted"> / {period}</span>
               </span>
-              <span className="mt-1 block text-[12px] text-muted">{p.includes.slice(0, 2).join(" · ")}</span>
+              <span className="mt-1 block text-[12px] text-muted">{planIncludes(p, period).slice(0, 2).join(" · ")}</span>
             </button>
           );
         })}

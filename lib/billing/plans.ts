@@ -48,7 +48,7 @@ type PlanInfo = {
   creditsYearly: number;
   /** The AI engines this plan scans. */
   engines: Engine[];
-  /** The short list on the plan card; the full breakdown is COMPARISON. */
+  /** The short list on the plan card, without credits (they depend on the billing period: see planIncludes). */
   includes: string[];
 };
 
@@ -63,7 +63,7 @@ export const PLANS: readonly PlanInfo[] = [
     credits: 900,
     creditsYearly: 800,
     engines: STARTER_ENGINES,
-    includes: ["50 prompts × 3 AI models", "900 credits a month (800 on yearly)", "ChatGPT Search, Perplexity and Gemini, all searching the live web", "Weekly automatic tracking", "2 projects", "20 competitors per project", "Unlimited seats"],
+    includes: ["50 prompts × 3 AI models", "ChatGPT Search, Perplexity and Gemini, all searching the live web", "Weekly automatic tracking", "2 projects", "20 competitors per project", "Unlimited seats"],
   },
   {
     key: "growth",
@@ -75,7 +75,7 @@ export const PLANS: readonly PlanInfo[] = [
     credits: 2200,
     creditsYearly: 2000,
     engines: GROWTH_ENGINES,
-    includes: ["120 prompts × 4 AI models", "2,200 credits a month (2,000 on yearly)", "ChatGPT Search, Perplexity and Gemini search the live web; Claude answers from memory", "Weekly automatic tracking", "4 projects", "50 competitors per project", "Experiments with before and after"],
+    includes: ["120 prompts × 4 AI models", "ChatGPT Search, Perplexity and Gemini search the live web; Claude answers from memory", "Weekly automatic tracking", "4 projects", "50 competitors per project", "Experiments with before and after"],
   },
   {
     key: "pro",
@@ -87,12 +87,19 @@ export const PLANS: readonly PlanInfo[] = [
     credits: 4400,
     creditsYearly: 4000,
     engines: PRO_ENGINES,
-    includes: ["200 prompts × 7 AI models", "4,400 credits a month (4,000 on yearly)", "ChatGPT Search, Perplexity and Gemini search the live web; the rest answer from memory", "Weekly automatic tracking", "10 projects", "100 competitors per project", "Experiments with before and after"],
+    includes: ["200 prompts × 7 AI models", "ChatGPT Search, Perplexity and Gemini search the live web; the rest answer from memory", "Weekly automatic tracking", "10 projects", "100 competitors per project", "Experiments with before and after"],
   },
 ];
 
 /** The most prompts any plan tracks, for "plans track up to N questions". */
 export const MAX_PROMPTS = Math.max(...PLANS.map((p) => p.prompts));
+
+/** Credits in any 30 days for a billing period: yearly plans pay less a month, so they get fewer. */
+export const planCredits = (plan: PlanInfo, period: Interval): number => (period === "year" ? plan.creditsYearly : plan.credits);
+
+/** The plan card's list for a billing period: prompts × models first, then that period's credits. */
+export const planIncludes = (plan: PlanInfo, period: Interval): string[] =>
+  [plan.includes[0], `${count(planCredits(plan, period))} credits a month`, ...plan.includes.slice(1)];
 
 /** The plan we steer people to: highlighted on the website and preselected when subscribing. */
 export const FEATURED: PaidPlan = "growth";
@@ -102,15 +109,15 @@ export type ComparisonGroup = { title: string; rows: { label: string; hint?: str
 
 const perPlan = <T>(value: (plan: PlanInfo) => T): [T, T, T] => [value(PLANS[0]), value(PLANS[1]), value(PLANS[2])];
 
-/** Plan-by-plan breakdown for the /pricing page. Only lists what the product actually does. */
-export const COMPARISON: ComparisonGroup[] = [
+/** Plan-by-plan breakdown for the /pricing page, for a billing period. Only lists what the product actually does. */
+export const comparison = (period: Interval): ComparisonGroup[] => [
   {
     title: "Tracking coverage",
     rows: [
       { label: "AI engines", values: perPlan((p) => p.engines) },
       { label: "Live web search", hint: "the other engines answer from memory", values: perPlan((p) => p.engines.filter((e) => WEB_SEARCH_ENGINES.includes(e))) },
       { label: "Prompts × AI models", hint: "one prompt pool shared by every project; each prompt is asked on every model", values: perPlan((p) => `${count(p.prompts)} × ${p.engines.length}`) },
-      { label: "Credits a month", hint: "1 credit = 1 ChatGPT Search answer", values: perPlan((p) => `${count(p.credits)} (${count(p.creditsYearly)} yearly)`) },
+      { label: "Credits a month", hint: "1 credit = 1 ChatGPT Search answer", values: perPlan((p) => count(planCredits(p, period))) },
       { label: "Tracking frequency", values: ["Weekly, automatic", "Weekly, automatic", "Weekly, automatic"] },
       { label: "On-demand scans a day", hint: "use the same monthly credits", values: ["2", "4", "10"] },
       { label: "Country targeting", hint: "answers for your market", values: [true, true, true] },
