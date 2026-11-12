@@ -251,7 +251,7 @@ export function PlanChooser({ billing, returnPath, action = "Continue to payment
 
   return (
     <div>
-      <Segmented label="Billing period" value={period} onChange={setPeriod} options={[{ key: "month", label: "Monthly" }, { key: "year", label: "Yearly · save 20%" }]} />
+      <Segmented label="Billing period" value={period} onChange={setPeriod} options={[{ key: "month", label: "Monthly" }, { key: "year", label: "Yearly · save 10%" }]} />
       <div role="radiogroup" aria-label="Plan" className="mt-3 grid gap-2 sm:grid-cols-3">
         {PLANS.map((p) => {
           const on = plan === p.key;
