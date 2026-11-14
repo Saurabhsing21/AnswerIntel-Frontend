@@ -35,7 +35,9 @@ function Meta({ post }: { post: Post }) {
 }
 
 export default function BlogPage() {
-  const [featured, ...rest] = getPosts();
+  const posts = getPosts();
+  const featured = posts.find((p) => p.featured) ?? posts[0];
+  const rest = posts.filter((p) => p !== featured);
   return (
     <>
       <Nav />

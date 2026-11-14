@@ -4,9 +4,11 @@ description: Five AI search visibility trackers with a plan under $100 a month, 
 category: Comparison
 date: 2026-11-14
 author: Saurabh Singh
+cover: "AI visibility tools under $100"
+glance: Cheapest=$17/mo=Rankscale, yearly; Monthly billing=$20=Seenlense Starter; Daily from=$29=Otterly Lite; Most prompts=500=LLMrefs, $79
 ---
 
-**Five AI visibility tools have a self-serve plan under $100 a month: Rankscale ($17, yearly), Seenlense ($20), Otterly.AI (€29), LLMrefs ($79) and Peec AI ($95).** Profound no longer lists a self-serve price for brands. The cheap plans differ a lot in how many prompts you get and how often they run, so compare on those, not price alone.
+**Five AI visibility tools have a self-serve plan under $100 a month: Rankscale ($17, yearly), Seenlense ($20), Otterly.AI ($29), LLMrefs ($79) and Peec AI ($95).** Profound no longer lists a self-serve price for brands. The cheap plans differ a lot in how many prompts you get and how often they run, so compare on those, not price alone.
 
 Prices were checked on each vendor's pricing page on November 14, 2026. Seenlense is our product.
 
@@ -16,10 +18,10 @@ Prices were checked on each vendor's pricing page on November 14, 2026. Seenlens
 |---|---|---|---|---|---|
 | Rankscale | Essentials, $17/month (yearly) | 120 credits, about 480 answers | 17+ | Hourly to monthly | |
 | Seenlense | Starter, $20/month | 50 | ChatGPT Search, Perplexity, Gemini | Weekly | 1 free scan |
-| Otterly.AI | Lite, €29/month | 16 | 4 of 7 | Daily | |
+| Otterly.AI | Lite, $29/month | 20 | 3 of 7 | Daily | |
 | Seenlense | Growth, $50/month | 120 | + Claude | Weekly | |
-| LLMrefs | All in One, $79/month | 500 | 9 | Weekly | 7-day trial |
-| Rankscale | Pro, $84/month | 1,200 credits, about 4,800 answers | 17+ | Hourly to monthly | |
+| LLMrefs | All in One, $79/month | 500 | 11 | Weekly | 7-day trial |
+| Rankscale | Pro, $99/month | 1,200 credits, about 4,800 answers | 17+ | Hourly to monthly | |
 | Peec AI | Starter, $95/month | 50 | 3 of 8 | Daily | |
 
 ## What the money buys
