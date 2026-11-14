@@ -1,6 +1,6 @@
-# SeenLense Website — Build Plan
+# Seenlense Website — Build Plan
 
-**Goal:** A marketing site for SeenLense with the same structure, polish, and micro-interactions as peec.ai, scoped to what the PRD actually covers.
+**Goal:** A marketing site for Seenlense with the same structure, polish, and micro-interactions as peec.ai, scoped to what the PRD actually covers.
 
 **Reference:** peec.ai (analyzed 2026-10-03 with `skillui --mode ultra` + `playwright-cli`).
 
@@ -34,9 +34,9 @@ Raw extraction lives in the scratchpad (`peec-design/`, DESIGN.md, tokens, 7 scr
 
 ---
 
-## 3. Section map (Peec → SeenLense)
+## 3. Section map (Peec → Seenlense)
 
-| # | Peec section | SeenLense version | PRD source | Decision |
+| # | Peec section | Seenlense version | PRD source | Decision |
 |---|---|---|---|---|
 | 1 | Nav + **Product mega-menu** | Product (Visibility, Competitors, Sources, Opportunities, Experiments), How it works, FAQ, Log in, Sign up | §15 dashboard areas | **Build** |
 | 2 | Hero: pill badge, two-tone H1, inline metric chips, 2 CTAs, dotted-matrix band, **live dashboard mock** | "AI visibility intelligence for founders" + chips: Mention · Recommendation · Share of Voice · Citations | Product §19, Tech §76 | **Build** (highest priority) |
@@ -196,4 +196,4 @@ Suggested order of value: **Hero + MetricsTabs** first, since together they sell
 1. **Accent color & logo.** Peec is monochrome plus data colors. Do we keep that, or add one brand accent? Do we have a logo yet?
 2. **CTAs.** "Start free trial" vs "Join waitlist": is signup live at launch?
 3. **Pricing page.** Skipped, since the PRD defers billing. Confirm.
-4. **Competitor pages** ("SeenLense vs Peec/Profound"). Skipped for v1, since they're SEO work for later. Confirm.
+4. **Competitor pages** ("Seenlense vs Peec/Profound"). Skipped for v1, since they're SEO work for later. Confirm.

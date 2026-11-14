@@ -5,8 +5,8 @@ import { PLANS } from "@/lib/billing/plans";
 import { PUBLIC_URL } from "@/lib/urls";
 
 export const metadata: Metadata = {
-  title: "About SeenLense",
-  description: "SeenLense is an AI search visibility tracker for founders and small teams, built by Saurabh Singh.",
+  title: "About Seenlense",
+  description: "Seenlense is an AI search visibility tracker for founders and small teams, built by Saurabh Singh.",
   alternates: { canonical: "/about" },
 };
 
@@ -22,13 +22,13 @@ export default function AboutPage() {
         }}
       />
       <LegalPage
-        title="About SeenLense"
+        title="About Seenlense"
         updated="November 14, 2026"
-        intro="SeenLense is an AI search visibility tracker for founders and small teams. It asks ChatGPT, Perplexity, Gemini and Claude the questions your buyers ask, records every answer, and shows how often your brand is mentioned, recommended and cited compared to your competitors, and what to fix next."
+        intro="Seenlense is an AI search visibility tracker for founders and small teams. It asks ChatGPT, Perplexity, Gemini and Claude the questions your buyers ask, records every answer, and shows how often your brand is mentioned, recommended and cited compared to your competitors, and what to fix next."
         sections={[
           { title: "Why it exists", body: [
             "More buyers now ask an AI assistant which product to choose instead of searching. The assistant answers with a few names. If yours is not one of them, you were never in the running, and nothing in a classic SEO tool tells you.",
-            "SeenLense measures those answers the way a buyer would see them, every week, so you can tell whether the changes you make move the numbers.",
+            "Seenlense measures those answers the way a buyer would see them, every week, so you can tell whether the changes you make move the numbers.",
           ] },
           { title: "What it does", body: [
             [
@@ -40,7 +40,7 @@ export default function AboutPage() {
             "How each number is measured is on the methodology page.",
           ] },
           { title: "Who builds it", body: [
-            "SeenLense is built by Saurabh Singh, trading as SeenLense. He also writes the SeenLense blog.",
+            "Seenlense is built by Saurabh Singh, trading as Seenlense. He also writes the Seenlense blog.",
           ] },
           { title: "Pricing", body: [
             `Every account starts with one free scan, no card needed. Plans run from $${PLANS[0].monthly} to $${PLANS[PLANS.length - 1].monthly} a month. Payments go through Paddle, our merchant of record.`,

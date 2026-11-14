@@ -8,7 +8,7 @@ import { MathUtils, type Group } from "three";
 const LIME = "#d7f36b";
 
 /**
- * The SeenLense mascot: a chunky glossy lime bot with a dark visor, two glowing eyes, a smile, stubby feet and an
+ * The Seenlense mascot: a chunky glossy lime bot with a dark visor, two glowing eyes, a smile, stubby feet and an
  * antenna that ends in a small magnifier lens. It turns and leans toward the pointer anywhere on the page and blinks. The
  * environment is built from local light panels (no HDR download).
  */

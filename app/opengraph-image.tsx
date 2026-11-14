@@ -5,7 +5,7 @@ import { ImageResponse } from "next/og";
 // The share card for every page without its own (blog posts have their covers), in the same style as those covers.
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-export const alt = "SeenLense: see how ChatGPT, Perplexity, Gemini and Claude recommend your brand";
+export const alt = "Seenlense: see how ChatGPT, Perplexity, Gemini and Claude recommend your brand";
 
 export default async function Image() {
   const bricolage = await readFile(path.join(process.cwd(), "assets/fonts/bricolage-grotesque-700.woff"));
@@ -29,7 +29,7 @@ export default async function Image() {
               <div style={{ width: 9, height: 9, borderRadius: 999, background: "#d7f36b" }} />
             </div>
           </div>
-          <div style={{ fontSize: 30, fontWeight: 700, letterSpacing: -1 }}>SeenLense</div>
+          <div style={{ fontSize: 30, fontWeight: 700, letterSpacing: -1 }}>Seenlense</div>
         </div>
         <div style={{ marginTop: "auto", display: "flex", flexDirection: "column" }}>
           <div style={{ fontSize: 76, fontWeight: 700, lineHeight: 1.02, letterSpacing: -2.5, maxWidth: 1000 }}>

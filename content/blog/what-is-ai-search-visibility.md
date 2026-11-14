@@ -38,7 +38,7 @@ SEO still matters: assistants that search the web start from a search index (Cha
 4. **Record every answer.** Note who was mentioned, who was recommended, in what order, and which links were cited.
 5. **Repeat weekly.** One scan is a snapshot. The trend tells you whether anything you changed worked.
 
-This is tedious by hand: 30 questions × 3 assistants × 3 runs is 270 answers a week. That is the job SeenLense automates.
+This is tedious by hand: 30 questions × 3 assistants × 3 runs is 270 answers a week. That is the job Seenlense automates.
 
 ## What a good score looks like
 

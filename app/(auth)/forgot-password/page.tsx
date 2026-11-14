@@ -30,7 +30,7 @@ export default function ForgotPasswordPage() {
 
   const back = <Link href="/login" className="font-medium text-ink underline-offset-2 hover:underline">Back to log in</Link>;
   if (sentTo)
-    return <AuthCard title="Check your inbox" body={`If ${sentTo} has a SeenLense account, a reset link is on its way. It expires in an hour.`} footer={back} />;
+    return <AuthCard title="Check your inbox" body={`If ${sentTo} has a Seenlense account, a reset link is on its way. It expires in an hour.`} footer={back} />;
   return (
     <AuthCard title="Reset your password" body="Enter your login email and we'll send you a link to choose a new password." footer={back}>
       <form onSubmit={submit} className="space-y-4">

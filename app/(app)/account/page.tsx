@@ -159,7 +159,7 @@ function Sessions() {
   return (
     <Card title="Sessions" subtitle="Lost a laptop or shared a computer?">
       <div className="space-y-3 p-5">
-        <p className="text-[13px] text-muted">Sign out of SeenLense on every device, including this one.</p>
+        <p className="text-[13px] text-muted">Sign out of Seenlense on every device, including this one.</p>
         {error && <ErrorBanner message={error} />}
         <button
           type="button"

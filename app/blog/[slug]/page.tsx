@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: PageProps<"/blog/[slug]">): P
   const post = getPost((await params).slug);
   if (!post) return {};
   return {
-    title: `${post.title} - SeenLense`,
+    title: `${post.title} - Seenlense`,
     description: post.description,
     alternates: { canonical: `/blog/${post.slug}` },
     authors: [{ name: post.author, url: AUTHOR_PAGES[post.author] }],

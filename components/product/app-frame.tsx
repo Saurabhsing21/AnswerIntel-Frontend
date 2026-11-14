@@ -76,7 +76,7 @@ function last(key: MetricKey) {
   return { value: v[v.length - 1], delta: v[v.length - 1] - v[v.length - 2] };
 }
 
-/** A working mini version of the SeenLense dashboard, fed with sample data. */
+/** A working mini version of the Seenlense dashboard, fed with sample data. */
 export function AppFrame() {
   const [metric, setMetric] = useState<MetricKey>("mentions");
   const lines = brands.map((brand) => ({ brand, values: series[metric][brand.id] }));

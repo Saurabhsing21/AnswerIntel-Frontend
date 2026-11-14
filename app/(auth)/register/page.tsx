@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { AuthForm } from "@/components/app/auth-form";
 import { isPaidPlan } from "@/lib/billing/plans";
 
-export const metadata: Metadata = { title: "Create account - SeenLense" };
+export const metadata: Metadata = { title: "Create account - Seenlense" };
 
 export default async function RegisterPage({ searchParams }: PageProps<"/register">) {
   const { plan, interval, invite, brand, website, category, country } = await searchParams; // plan: from the pricing section

@@ -6,7 +6,7 @@ import { getPost, getPosts } from "@/lib/blog";
 // The post's cover: shown at the top of the post, on the blog index, and as the share card on social sites.
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-export const alt = "SeenLense blog post cover";
+export const alt = "Seenlense blog post cover";
 
 export function generateStaticParams() {
   return getPosts().map((p) => ({ slug: p.slug }));
@@ -36,7 +36,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
               <div style={{ width: 9, height: 9, borderRadius: 999, background: "#d7f36b" }} />
             </div>
           </div>
-          <div style={{ fontSize: 30, fontWeight: 700, letterSpacing: -1 }}>SeenLense</div>
+          <div style={{ fontSize: 30, fontWeight: 700, letterSpacing: -1 }}>Seenlense</div>
         </div>
         <div style={{ marginTop: "auto", display: "flex", flexDirection: "column" }}>
           <div style={{ display: "flex" }}>
@@ -45,7 +45,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
             </div>
           </div>
           <div style={{ marginTop: 28, fontSize: 72, fontWeight: 700, lineHeight: 1.02, letterSpacing: -2.5, maxWidth: 1000 }}>
-            {post?.title ?? "SeenLense journal"}
+            {post?.title ?? "Seenlense journal"}
           </div>
           <div style={{ marginTop: 28, fontSize: 24, color: "#8a8a8a" }}>seenlense.com/blog</div>
         </div>

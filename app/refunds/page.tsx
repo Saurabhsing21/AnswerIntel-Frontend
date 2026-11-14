@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { CONTACT_EMAIL, LegalPage } from "@/components/marketing/legal-page";
 
 export const metadata: Metadata = {
-  title: "Refund Policy - SeenLense",
-  description: "When and how SeenLense refunds a payment.",
+  title: "Refund Policy - Seenlense",
+  description: "When and how Seenlense refunds a payment.",
   alternates: { canonical: "/refunds" },
 };
 
@@ -12,7 +12,7 @@ export default function RefundsPage() {
   return (
     <LegalPage
       title="Refund Policy"
-      intro="SeenLense is billed in advance. Here is what happens to your money when you cancel or change plans."
+      intro="Seenlense is billed in advance. Here is what happens to your money when you cancel or change plans."
       sections={[
         { title: "Cancelling", body: [
           "You can cancel any time from Manage billing. You keep full access until the end of the period you already paid for, and you won't be charged again.",

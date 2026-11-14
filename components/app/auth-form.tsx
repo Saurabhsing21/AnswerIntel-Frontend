@@ -115,7 +115,7 @@ export function AuthForm({ mode, plan, interval = "month", invite, prefill }: { 
             </form>
           </div>
           <p className="mt-5 text-center text-[13px] text-muted lg:text-left">
-            {isLogin ? "New to SeenLense? " : "Already have an account? "}
+            {isLogin ? "New to Seenlense? " : "Already have an account? "}
             <Link href={`${isLogin ? "/register" : "/login"}${invite ? `?invite=${encodeURIComponent(invite)}` : ""}`} className="font-medium text-ink underline-offset-2 hover:underline">
               {isLogin ? "Run a free scan" : "Log in"}
             </Link>
@@ -123,7 +123,7 @@ export function AuthForm({ mode, plan, interval = "month", invite, prefill }: { 
         </div>
       </div>
 
-      <aside className="relative hidden flex-col justify-between overflow-hidden bg-night p-12 text-white lg:flex" aria-label="What SeenLense does">
+      <aside className="relative hidden flex-col justify-between overflow-hidden bg-night p-12 text-white lg:flex" aria-label="What Seenlense does">
         <div aria-hidden className="pointer-events-none absolute -top-24 -right-16 size-80 rounded-full bg-mark/20 blur-[120px]" />
         <div aria-hidden className="pointer-events-none absolute bottom-0 left-1/4 size-72 rounded-full bg-mark/10 blur-[120px]" />
         <div className="relative flex items-center gap-2" aria-hidden>

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { CONTACT_EMAIL, LegalPage } from "@/components/marketing/legal-page";
 
 export const metadata: Metadata = {
-  title: "Terms of Service - SeenLense",
-  description: "The terms for using SeenLense, the AI search visibility tracker: accounts, plans, payment, cancelling and acceptable use.",
+  title: "Terms of Service - Seenlense",
+  description: "The terms for using Seenlense, the AI search visibility tracker: accounts, plans, payment, cancelling and acceptable use.",
   alternates: { canonical: "/terms" },
 };
 
@@ -12,14 +12,14 @@ export default function TermsPage() {
   return (
     <LegalPage
       title="Terms of Service"
-      intro="These terms cover your use of SeenLense, a service that asks AI engines questions about your market and reports how they mention your brand and your competitors. SeenLense is operated by Saurabh Singh, trading as SeenLense. By creating an account you agree to them."
+      intro="These terms cover your use of Seenlense, a service that asks AI engines questions about your market and reports how they mention your brand and your competitors. Seenlense is operated by Saurabh Singh, trading as Seenlense. By creating an account you agree to them."
       sections={[
         { title: "Your account", body: [
-          "You need an account to use SeenLense. Give us accurate details, keep your password safe and tell us if you think someone else has used your account. You are responsible for what happens under your account.",
+          "You need an account to use Seenlense. Give us accurate details, keep your password safe and tell us if you think someone else has used your account. You are responsible for what happens under your account.",
           "Accounts belong to people. Plans, projects and data belong to workspaces. The owners of a workspace decide who else can access it.",
         ] },
         { title: "Plans and payment", body: [
-          "New accounts get a free trial of one scan for one brand, with no card needed. After that, SeenLense is a paid service with monthly and yearly plans. Prices are shown on our pricing page and charged in advance through Paddle, our reseller and merchant of record. Plans renew automatically until you cancel.",
+          "New accounts get a free trial of one scan for one brand, with no card needed. After that, Seenlense is a paid service with monthly and yearly plans. Prices are shown on our pricing page and charged in advance through Paddle, our reseller and merchant of record. Plans renew automatically until you cancel.",
           "Each plan has limits, such as questions, credits a month and projects. When you reach a limit, some actions wait until your allowance refills or until you move to a bigger plan.",
           "If a payment fails, you have 7 days to update your card. After that the workspace becomes read-only until you pay.",
         ] },
@@ -27,7 +27,7 @@ export default function TermsPage() {
           "You can cancel at any time from Manage billing. Your plan keeps working until the end of the period you paid for. After that the workspace is read-only: you can still view and export your data, but not run new scans. Refunds are covered in our Refund Policy.",
         ] },
         { title: "Acceptable use", body: [
-          "Don't use SeenLense to:",
+          "Don't use Seenlense to:",
           [
             "break the law or anyone's rights,",
             "try to get around plan limits, security or rate limits,",
@@ -37,16 +37,16 @@ export default function TermsPage() {
           "We may suspend accounts that do these things.",
         ] },
         { title: "AI answers and our analysis", body: [
-          "SeenLense reports what AI engines answered when we asked them, and our analysis of those answers. AI answers change from run to run and over time, and our analysis can be wrong. Treat SeenLense as guidance, not a guarantee of how any AI engine will describe or rank you.",
+          "Seenlense reports what AI engines answered when we asked them, and our analysis of those answers. AI answers change from run to run and over time, and our analysis can be wrong. Treat Seenlense as guidance, not a guarantee of how any AI engine will describe or rank you.",
         ] },
         { title: "Your data", body: [
           "You own the data you add, such as brands, competitors and questions. You let us use it to run the service. The AI answers we collect for you are yours to use. How we handle personal data is in our Privacy Policy.",
         ] },
         { title: "Availability and changes", body: [
-          "We work to keep SeenLense running but can't promise it will always be available or free of errors. We may change features. If we make a change that materially reduces what a paid plan includes, we will tell you in advance.",
+          "We work to keep Seenlense running but can't promise it will always be available or free of errors. We may change features. If we make a change that materially reduces what a paid plan includes, we will tell you in advance.",
         ] },
         { title: "Liability", body: [
-          "SeenLense is provided as is. To the extent the law allows, we are not liable for indirect or consequential losses, and our total liability is limited to what you paid us in the 12 months before the claim.",
+          "Seenlense is provided as is. To the extent the law allows, we are not liable for indirect or consequential losses, and our total liability is limited to what you paid us in the 12 months before the claim.",
         ] },
         { title: "Changes to these terms", body: [
           `We may update these terms. If a change matters, we will email the owners of each workspace before it takes effect. Questions go to ${CONTACT_EMAIL}.`,
