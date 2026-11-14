@@ -11,7 +11,7 @@ import { MenuItem, MenuLabel, Popover } from "@/components/app/popover";
 import { askUpgrade, ProBadge, usePro } from "@/components/app/pro-lock";
 import { isScanActive, useProject } from "@/components/app/project-context";
 import { useToast } from "@/components/app/toast";
-import { EngineIcon } from "@/components/product/engine-icon";
+import { EngineIcon, engineNames } from "@/components/product/engine-icon";
 import { buttonClass } from "@/components/ui/button";
 import { YOU_COLOR } from "@/lib/brand";
 import { timeAgo } from "@/lib/format";
@@ -107,8 +107,11 @@ function ExportMenu() {
 
 export function Topbar({ onMenu }: { onMenu: () => void }) {
   const pathname = usePathname();
-  const { projectId, project, latestScan, scans, starting, startScan } = useProject();
+  const { projectId, project, latestScan, scans, starting, startScan, billing } = useProject();
   const active = isScanActive(latestScan);
+  // What scans really ask: the project's engines, minus any the plan no longer includes (scans skip those).
+  const allowed = billing?.limits.allowed_engines;
+  const engines = (project?.engines ?? []).filter((e) => !allowed || allowed.includes(e));
   const progress = latestScan ? Math.max(3, latestScan.progress * 100) : 0;
 
   return (
@@ -133,16 +136,18 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
               <Calendar size={13} />
               {scanLabel(latestScan)}
             </Link>
-            <span className={`${chip} hidden md:inline-flex`}>
-              <span className="flex -space-x-1">
-                {(["chatgpt", "perplexity", "gemini"] as const).map((engine) => (
-                  <span key={engine} className="grid size-[18px] place-items-center rounded-full border border-surface bg-surface">
-                    <EngineIcon engine={engine} size={10} />
-                  </span>
-                ))}
+            {engines.length > 0 && (
+              <span className={`${chip} hidden md:inline-flex`} title={engines.map((e) => engineNames[e]).join(", ")}>
+                <span className="flex -space-x-1">
+                  {engines.map((engine) => (
+                    <span key={engine} className="grid size-[18px] place-items-center rounded-full border border-surface bg-surface">
+                      <EngineIcon engine={engine} size={10} />
+                    </span>
+                  ))}
+                </span>
+                {engines.length} {engines.length === 1 ? "engine" : "engines"}
               </span>
-              3 engines
-            </span>
+            )}
           </div>
         ) : (
           <h1 className="flex items-center gap-2 text-[14px] font-medium">
