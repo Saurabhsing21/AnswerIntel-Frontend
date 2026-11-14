@@ -173,13 +173,13 @@ const engineList: { engine: Engine; available: boolean; visibility?: number }[] 
   { engine: "chatgpt", available: true, visibility: 42 },
   { engine: "perplexity", available: true, visibility: 31 },
   { engine: "gemini", available: true, visibility: 28 },
-  { engine: "google", available: true, visibility: 19 },
-  { engine: "claude", available: false },
+  { engine: "claude", available: true, visibility: 19 },
+  { engine: "google", available: false },
   { engine: "copilot", available: false },
 ];
 
 function ChooseEngines() {
-  const [on, setOn] = useState<Record<string, boolean>>({ chatgpt: true, perplexity: true, gemini: true, google: true });
+  const [on, setOn] = useState<Record<string, boolean>>({ chatgpt: true, perplexity: true, gemini: true, claude: true });
   return (
     <MiniPanel>
       <div className="flex items-center border-b border-line px-3.5 py-2.5 font-medium">

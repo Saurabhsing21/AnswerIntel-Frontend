@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "indexnow": "node scripts/indexnow.mjs"
   },
   "dependencies": {
     "@paddle/paddle-js": "1.6.5",

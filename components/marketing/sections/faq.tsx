@@ -7,7 +7,9 @@ import { Section, SectionHeading } from "@/components/marketing/section";
 import { buttonClass, ButtonArrow } from "@/components/ui/button";
 import { faqs } from "@/lib/data";
 import { cx } from "@/lib/cx";
+import { WAITLIST_ONLY } from "@/lib/flags";
 import { ease } from "@/lib/motion";
+import { appHref } from "@/lib/urls";
 
 export function Faq() {
   const reduce = useReducedMotion();
@@ -16,9 +18,12 @@ export function Faq() {
   return (
     <Section id="faq" innerClassName="grid gap-10 lg:grid-cols-[1fr_1.5fr] lg:gap-16">
       <div className="lg:sticky lg:top-28 lg:self-start">
-        <SectionHeading title="Questions, answered" muted="Anything else? Join the waitlist and we will walk you through it." />
-        <a href="#waitlist" className={cx(buttonClass("secondary"), "mt-8")}>
-          Join waitlist
+        <SectionHeading
+          title="Questions, answered"
+          muted={WAITLIST_ONLY ? "Anything else? Join the waitlist and we will walk you through it." : "Anything else? Run a free scan and see your own numbers."}
+        />
+        <a href={WAITLIST_ONLY ? "#waitlist" : appHref("/register")} className={cx(buttonClass("secondary"), "mt-8")}>
+          {WAITLIST_ONLY ? "Join waitlist" : "Run a free scan"}
           <ButtonArrow />
         </a>
       </div>

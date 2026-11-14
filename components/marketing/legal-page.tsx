@@ -6,13 +6,13 @@ export const UPDATED = "October 24, 2026";
 
 export type LegalSection = { title: string; body: (string | string[])[] };
 
-/** Terms, privacy and refunds: plain text in sections, one column, easy to read. */
-export function LegalPage({ title, intro, sections }: { title: string; intro: string; sections: LegalSection[] }) {
+/** Terms, privacy and refunds (also About and Methodology): plain text in sections, one column, easy to read. */
+export function LegalPage({ title, intro, sections, updated = UPDATED }: { title: string; intro: string; sections: LegalSection[]; updated?: string }) {
   return (
     <>
       <Nav />
       <main id="top" className="mx-auto max-w-[720px] px-5 pt-14 pb-24 md:px-8 md:pt-20">
-        <p className="text-[13px] text-muted">Last updated {UPDATED}</p>
+        <p className="text-[13px] text-muted">Last updated {updated}</p>
         <h1 className="mt-2 font-display text-[38px] leading-[1.05] font-semibold tracking-[-0.04em] md:text-[48px]">{title}</h1>
         <p className="mt-5 text-[16px] leading-relaxed text-ink-2">{intro}</p>
         {sections.map((s, i) => (

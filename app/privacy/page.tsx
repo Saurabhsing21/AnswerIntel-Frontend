@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { CONTACT_EMAIL, LegalPage } from "@/components/marketing/legal-page";
 
-export const metadata: Metadata = { title: "Privacy Policy - SeenLense" };
+export const metadata: Metadata = {
+  title: "Privacy Policy - SeenLense",
+  description: "What SeenLense collects, why, who it is shared with and how long it is kept.",
+  alternates: { canonical: "/privacy" },
+};
 
 // A starting draft, not legal advice: have a lawyer review it before taking payments.
 export default function PrivacyPage() {
