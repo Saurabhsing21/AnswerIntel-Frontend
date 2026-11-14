@@ -62,7 +62,8 @@ export function EnginePicker({ engines, value, onChange, wide }: {
         </span>
       </div>
       <ul className={cx("grid gap-2 sm:grid-cols-2", wide && "lg:grid-cols-3 2xl:grid-cols-4")}>
-        {engines.map((e) => {
+        {/* ChatGPT is offered once: as ChatGPT Search, which searches the web like the real app. */}
+        {engines.filter((e) => e.key !== "chatgpt").map((e) => {
           const isLocked = e.available && locked.includes(e.key);
           const on = !isLocked && value.includes(e.key);
           const upgrade = upgrades[e.key];
@@ -109,7 +110,7 @@ export function EnginePicker({ engines, value, onChange, wide }: {
                 {icon}
                 {e.available ? <EngineLabel name={e.name} engine={e.key} /> : <span className="min-w-0 flex-1 truncate text-[14px] font-medium text-ink">{e.name}</span>}
                 {!e.available ? (
-                  <span className="rounded-full bg-sunken px-2 py-0.5 text-[11px] text-muted">{e.key === "google" ? "Needs setup" : "Coming soon"}</span>
+                  <span className="rounded-full bg-sunken px-2 py-0.5 text-[11px] text-muted">Coming soon</span>
                 ) : (
                   e.web_search && (
                     <span className="inline-flex items-center gap-1 text-[11px] text-muted" title="Searches the web before answering, like the real app">
