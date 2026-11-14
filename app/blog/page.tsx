@@ -5,7 +5,7 @@ import { Nav } from "@/components/marketing/sections/nav";
 import { formatDate, getPosts, type Post } from "@/lib/blog";
 
 export const metadata: Metadata = {
-  title: "Blog - SeenLense",
+  title: "Blog - Seenlense",
   description: "Guides on AI search visibility: how ChatGPT, Perplexity and Gemini pick the brands they recommend, and how to become one of them.",
   alternates: { canonical: "/blog" },
 };

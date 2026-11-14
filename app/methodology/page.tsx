@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { LegalPage } from "@/components/marketing/legal-page";
 
 export const metadata: Metadata = {
-  title: "Methodology - SeenLense",
-  description: "How SeenLense measures AI search visibility: the questions, the engines, how answers are read, and how each rate is calculated.",
+  title: "Methodology - Seenlense",
+  description: "How Seenlense measures AI search visibility: the questions, the engines, how answers are read, and how each rate is calculated.",
   alternates: { canonical: "/methodology" },
 };
 
@@ -11,9 +11,9 @@ export const metadata: Metadata = {
 export default function MethodologyPage() {
   return (
     <LegalPage
-      title="How SeenLense measures AI visibility"
+      title="How Seenlense measures AI visibility"
       updated="November 14, 2026"
-      intro="Every SeenLense number comes from real answers: we ask AI engines the questions your buyers ask, store each answer, and count. This page explains each step so you can judge the numbers for yourself."
+      intro="Every Seenlense number comes from real answers: we ask AI engines the questions your buyers ask, store each answer, and count. This page explains each step so you can judge the numbers for yourself."
       sections={[
         { title: "The questions", body: [
           "For each project we generate 30 to 50 realistic buyer questions from your category, market and competitors. You review them, edit or remove any and add your own before the first scan. The same questions are asked every week, so results stay comparable over time.",
@@ -41,7 +41,7 @@ export default function MethodologyPage() {
           "AI answers vary from run to run, so a small change between two weeks is often chance. Each rate is shown with a 95% Wilson interval, and a change between two scans or before and after an experiment is called real only when a two-proportion test says it is bigger than that noise.",
         ] },
         { title: "Limits", body: [
-          "AI answers differ by account, location and conversation history, and the models change without notice. SeenLense measures a clean, repeatable sample of answers, not every answer every buyer sees. Treat the numbers as a trend to act on, not an exact count.",
+          "AI answers differ by account, location and conversation history, and the models change without notice. Seenlense measures a clean, repeatable sample of answers, not every answer every buyer sees. Treat the numbers as a trend to act on, not an exact count.",
         ] },
       ]}
     />

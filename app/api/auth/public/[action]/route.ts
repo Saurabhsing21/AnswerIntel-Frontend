@@ -15,6 +15,6 @@ export async function POST(request: Request, ctx: RouteContext<"/api/auth/public
     });
     return new Response(res.body, { status: res.status, headers: { "Content-Type": "application/json" } });
   } catch {
-    return Response.json(errorBody("API_UNAVAILABLE", "The SeenLense API is not reachable."), { status: 502 });
+    return Response.json(errorBody("API_UNAVAILABLE", "The Seenlense API is not reachable."), { status: 502 });
   }
 }

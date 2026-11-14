@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { CONTACT_EMAIL, LegalPage } from "@/components/marketing/legal-page";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy - SeenLense",
-  description: "What SeenLense collects, why, who it is shared with and how long it is kept.",
+  title: "Privacy Policy - Seenlense",
+  description: "What Seenlense collects, why, who it is shared with and how long it is kept.",
   alternates: { canonical: "/privacy" },
 };
 
@@ -12,7 +12,7 @@ export default function PrivacyPage() {
   return (
     <LegalPage
       title="Privacy Policy"
-      intro="This policy explains what personal data SeenLense collects, why, who we share it with and the choices you have."
+      intro="This policy explains what personal data Seenlense collects, why, who we share it with and the choices you have."
       sections={[
         { title: "What we collect", body: [
           [
@@ -25,7 +25,7 @@ export default function PrivacyPage() {
         ] },
         { title: "Why we use it", body: [
           [
-            "To run SeenLense: sign you in, run scans, show results and send the reports and alerts you ask for.",
+            "To run Seenlense: sign you in, run scans, show results and send the reports and alerts you ask for.",
             "To bill you and keep accounts secure.",
             "To send account emails, such as confirming your address, resetting a password, invitations and payment problems.",
             "To understand how the site is used, so we can improve it.",

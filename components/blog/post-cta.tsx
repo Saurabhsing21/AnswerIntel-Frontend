@@ -15,7 +15,7 @@ export function InlineCta() {
         Find out if ChatGPT recommends you or a competitor
       </p>
       <p className="mt-2 max-w-[56ch] text-[15px] leading-relaxed text-ink-2">
-        SeenLense asks the questions your buyers ask and shows which brands each AI names, which sources it trusts and what to fix.
+        Seenlense asks the questions your buyers ask and shows which brands each AI names, which sources it trusts and what to fix.
       </p>
       <a href={href} className={`${buttonClass()} mt-5`}>
         {label}

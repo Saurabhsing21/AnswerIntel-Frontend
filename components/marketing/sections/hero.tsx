@@ -44,7 +44,7 @@ export function Hero() {
 
         <Reveal delay={0.1}>
           <p className="mt-6 max-w-[560px] text-[17px] leading-relaxed text-muted md:text-[18px]">
-            SeenLense is an AI search visibility tracker. It asks ChatGPT, Perplexity, Gemini and Claude the questions your
+            Seenlense is an AI search visibility tracker. It asks ChatGPT, Perplexity, Gemini and Claude the questions your
             buyers ask, every week, and shows how often you are mentioned and recommended against your competitors, and what to
             fix.
           </p>

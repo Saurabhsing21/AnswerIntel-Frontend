@@ -7,7 +7,7 @@ import { Nav } from "@/components/marketing/sections/nav";
 import { FREE_CHECK } from "@/lib/flags";
 
 export const metadata: Metadata = {
-  title: "Free AI visibility check - SeenLense",
+  title: "Free AI visibility check - Seenlense",
   description: "See whether ChatGPT and Perplexity recommend your brand when buyers ask about your category. Free, no account.",
   alternates: { canonical: "/check" },
 };

@@ -24,6 +24,6 @@ export async function POST(request: Request) {
   try {
     return await login(request, String(email ?? ""), String(password ?? ""));
   } catch {
-    return Response.json(errorBody("API_UNAVAILABLE", "The SeenLense API is not reachable."), { status: 502 });
+    return Response.json(errorBody("API_UNAVAILABLE", "The Seenlense API is not reachable."), { status: 502 });
   }
 }

@@ -20,11 +20,11 @@ const bricolage = Bricolage_Grotesque({
 });
 
 export const metadata: Metadata = {
-  title: "SeenLense - AI visibility intelligence for founders",
+  title: "Seenlense - AI visibility intelligence for founders",
   description:
     "See how ChatGPT, Perplexity, Gemini and Google AI recommend your brand, why competitors win, and what to fix next.",
   metadataBase: new URL(PUBLIC_URL),
-  openGraph: { siteName: "SeenLense", type: "website", locale: "en_US" },
+  openGraph: { siteName: "Seenlense", type: "website", locale: "en_US" },
   twitter: { card: "summary_large_image" },
 };
 

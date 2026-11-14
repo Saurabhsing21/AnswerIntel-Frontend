@@ -1,6 +1,6 @@
 import { cx } from "@/lib/cx";
 
-/** The SeenLense mark: the mascot's head, a lime bot with a dark visor and a lens on its antenna. */
+/** The Seenlense mark: the mascot's head, a lime bot with a dark visor and a lens on its antenna. */
 export function LogoMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 32 32" aria-hidden className={cx("shrink-0", className)}>
@@ -32,7 +32,7 @@ export function Logo({ size = "md" }: { size?: "md" | "lg" }) {
           size === "lg" ? "text-[22px]" : "text-[18px]",
         )}
       >
-        SeenLense
+        Seenlense
       </span>
     </span>
   );

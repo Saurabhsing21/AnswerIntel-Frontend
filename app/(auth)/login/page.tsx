@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { AuthForm } from "@/components/app/auth-form";
 
-export const metadata: Metadata = { title: "Log in - SeenLense" };
+export const metadata: Metadata = { title: "Log in - Seenlense" };
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const { invite } = await searchParams;

@@ -13,8 +13,8 @@ import { Mark } from "@/components/ui/mark";
 import { FREE_CHECK } from "@/lib/flags";
 
 export const metadata: Metadata = {
-  title: "Pricing - SeenLense",
-  description: "SeenLense plans from $20 a month: track how ChatGPT, Perplexity and Gemini recommend your brand against competitors.",
+  title: "Pricing - Seenlense",
+  description: "Seenlense plans from $20 a month: track how ChatGPT, Perplexity and Gemini recommend your brand against competitors.",
   alternates: { canonical: "/pricing" },
 };
 

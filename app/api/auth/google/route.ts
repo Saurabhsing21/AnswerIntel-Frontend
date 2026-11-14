@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { BACKEND_URL, visitorHeaders, REFRESH_COOKIE, TOKEN_COOKIE, cookieOptions, errorBody } from "@/lib/api/server";
 
-/** "Continue with Google": swaps Google's ID token for a SeenLense session, kept in HttpOnly cookies like a password login. */
+/** "Continue with Google": swaps Google's ID token for a Seenlense session, kept in HttpOnly cookies like a password login. */
 export async function POST(request: Request) {
   const { credential } = await request.json().catch(() => ({}));
   try {
@@ -20,6 +20,6 @@ export async function POST(request: Request) {
     if (data.refresh_token) jar.set(REFRESH_COOKIE, data.refresh_token, cookieOptions);
     return Response.json({ ok: true });
   } catch {
-    return Response.json(errorBody("API_UNAVAILABLE", "The SeenLense API is not reachable."), { status: 502 });
+    return Response.json(errorBody("API_UNAVAILABLE", "The Seenlense API is not reachable."), { status: 502 });
   }
 }
