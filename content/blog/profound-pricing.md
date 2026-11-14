@@ -4,6 +4,8 @@ description: Profound's pricing page now shows a free 7-day trial and custom Ent
 category: Comparison
 date: 2026-11-14
 author: Saurabh Singh
+cover: "Profound pricing in 2026"
+glance: Self-serve plan=None=for brands; Trial=7 days=50 prompts daily; Enterprise=Custom=up to 10 engines; Old Starter=$99=no longer listed
 ---
 
 **As of November 2026, Profound does not publish a price for brands: its pricing page shows a free 7-day trial and an Enterprise plan with custom pricing.** The self-serve Starter and Growth plans, widely reported at $99 and $399 a month, are no longer listed. Agencies have a self-serve Agency Growth plan, but the page shows no price for it.
@@ -42,8 +44,8 @@ For enterprise brands, it can be. Profound covers many engines, keeps all-time h
 | Tool | Entry price | Prompts | Engines |
 |---|---|---|---|
 | Seenlense | $20/month | 50, weekly | ChatGPT Search, Perplexity, Gemini |
-| Otterly.AI | €29/month | 16, daily | 4 of 7 |
-| LLMrefs | $79/month | 500, weekly | 9 |
+| Otterly.AI | $29/month | 20, daily | 3 of 7 |
+| LLMrefs | $79/month | 500, weekly | 11 |
 | Peec AI | $95/month | 50, daily | 3 of 8 |
 
 Seenlense is our product. For a longer comparison, see [Profound alternatives](/blog/profound-alternatives).
