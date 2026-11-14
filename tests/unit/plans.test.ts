@@ -18,7 +18,7 @@ describe("plans", () => {
   });
 
   it("weigh engines like the backend", () => {
-    expect(ENGINE_CREDITS).toEqual({ chatgpt_search: 1, gemini: 1.25, perplexity: 0.5, claude: 0.5, deepseek: 0.25, llama: 0.25, mistral: 0.25 });
+    expect(ENGINE_CREDITS).toEqual({ chatgpt_search: 1, gemini: 4.5, perplexity: 0.5, claude: 0.5, deepseek: 0.25, llama: 0.25, mistral: 0.25 });
   });
 
   it("price every plan engine", () => {

@@ -1,5 +1,6 @@
 "use client";
 
+import { Warning } from "@phosphor-icons/react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { BrandLineChart, type BrandSeries } from "@/components/app/charts";
@@ -10,7 +11,7 @@ import { type FirstScan, ReportReady } from "@/components/app/report-ready";
 import { ResponseDrawer } from "@/components/app/response-drawer";
 import { Card, ErrorBanner, Skeleton } from "@/components/app/ui";
 import { useApi } from "@/lib/api/client";
-import type { Dashboard } from "@/lib/api/types";
+import type { Dashboard, Scan } from "@/lib/api/types";
 import { brandColor, YOU_COLOR } from "@/lib/brand";
 import { pct } from "@/lib/format";
 
@@ -20,6 +21,25 @@ const TABS: { key: TabKey; label: string; noun: string }[] = [
   { key: "recommendation_rate", label: "Recommendations", noun: "recommendation rate" },
   { key: "share_of_voice", label: "Share of voice", noun: "share of voice" },
 ];
+
+/** The latest scan ended with answers missing: say how many came back, so thin numbers are not read as final. */
+function ScanIncomplete({ scan, starting, onRunAgain }: { scan: Scan; starting: boolean; onRunAgain: () => void }) {
+  const text =
+    scan.status === "failed"
+      ? `Your last scan failed: no AI answers came back. It used ${scan.credits} credits. The numbers below are from an earlier scan.`
+      : `Only ${scan.completed_runs} of ${scan.total_runs} AI answers came back in your last scan, so the numbers below rest on few answers and can swing a lot. It used ${scan.credits} credits.`;
+  return (
+    <div role="status" className="flex flex-col gap-2 rounded-[12px] border border-[#f5dca0] bg-amber-soft px-4 py-3 text-[13px] text-amber-ink sm:flex-row sm:items-center">
+      <span className="flex items-start gap-2">
+        <Warning size={16} className="mt-px shrink-0" />
+        {text}
+      </span>
+      <button type="button" onClick={onRunAgain} disabled={starting} className="shrink-0 font-medium underline underline-offset-2 disabled:opacity-60 sm:ml-auto">
+        Run scan again
+      </button>
+    </div>
+  );
+}
 
 function OverviewSkeleton() {
   return (
@@ -117,6 +137,7 @@ export default function OverviewPage() {
 
   return (
     <div className="space-y-4">
+      {(latestScan?.status === "partial" || latestScan?.status === "failed") && <ScanIncomplete scan={latestScan} starting={starting} onRunAgain={startScan} />}
       <ReportReady projectId={id} brand={brand} first={n === 1 ? firstScan : undefined} />
       {n > 1 && (
         <p className="text-[14px]">

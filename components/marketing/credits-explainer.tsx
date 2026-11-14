@@ -5,7 +5,7 @@ import type { Engine } from "@/lib/data";
 import { cx } from "@/lib/cx";
 import { formatCredits } from "@/lib/format";
 
-/** Engines grouped by what one answer costs, dearest first: 1.25, 1, 0.5, 0.25. */
+/** Engines grouped by what one answer costs, dearest first: 4.5, 1, 0.5, 0.25. */
 const TIERS = [...new Set(Object.values(ENGINE_CREDITS))]
   .sort((a, b) => b - a)
   .map((price) => ({ price, engines: (Object.keys(ENGINE_CREDITS) as Engine[]).filter((e) => creditsFor(e) === price) }));
@@ -64,8 +64,11 @@ export function CreditsExplainer() {
         <ul className="relative mt-10 grid gap-8 border-t border-white/10 pt-8 md:grid-cols-3 md:gap-0 md:divide-x md:divide-white/10">
           {PLANS.map((plan) => {
             const engines = exampleEngines(plan.engines);
-            const perScan = plan.prompts * engines.reduce((sum, e) => sum + creditsFor(e), 0);
-            const weekly = Math.min(plan.credits, perScan * RUNS_PER_MONTH);
+            const perPrompt = engines.reduce((sum, e) => sum + creditsFor(e), 0);
+            // Gemini is dear, so not every plan fits all its prompts on every engine each week: say how many do.
+            const fit = Math.min(plan.prompts, Math.floor(plan.credits / (perPrompt * RUNS_PER_MONTH)));
+            const perScan = fit * perPrompt;
+            const weekly = perScan * RUNS_PER_MONTH;
             const extra = Math.floor((plan.credits - weekly) / perScan);
             return (
               <li key={plan.key} className="md:px-8 md:first:pl-0 md:last:pr-0">
@@ -81,7 +84,7 @@ export function CreditsExplainer() {
                   <span className="flex-1 rounded-full bg-white/20" />
                 </div>
                 <p className="mt-4 text-[14px] leading-snug text-white/65">
-                  {plan.prompts} prompts × {engines.length} engines weekly, {extra > 0 ? `plus about ${extra} extra ${extra === 1 ? "scan" : "scans"}` : "plus room for re-tests"}.
+                  {fit === plan.prompts ? plan.prompts : `${fit} of your ${plan.prompts}`} prompts × {engines.length} engines weekly, {extra > 0 ? `plus about ${extra} extra ${extra === 1 ? "scan" : "scans"}` : "plus room for re-tests"}.
                 </p>
               </li>
             );
