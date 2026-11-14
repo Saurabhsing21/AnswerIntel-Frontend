@@ -224,7 +224,7 @@ function NewProjectWizard() {
     api<{ suggestions: Suggestion[] }>("/onboarding/competitors", { method: "POST", json: brandBody() })
       .then((r) => {
         setSuggestions(r.suggestions);
-        setPicked(r.suggestions.slice(0, 3));
+        setPicked(r.suggestions.slice(0, Math.min(3, maxCompetitors)));
       })
       .catch((e) => {
         setError((e as ApiError).message);
@@ -235,7 +235,7 @@ function NewProjectWizard() {
   function toggle(s: Suggestion) {
     if (picked.some((p) => p.name === s.name)) return setPicked((all) => all.filter((p) => p.name !== s.name));
     if (picked.length >= maxCompetitors) {
-      if (maxCompetitors < MAX_COMPETITORS) askUpgrade(`The free scan tracks up to ${maxCompetitors} competitors. Paid plans track up to 100.`, "competitors");
+      if (maxCompetitors < MAX_COMPETITORS) askUpgrade(`The free scan tracks ${maxCompetitors === 1 ? "one competitor" : `up to ${maxCompetitors} competitors`}. Paid plans track up to 100.`, "competitors");
       return;
     }
     setPicked((all) => [...all, s]);
@@ -430,7 +430,7 @@ function NewProjectWizard() {
 
         {step === 1 && (
           <>
-            <StepHead step={1} title="Your competitors" body={`The brands buyers compare with ${draft.brand.trim()}. We picked the closest three; change them or skip.`} optional />
+            <StepHead step={1} title="Your competitors" body={`The brands buyers compare with ${draft.brand.trim()}. ${maxCompetitors === 1 ? "We picked the closest one; your free scan tracks one competitor. Change it or skip." : "We picked the closest three; change them or skip."}`} optional />
             <div className="space-y-3 px-7 pb-7">
               {suggestions === null ? (
                 <div className="space-y-2" role="status">
