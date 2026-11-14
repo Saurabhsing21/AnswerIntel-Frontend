@@ -28,7 +28,7 @@ const structuredData = {
       url: PUBLIC_URL,
       email: "saurabh@seenlense.com",
       logo: `${PUBLIC_URL}/icon.svg`,
-      founder: { "@type": "Person", name: "Saurabh Singh" },
+      founder: { "@type": "Person", "@id": `${PUBLIC_URL}/authors/saurabh-singh#person`, name: "Saurabh Singh", url: `${PUBLIC_URL}/authors/saurabh-singh` },
     },
     { "@type": "WebSite", "@id": `${PUBLIC_URL}/#website`, name: "SeenLense", url: PUBLIC_URL, publisher: { "@id": `${PUBLIC_URL}/#organization` } },
     {
@@ -37,7 +37,7 @@ const structuredData = {
       applicationCategory: "BusinessApplication",
       operatingSystem: "Web",
       url: PUBLIC_URL,
-      description: "AI search visibility tracking: see how ChatGPT, Perplexity and Gemini mention and recommend your brand against competitors, and what to fix.",
+      description: "AI search visibility tracking: see how ChatGPT, Perplexity, Gemini and Claude mention and recommend your brand against competitors, and what to fix.",
       publisher: { "@id": `${PUBLIC_URL}/#organization` },
       offers: PLANS.map((p) => ({ "@type": "Offer", name: p.name, price: p.monthly, priceCurrency: "USD", url: `${PUBLIC_URL}/pricing` })),
     },

@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { CONTACT_EMAIL, LegalPage } from "@/components/marketing/legal-page";
 
-export const metadata: Metadata = { title: "Refund Policy - SeenLense" };
+export const metadata: Metadata = {
+  title: "Refund Policy - SeenLense",
+  description: "When and how SeenLense refunds a payment.",
+  alternates: { canonical: "/refunds" },
+};
 
 // A starting draft, not legal advice: have a lawyer review it before taking payments.
 export default function RefundsPage() {

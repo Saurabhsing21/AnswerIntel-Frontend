@@ -9,6 +9,9 @@ import { Marked, type Tokens } from "marked";
  */
 const DIR = path.join(process.cwd(), "content/blog");
 
+/** Authors with their own page. */
+export const AUTHOR_PAGES: Record<string, string> = { "Saurabh Singh": "/authors/saurabh-singh" };
+
 export type Post = {
   slug: string;
   title: string;

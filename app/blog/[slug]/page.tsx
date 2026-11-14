@@ -5,7 +5,7 @@ import { JsonLd } from "@/components/blog/json-ld";
 import { EndCta, InlineCta, SideCta } from "@/components/blog/post-cta";
 import { Footer } from "@/components/marketing/sections/footer";
 import { Nav } from "@/components/marketing/sections/nav";
-import { formatDate, getPost, getPosts, splitForCta } from "@/lib/blog";
+import { AUTHOR_PAGES, formatDate, getPost, getPosts, splitForCta } from "@/lib/blog";
 import { PUBLIC_URL } from "@/lib/urls";
 
 export const dynamicParams = false;
@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: PageProps<"/blog/[slug]">): P
     title: `${post.title} - SeenLense`,
     description: post.description,
     alternates: { canonical: `/blog/${post.slug}` },
-    authors: [{ name: post.author }],
+    authors: [{ name: post.author, url: AUTHOR_PAGES[post.author] }],
     openGraph: { type: "article", title: post.title, description: post.description, url: `/blog/${post.slug}`, publishedTime: post.date },
   };
 }
@@ -47,7 +47,7 @@ export default async function PostPage({ params }: PageProps<"/blog/[slug]">) {
               dateModified: post.date,
               url,
               mainEntityOfPage: url,
-              author: { "@type": "Person", name: post.author },
+              author: { "@type": "Person", name: post.author, ...(AUTHOR_PAGES[post.author] && { url: `${PUBLIC_URL}${AUTHOR_PAGES[post.author]}` }) },
               publisher: { "@id": `${PUBLIC_URL}/#organization` },
             },
             ...(post.faqs.length
@@ -87,7 +87,13 @@ export default async function PostPage({ params }: PageProps<"/blog/[slug]">) {
                 <span aria-hidden className="grid size-7 place-items-center rounded-full bg-ink text-[11px] font-semibold text-mark">
                   {post.author.split(" ").map((w) => w[0]).join("")}
                 </span>
-                {post.author}
+                {AUTHOR_PAGES[post.author] ? (
+                  <Link href={AUTHOR_PAGES[post.author]} className="hover:text-ink hover:underline">
+                    {post.author}
+                  </Link>
+                ) : (
+                  post.author
+                )}
               </span>
               <time dateTime={post.date}>{formatDate(post.date)}</time>
               <span>{post.minutes} min read</span>

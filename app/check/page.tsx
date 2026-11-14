@@ -9,6 +9,7 @@ import { FREE_CHECK } from "@/lib/flags";
 export const metadata: Metadata = {
   title: "Free AI visibility check - SeenLense",
   description: "See whether ChatGPT and Perplexity recommend your brand when buyers ask about your category. Free, no account.",
+  alternates: { canonical: "/check" },
 };
 
 export default function CheckPage() {

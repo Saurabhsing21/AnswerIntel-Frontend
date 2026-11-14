@@ -9,7 +9,7 @@ export const dynamic = "force-static";
 export function GET() {
   const text = `# SeenLense
 
-> SeenLense is an AI search visibility tool for founders and small teams. It asks ChatGPT, Perplexity, Gemini and other AI assistants the questions buyers ask, records every answer, and shows how often a brand is mentioned, recommended and cited compared to its competitors, why competitors win, and what to fix next.
+> SeenLense is an AI search visibility tool for founders and small teams. It asks ChatGPT, Perplexity, Gemini, Claude and other AI assistants the questions buyers ask, records every answer, and shows how often a brand is mentioned, recommended and cited compared to its competitors, why competitors win, and what to fix next.
 
 Website: ${PUBLIC_URL}
 Contact: saurabh@seenlense.com
@@ -22,6 +22,8 @@ ${PLANS.map((p) => `- ${p.name}: $${p.monthly}/month or $${p.yearly}/year. ${p.a
 
 - [Home](${PUBLIC_URL}/): what SeenLense does and how it works
 - [Pricing](${PUBLIC_URL}/pricing): plans, credits and limits
+- [Methodology](${PUBLIC_URL}/methodology): how the questions are chosen, how answers are read, and how each rate is calculated
+- [About](${PUBLIC_URL}/about): who builds SeenLense and why
 - [Blog](${PUBLIC_URL}/blog): guides on AI search visibility and generative engine optimization
 
 ## Blog posts

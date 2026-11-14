@@ -1,3 +1,6 @@
+import { PLANS } from "@/lib/billing/plans";
+import { WAITLIST_ONLY } from "@/lib/flags";
+
 // Sample data for the marketing mocks. Brands are fictional.
 
 export type Engine =
@@ -112,7 +115,7 @@ export const faqs = [
   },
   {
     q: "Which AI engines do you track?",
-    a: "ChatGPT, Perplexity, Gemini, and Google AI Overviews at launch. Claude and Copilot are next.",
+    a: "ChatGPT Search, Perplexity and Gemini on every plan, all searching the live web. Growth adds Claude, and Pro adds DeepSeek, Llama and Mistral, which answer from what they learned in training. Google AI Mode and Microsoft Copilot are next.",
   },
   {
     q: "What is the difference between a mention and a recommendation?",
@@ -126,10 +129,9 @@ export const faqs = [
     q: "How often is my visibility measured?",
     a: "Every week by default. Each scan is stored, so you can compare any two weeks and see whether a change you shipped moved the numbers.",
   },
-  {
-    q: "When can I get access?",
-    a: "We are onboarding teams from the waitlist in small groups. Join with your work email and we will reach out when your spot opens.",
-  },
+  WAITLIST_ONLY
+    ? { q: "When can I get access?", a: "We are onboarding teams from the waitlist in small groups. Join with your work email and we will reach out when your spot opens." }
+    : { q: "How do I get started?", a: `Create an account and run one free scan of your brand, no card needed. After that, plans start at $${PLANS[0].monthly} a month: see the pricing page.` },
 ];
 
 // Hero engine sweep: one buyer question, four engines, what each one said.

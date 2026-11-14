@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { CONTACT_EMAIL, LegalPage } from "@/components/marketing/legal-page";
 
-export const metadata: Metadata = { title: "Terms of Service - SeenLense" };
+export const metadata: Metadata = {
+  title: "Terms of Service - SeenLense",
+  description: "The terms for using SeenLense, the AI search visibility tracker: accounts, plans, payment, cancelling and acceptable use.",
+  alternates: { canonical: "/terms" },
+};
 
 // A starting draft, not legal advice: have a lawyer review it before taking payments.
 export default function TermsPage() {

@@ -8,7 +8,7 @@ import { Mark } from "@/components/ui/mark";
 import type { Engine } from "@/lib/data";
 import { WAITLIST_ONLY } from "@/lib/flags";
 
-const tracked: Engine[] = ["chatgpt", "perplexity", "gemini", "google"];
+const tracked: Engine[] = ["chatgpt", "perplexity", "gemini", "claude"];
 
 export function Hero() {
   return (
@@ -32,7 +32,7 @@ export function Hero() {
                 </span>
               ))}
             </span>
-            Private beta for ChatGPT, Perplexity, Gemini and Google AI
+            {WAITLIST_ONLY ? "Private beta" : "Now tracking"} ChatGPT, Perplexity, Gemini and Claude
           </span>
         </Reveal>
 
@@ -44,7 +44,9 @@ export function Hero() {
 
         <Reveal delay={0.1}>
           <p className="mt-6 max-w-[560px] text-[17px] leading-relaxed text-muted md:text-[18px]">
-            Track your mentions, recommendations, and share of voice across AI search, then learn exactly what to fix.
+            SeenLense is an AI search visibility tracker. It asks ChatGPT, Perplexity, Gemini and Claude the questions your
+            buyers ask, every week, and shows how often you are mentioned and recommended against your competitors, and what to
+            fix.
           </p>
         </Reveal>
 

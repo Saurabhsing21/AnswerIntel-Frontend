@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     "See how ChatGPT, Perplexity, Gemini and Google AI recommend your brand, why competitors win, and what to fix next.",
   metadataBase: new URL(PUBLIC_URL),
   openGraph: { siteName: "SeenLense", type: "website", locale: "en_US" },
-  twitter: { card: "summary" },
+  twitter: { card: "summary_large_image" },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
