@@ -12,7 +12,7 @@ export type Interval = "month" | "year";
  * engine's weight, counted over any 30 days. An engine missing here costs 1.
  */
 export const ENGINE_CREDITS: Record<string, number> = {
-  chatgpt_search: 1, gemini: 1.25, perplexity: 0.5, claude: 0.5, deepseek: 0.25, llama: 0.25, mistral: 0.25,
+  chatgpt_search: 1, gemini: 4.5, perplexity: 0.5, claude: 0.5, deepseek: 0.25, llama: 0.25, mistral: 0.25,
 };
 
 /** Credits one answer from this engine costs. */
@@ -183,7 +183,7 @@ export const comparison = (period: Interval): ComparisonGroup[] => [
 export const PRICING_FAQ = [
   { q: "Is there a free trial?", a: "Yes. Every new account gets one free scan of one brand: up to 10 buyer questions on ChatGPT Search, with the full results. No card needed. After that, plans start at $20 a month and you can cancel any time." },
   { q: "Do your answers match what I see in ChatGPT?", a: "As closely as we can: ChatGPT Search and Gemini answer with their own live web search, and Perplexity always searches. Claude, DeepSeek, Llama and Mistral answer from what they learned in training, without searching. Answers still vary from run to run, so every rate shows how much it can move by chance." },
-  { q: "What is a credit?", a: `Your monthly allowance. One answer from ChatGPT Search costs 1 credit, and other engines cost less or more: Perplexity and Claude 0.5, DeepSeek, Llama and Mistral 0.25, Gemini 1.25. Tracking 50 prompts weekly on ChatGPT Search, Perplexity and Gemini uses about ${count(Math.round(monthlyCredits(50, STARTER_ENGINES)))} credits a month, well inside Starter's ${count(PLANS[0].credits)}. On-demand scans use the same credits.` },
+  { q: "What is a credit?", a: `Your monthly allowance. One answer from ChatGPT Search costs 1 credit, and other engines cost less or more: Perplexity and Claude 0.5, DeepSeek, Llama and Mistral 0.25, Gemini 4.5, since every Gemini answer runs several paid web searches. Tracking 50 prompts weekly on ChatGPT Search and Perplexity uses about ${count(Math.round(monthlyCredits(50, ["chatgpt_search", "perplexity"])))} of Starter's ${count(PLANS[0].credits)} credits a month; with Gemini as well, about ${Math.floor(PLANS[0].credits / monthlyCredits(1, STARTER_ENGINES))} prompts fit weekly. On-demand scans use the same credits.` },
   { q: "What happens when I run out of credits?", a: "New scans wait until older ones are more than 30 days old, so your credits come back as you go: they are counted over the last 30 days, not per calendar month. Engines use different credits, so lighter engines stretch further. You can switch off prompts or engines you no longer need, or move to a bigger plan any time." },
   { q: "Can I change plans later?", a: "Yes, from the billing page in the app. Changes take effect right away, and you pay or are credited only the difference for the rest of the billing period." },
   { q: "What happens if I cancel?", a: "Your plan runs until the end of the period you paid for. After that the workspace is read-only: you can still view and export everything, but not run new scans." },
