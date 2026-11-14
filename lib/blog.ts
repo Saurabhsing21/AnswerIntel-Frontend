@@ -4,8 +4,10 @@ import { Marked, type Tokens } from "marked";
 
 /**
  * Blog posts are Markdown files in content/blog: the file name is the slug, and a small front matter block holds
- * title, description, category, date (YYYY-MM-DD) and author. A "## FAQ" section with "### Question" headings also becomes
- * FAQ structured data.
+ * title, description, category, date (YYYY-MM-DD) and author. Optional: updated (YYYY-MM-DD), cover (a shorter headline for
+ * the cover image), featured (true to lead the blog index) and glance ("Label=Value=Note; ..." up to four key numbers shown on the cover). A "## FAQ" section with
+ * "### Question" headings also becomes FAQ structured data. An image with a title, ![alt](src "caption"), becomes a
+ * captioned figure.
  */
 const DIR = path.join(process.cwd(), "content/blog");
 
@@ -18,7 +20,11 @@ export type Post = {
   description: string;
   category: string;
   date: string;
+  updated: string;
   author: string;
+  cover: string;
+  featured: boolean;
+  glance: { label: string; value: string; note: string }[];
   minutes: number;
   html: string;
   headings: { id: string; text: string }[];
@@ -57,6 +63,17 @@ function parse(slug: string, file: string): Post {
       heading({ tokens, depth, text }: Tokens.Heading) {
         return `<h${depth} id="${slugify(text)}">${this.parser.parseInline(tokens)}</h${depth}>\n`;
       },
+      image({ href, text }: Tokens.Image) {
+        return `<img src="${href}" alt="${text}" loading="lazy" decoding="async" />`;
+      },
+      paragraph({ tokens }: Tokens.Paragraph) {
+        // A paragraph that is only a titled image becomes a figure; everything else renders as usual.
+        const [only] = tokens;
+        if (tokens.length !== 1 || only.type !== "image" || !(only as Tokens.Image).title) return false;
+        const image = only as Tokens.Image;
+        // Screenshots are shrunk to the column; the link opens the full-size image.
+        return `<figure><a href="${image.href}" target="_blank" rel="noopener">${this.parser.parseInline(tokens)}</a><figcaption>${image.title}</figcaption></figure>\n`;
+      },
     },
   });
 
@@ -66,7 +83,16 @@ function parse(slug: string, file: string): Post {
     description: meta.description,
     category: meta.category ?? "Guide",
     date: meta.date,
+    updated: meta.updated ?? meta.date,
     author: meta.author,
+    cover: meta.cover ?? meta.title,
+    featured: meta.featured === "true",
+    glance: (meta.glance ?? "")
+      .split(";")
+      .map((item: string) => item.split("=").map((part) => part.trim()))
+      .filter(([label, value]: string[]) => label && value)
+      .slice(0, 4)
+      .map(([label, value, note = ""]: string[]) => ({ label, value, note })),
     minutes: Math.max(1, Math.round(body.split(/\s+/).length / 220)),
     html: marked.parse(body, { async: false }),
     headings,

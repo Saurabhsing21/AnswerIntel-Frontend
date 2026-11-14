@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: PageProps<"/blog/[slug]">): P
     description: post.description,
     alternates: { canonical: `/blog/${post.slug}` },
     authors: [{ name: post.author, url: AUTHOR_PAGES[post.author] }],
-    openGraph: { type: "article", title: post.title, description: post.description, url: `/blog/${post.slug}`, publishedTime: post.date },
+    openGraph: { type: "article", title: post.title, description: post.description, url: `/blog/${post.slug}`, publishedTime: post.date, modifiedTime: post.updated },
   };
 }
 
@@ -44,7 +44,8 @@ export default async function PostPage({ params }: PageProps<"/blog/[slug]">) {
               headline: post.title,
               description: post.description,
               datePublished: post.date,
-              dateModified: post.date,
+              dateModified: post.updated,
+              image: `${url}/opengraph-image`,
               url,
               mainEntityOfPage: url,
               author: { "@type": "Person", name: post.author, ...(AUTHOR_PAGES[post.author] && { url: `${PUBLIC_URL}${AUTHOR_PAGES[post.author]}` }) },
@@ -76,7 +77,7 @@ export default async function PostPage({ params }: PageProps<"/blog/[slug]">) {
             {/* eslint-disable-next-line @next/next/no-img-element -- generated cover, already sized for the page */}
             <img
               src={`/blog/${post.slug}/opengraph-image`}
-              alt=""
+              alt={`Cover: ${post.cover}`}
               width={1200}
               height={630}
               className="mt-10 aspect-[1200/630] w-full rounded-card border border-line-strong object-cover"
@@ -96,6 +97,11 @@ export default async function PostPage({ params }: PageProps<"/blog/[slug]">) {
                 )}
               </span>
               <time dateTime={post.date}>{formatDate(post.date)}</time>
+              {post.updated !== post.date && (
+                <span>
+                  Updated <time dateTime={post.updated}>{formatDate(post.updated)}</time>
+                </span>
+              )}
               <span>{post.minutes} min read</span>
             </div>
 

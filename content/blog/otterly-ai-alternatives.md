@@ -1,12 +1,14 @@
 ---
 title: "Otterly.AI Alternatives: Which AI Visibility Tool Gives You More Prompts?"
-description: Otterly's Lite plan tracks 16 prompts for €29 a month. Here are four alternatives with more prompts or more engines, and when Otterly is still the better pick.
+description: Otterly's Lite plan tracks 20 prompts for $29 a month. Here are four alternatives with more prompts or more engines, and when Otterly is still the better pick.
 category: Comparison
 date: 2026-11-14
 author: Saurabh Singh
+cover: "Otterly.AI alternatives"
+glance: Otterly Lite=$29=20 prompts; Next plan=$189=160 prompts; 120 prompts=$50=Seenlense Growth; 500 prompts=$79=LLMrefs
 ---
 
-**If Otterly.AI's 16-prompt Lite plan is too small and its €189 Standard plan too big a jump, look at Seenlense, Rankscale, LLMrefs or Peec AI.** Seenlense gives 50 prompts for $20 a month, and LLMrefs gives 500 for $79.
+**If Otterly.AI's 20-prompt Lite plan is too small and its $189 Standard plan too big a jump, look at Seenlense, Rankscale, LLMrefs or Peec AI.** Seenlense gives 50 prompts for $20 a month, and LLMrefs gives 500 for $79.
 
 Prices were checked on each vendor's pricing page on November 14, 2026. Seenlense is our product.
 
@@ -14,17 +16,17 @@ Prices were checked on each vendor's pricing page on November 14, 2026. Seenlens
 
 | | Lite | Standard | Premium |
 |---|---|---|---|
-| Price | €29/month | €189/month | €489/month |
-| Prompts | 16 | 120 | 403 |
+| Price | $29/month | $189/month | $489/month |
+| Prompts | 20 | 160 | 535 |
 | Credits a month | 2,000 | 15,000 | 50,000 |
-| Engines | 4 of 7 | 4 of 7 | 4 of 7 |
+| Engines | 3 of 7 | 3 of 7 | 3 of 7 |
 | API | No | Yes | Yes |
 
 Annual billing is 15% cheaper. A Claude answer costs 3 credits.
 
 ## The gap between Lite and Standard
 
-Lite is cheap but small: 16 prompts covers one product and a few comparisons. The next step is €189, more than six times the price. Most alternatives sit in that gap.
+Lite is cheap but small: 20 prompts covers one product and a few comparisons. The next step is $189, more than six times the price. Most alternatives sit in that gap.
 
 ## Alternatives compared
 
@@ -32,11 +34,11 @@ Lite is cheap but small: 16 prompts covers one product and a few comparisons. Th
 |---|---|---|---|---|
 | Seenlense Starter | $20/month | 50 | ChatGPT Search, Perplexity, Gemini | Weekly |
 | Seenlense Growth | $50/month | 120 | + Claude | Weekly |
-| Rankscale Pro | $84/month | ~4,800 answers | 17+ | You choose |
-| LLMrefs | $79/month | 500 | 9 | Weekly |
+| Rankscale Pro | $99/month | ~4,800 answers | 17+ | You choose |
+| LLMrefs | $79/month | 500 | 11 | Weekly |
 | Peec AI Starter | $95/month | 50 | 3 of 8 | Daily |
 
-**Seenlense** gives Otterly Standard's 120 prompts for $50 a month, plus Claude, with weekly tracking instead of daily. It also tells you why competitors are recommended, and whether a fix worked.
+**Seenlense** gives 120 prompts for $50 a month (Otterly Standard is 160 for $189), plus Claude, with weekly tracking instead of daily. It also tells you why competitors are recommended, and whether a fix worked.
 
 **LLMrefs** gives the most prompts under $100.
 
@@ -46,7 +48,7 @@ Lite is cheap but small: 16 prompts covers one product and a few comparisons. Th
 
 ## When Otterly is still the better pick
 
-- You only need about 16 questions, tracked daily.
+- You only need about 20 questions, tracked daily.
 - You want Microsoft Copilot or Google AI Mode, which Otterly covers.
 - You need the Looker Studio (Data Studio) connector on Standard.
 

@@ -4,6 +4,8 @@ description: Profound no longer lists a self-serve plan for brands. Here are fiv
 category: Comparison
 date: 2026-11-14
 author: Saurabh Singh
+cover: "Profound alternatives with public prices"
+glance: Profound=Custom=Enterprise only; Cheapest=$17/mo=Rankscale, yearly; Seenlense=$20=50 prompts; Peec=$95=daily
 ---
 
 **If you want Profound-style AI visibility tracking without a sales call, the main options are Peec AI, Otterly.AI, Rankscale, LLMrefs and Seenlense.** All five publish their prices and let you start on your own. Profound's pricing page now shows only a free 7-day trial and a custom-priced Enterprise plan for brands.
@@ -26,8 +28,8 @@ If you are a large brand with budget for an enterprise contract, Profound is sti
 |---|---|---|---|---|
 | Seenlense | $20/month | 50 | ChatGPT Search, Perplexity, Gemini | Weekly |
 | Rankscale | $17/month (yearly) | 120 credits, about 480 answers | 17+ | Hourly to monthly |
-| Otterly.AI | €29/month | 16 | 4 of 7 | Daily |
-| LLMrefs | $79/month | 500 | 9 | Weekly |
+| Otterly.AI | $29/month | 20 | 3 of 7 | Daily |
+| LLMrefs | $79/month | 500 | 11 | Weekly |
 | Peec AI | $95/month | 50 | 3 of 8 | Daily |
 
 ## Peec AI
@@ -38,19 +40,19 @@ Peec AI is the closest like-for-like replacement: a polished dashboard, daily tr
 
 ## Otterly.AI
 
-Otterly is the cheapest way to get daily tracking. Lite is €29 a month for 16 prompts on 4 of its 7 engines. Standard is €189 for 120 prompts and adds an API, and Premium is €489 for 403 prompts. Engines are paid in credits, and a Claude answer costs 3 credits.
+Otterly is the cheapest way to get daily tracking. Lite is $29 a month for 20 prompts on 3 of its 7 engines. Standard is $189 for 160 prompts and adds an API, and Premium is $489 for 535 prompts. Engines are paid in credits, and a Claude answer costs 3 credits.
 
 **Best for:** watching a small, fixed set of questions every day.
 
 ## Rankscale
 
-Rankscale is credit-based and covers more engines than anyone else here (17+). Essentials is $17 a month on yearly billing for 120 credits, or about 480 answers. Pro is $84 for 1,200 credits. Search terms are unlimited, and you choose how often each one runs.
+Rankscale is credit-based and covers more engines than anyone else here (17+). Essentials is $17 a month on yearly billing for 120 credits, or about 480 answers. Pro is $99 for 1,200 credits. Search terms are unlimited, and you choose how often each one runs.
 
 **Best for:** people who want many engines and are comfortable budgeting in credits.
 
 ## LLMrefs
 
-LLMrefs has one plan, $79 a month, covering 500 prompts on nine engines, including Claude, Grok, Copilot and Meta AI. It also includes geo-targeting in 50+ countries and unlimited projects. Reports refresh weekly.
+LLMrefs has one plan, $79 a month, covering 500 prompts on 11 engines, including Claude, Grok, Copilot and Meta AI. It also includes geo-targeting in 50+ countries and unlimited projects. Reports refresh weekly.
 
 **Best for:** agencies and teams tracking many prompts across many markets.
 
