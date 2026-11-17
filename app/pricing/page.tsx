@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { JsonLd } from "@/components/blog/json-ld";
 import { Reveal } from "@/components/marketing/effects/reveal";
 import { PricingCards } from "@/components/marketing/pricing-cards";
 import { CreditsExplainer } from "@/components/marketing/credits-explainer";
@@ -10,11 +11,36 @@ import { Section, SectionHeading } from "@/components/marketing/section";
 import { Footer } from "@/components/marketing/sections/footer";
 import { Nav } from "@/components/marketing/sections/nav";
 import { Mark } from "@/components/ui/mark";
+import { PLANS, PRICING_FAQ } from "@/lib/billing/plans";
+import { PUBLIC_URL } from "@/lib/urls";
 
 export const metadata: Metadata = {
   title: "Pricing - Seenlense",
   description: "Seenlense plans from $20 a month: track how ChatGPT, Perplexity and Gemini recommend your brand against competitors.",
   alternates: { canonical: "/pricing" },
+};
+
+// Plans with monthly and yearly prices, and the billing FAQ, in the form search engines and AI assistants read.
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      name: "Seenlense",
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "Web",
+      url: `${PUBLIC_URL}/pricing`,
+      publisher: { "@id": `${PUBLIC_URL}/#organization` },
+      offers: PLANS.flatMap((p) => [
+        { "@type": "Offer", name: `${p.name} (monthly)`, price: p.monthly, priceCurrency: "USD", url: `${PUBLIC_URL}/pricing`, priceSpecification: { "@type": "UnitPriceSpecification", price: p.monthly, priceCurrency: "USD", billingDuration: "P1M" } },
+        { "@type": "Offer", name: `${p.name} (yearly)`, price: p.yearly, priceCurrency: "USD", url: `${PUBLIC_URL}/pricing`, priceSpecification: { "@type": "UnitPriceSpecification", price: p.yearly, priceCurrency: "USD", billingDuration: "P1Y" } },
+      ]),
+    },
+    {
+      "@type": "FAQPage",
+      mainEntity: PRICING_FAQ.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+    },
+  ],
 };
 
 export default async function PricingPage({ searchParams }: PageProps<"/pricing">) {
@@ -23,6 +49,7 @@ export default async function PricingPage({ searchParams }: PageProps<"/pricing"
   const country = (await headers()).get("x-vercel-ip-country") ?? undefined;
   return (
     <>
+      <JsonLd data={structuredData} />
       <Nav />
       <main id="top">
         <PricingPeriod>
