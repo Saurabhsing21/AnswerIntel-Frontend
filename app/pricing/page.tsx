@@ -10,7 +10,6 @@ import { Section, SectionHeading } from "@/components/marketing/section";
 import { Footer } from "@/components/marketing/sections/footer";
 import { Nav } from "@/components/marketing/sections/nav";
 import { Mark } from "@/components/ui/mark";
-import { FREE_CHECK } from "@/lib/flags";
 
 export const metadata: Metadata = {
   title: "Pricing - Seenlense",
@@ -41,11 +40,6 @@ export default async function PricingPage({ searchParams }: PageProps<"/pricing"
               <p className="mx-auto mt-4 max-w-[560px] text-[16px] leading-relaxed text-muted">
                 See how ChatGPT, Perplexity, Claude and Gemini recommend your brand, and what to fix first. One plan per workspace, shared by your team.
               </p>
-              {FREE_CHECK && (
-                <a href="/check" className="mt-3 inline-block text-[14px] font-medium text-ink underline decoration-mark decoration-2 underline-offset-4">
-                  Not sure yet? Run a free check
-                </a>
-              )}
             </Reveal>
             <div className="mt-8">
               <PricingCards toggleClassName="justify-center" country={country} />

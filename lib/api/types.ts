@@ -329,21 +329,6 @@ export type ReportContent = {
 };
 export type Report = ReportSummary & { content: ReportContent };
 
-export type FreeCheck = {
-  id: string;
-  status: "queued" | "running" | "done" | "failed";
-  brand_name: string;
-  website: string;
-  category: string;
-  country: string;
-  result: {
-    prompts: { text: string; answers: { engine: Engine; engine_name: string; mentioned: boolean; recommended: boolean; position: number | null; evidence: string | null }[] }[];
-    summary: { answers: number; mentioned: number; recommended: number; engines: string[] };
-    top_sources: { domain: string; count: number }[];
-    why?: { code: string; title: string; detail: string; action: string }[];
-  } | null;
-};
-
 export type DiagnosisCause = {
   code: "TECHNICAL" | "SOURCE_GAP" | "NO_ANSWER_PAGE" | "WINNING_CRITERIA" | "NOT_RECOMMENDED";
   title: string;

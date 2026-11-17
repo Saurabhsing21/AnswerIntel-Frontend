@@ -20,8 +20,7 @@ const POINTS = [
   { icon: ListChecks, title: "Know what to fix first", body: "A ranked list of actions, then a before and after to prove what worked." },
 ];
 
-/** `prefill`: brand details carried from the website's free check, so setup starts filled in. */
-export function AuthForm({ mode, plan, interval = "month", invite, prefill }: { mode: "login" | "register"; plan?: PaidPlan; interval?: Interval; invite?: string; prefill?: string }) {
+export function AuthForm({ mode, plan, interval = "month", invite }: { mode: "login" | "register"; plan?: PaidPlan; interval?: Interval; invite?: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -48,7 +47,7 @@ export function AuthForm({ mode, plan, interval = "month", invite, prefill }: { 
         window.location.replace(`/subscribe?plan=${chosen.key}&interval=${interval}`);
         return;
       }
-      router.push(prefill ? `/projects/new?${prefill}` : "/projects");
+      router.push("/projects");
       router.refresh();
     } catch (err) {
       setError((err as ApiError).message);
