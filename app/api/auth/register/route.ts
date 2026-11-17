@@ -1,6 +1,7 @@
-import { login } from "@/app/api/auth/login/route";
-import { BACKEND_URL, errorBody, visitorHeaders } from "@/lib/api/server";
+import { cookies } from "next/headers";
+import { BACKEND_URL, SIGNUP_COOKIE, cookieOptions, errorBody, visitorHeaders } from "@/lib/api/server";
 
+/** Step 1 of sign-up: the API emails a code. The pending sign-up waits in an HttpOnly cookie until the code is entered. */
 export async function POST(request: Request) {
   const { email, password } = await request.json().catch(() => ({}));
   try {
@@ -10,11 +11,12 @@ export async function POST(request: Request) {
       body: JSON.stringify({ email, password }),
       cache: "no-store",
     });
-    if (!res.ok) {
-      const data = await res.json().catch(() => null);
-      return Response.json(data ?? errorBody("REGISTER_FAILED", "Could not create the account."), { status: res.status });
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !data?.signup_token) {
+      return Response.json(data ?? errorBody("REGISTER_FAILED", "Could not create the account."), { status: res.status || 400 });
     }
-    return await login(request, String(email), String(password));
+    (await cookies()).set(SIGNUP_COOKIE, data.signup_token, { ...cookieOptions, maxAge: 60 * 15 });
+    return Response.json({ ok: true, email: data.email });
   } catch {
     return Response.json(errorBody("API_UNAVAILABLE", "The Seenlense API is not reachable."), { status: 502 });
   }
