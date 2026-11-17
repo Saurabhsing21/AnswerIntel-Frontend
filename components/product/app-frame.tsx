@@ -250,7 +250,7 @@ export function AppFrame() {
           </div>
 
           {/* Lower half of the dashboard: what to do next, and the raw answers behind the numbers. */}
-          <div className="grid border-t border-line md:grid-cols-2">
+          <div className="grid grid-cols-1 border-t border-line md:grid-cols-2">
             <div className="border-line p-4 md:border-r">
               <p className="text-[12px] font-medium">Top opportunities</p>
               <ul className="mt-3 space-y-2">
