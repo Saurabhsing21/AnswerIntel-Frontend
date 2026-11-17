@@ -9,7 +9,9 @@ import { WAITLIST_ONLY } from "@/lib/flags";
 import { cx } from "@/lib/cx";
 import { appHref } from "@/lib/urls";
 
-const grid = "grid grid-cols-[minmax(220px,1.4fr)_repeat(3,minmax(150px,1fr))]";
+const grid = "grid grid-cols-[minmax(150px,1.4fr)_repeat(3,minmax(130px,1fr))] lg:grid-cols-[minmax(220px,1.4fr)_repeat(3,minmax(150px,1fr))]";
+// Feature names stay pinned while the plan columns scroll sideways on small screens.
+const pinned = "sticky left-0 z-[1] lg:static";
 
 function Value({ value }: { value: boolean | string | Engine[] }) {
   if (Array.isArray(value)) return <EngineLogos engines={value} className="justify-center" />;
@@ -24,10 +26,10 @@ export function PricingCompare() {
   return (
     // Scrolls sideways on small screens; on desktop it must not, or the plan header could not stick.
     <div className="overflow-x-auto lg:overflow-visible">
-      <div className="min-w-[720px]">
+      <div className="min-w-[540px] lg:min-w-[720px]">
         {/* Plan header stays in view while the long table scrolls past. */}
         <div className={cx(grid, "z-10 border-b border-line-strong bg-page lg:sticky lg:top-[84px]")}>
-          <div className="py-4" />
+          <div className={cx(pinned, "bg-page py-4")} />
           {PLANS.map((p) => (
             <div key={p.key} className="flex flex-col items-center gap-2 px-3 py-4 text-center">
               <p className="text-[15px] font-medium text-ink">
@@ -49,10 +51,10 @@ export function PricingCompare() {
         {comparison(period).map((group) => (
           <section key={group.title} className="mt-10">
             <h3 className="mb-3 font-display text-[22px] font-semibold tracking-[-0.02em]">{group.title}</h3>
-            <div className="overflow-hidden rounded-[18px] border border-line-strong bg-surface">
+            <div className="overflow-clip rounded-[18px] border border-line-strong bg-surface">
               {group.rows.map((row, i) => (
                 <div key={row.label} className={cx(grid, "items-center", i > 0 && "border-t border-line")}>
-                  <div className="px-5 py-3.5">
+                  <div className={cx(pinned, "bg-surface px-4 py-3.5 lg:px-5")}>
                     <p className="text-[14px] text-ink">{row.label}</p>
                     {row.hint && <p className="text-[12px] text-muted">{row.hint}</p>}
                   </div>
