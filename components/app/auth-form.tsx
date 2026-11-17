@@ -25,6 +25,9 @@ export function AuthForm({ mode, plan, interval = "month", invite, prefill }: { 
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  // Sign-up waits here until the code we emailed is entered: no account exists for an address nobody has opened.
+  const [pending, setPending] = useState<{ email: string; password: string } | null>(null);
+  const [sent, setSent] = useState(false);
   const isLogin = mode === "login";
   const chosen = PLANS.find((p) => p.key === plan);
 
@@ -53,10 +56,30 @@ export function AuthForm({ mode, plan, interval = "month", invite, prefill }: { 
     }
   }
 
+  async function sendCode(email: string, password: string) {
+    setBusy(true);
+    setError("");
+    try {
+      await api("/api/auth/register", { method: "POST", json: { email, password } });
+      setPending({ email, password });
+      setSent(true);
+    } catch (err) {
+      setError((err as ApiError).message);
+    }
+    setBusy(false);
+  }
+
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
-    enter(() => api(`/api/auth/${mode}`, { method: "POST", json: { email: form.get("email"), password: form.get("password") } }));
+    if (isLogin) enter(() => api("/api/auth/login", { method: "POST", json: { email: form.get("email"), password: form.get("password") } }));
+    else sendCode(String(form.get("email") ?? ""), String(form.get("password") ?? ""));
+  }
+
+  function onVerify(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const code = String(new FormData(e.currentTarget).get("code") ?? "").trim();
+    enter(() => api("/api/auth/register/verify", { method: "POST", json: { code } }));
   }
 
   const onGoogle = (credential: string) => enter(() => api("/api/auth/google", { method: "POST", json: { credential } }));
@@ -82,37 +105,63 @@ export function AuthForm({ mode, plan, interval = "month", invite, prefill }: { 
                 <span className="text-[12px] text-muted">You pay on the next step</span>
               </div>
             )}
-            <div className="mt-6">
-              <GoogleButton text={isLogin ? "signin_with" : "continue_with"} onCredential={onGoogle} />
-            </div>
-            {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
-              <p className="my-5 flex items-center gap-3 text-[12px] text-faint before:h-px before:flex-1 before:bg-line after:h-px after:flex-1 after:bg-line">or with email</p>
+            {pending ? (
+              <form onSubmit={onVerify} className="mt-6 space-y-4" noValidate>
+                <p className="text-[14px] text-muted">
+                  We sent a 6-digit code to <span className="font-medium text-ink">{pending.email}</span>. Enter it to create your account.
+                </p>
+                <Field label="Code">
+                  <input name="code" required inputMode="numeric" autoComplete="one-time-code" maxLength={6} pattern="[0-9]{6}" autoFocus className={inputClass} placeholder="123456" />
+                </Field>
+                {error && <ErrorBanner message={error} />}
+                <button type="submit" disabled={busy} className={cx(buttonClass("primary"), "w-full")}>
+                  {busy ? "Please wait..." : chosen ? "Verify and pay" : "Verify and create account"}
+                  <ButtonArrow />
+                </button>
+                <p className="flex justify-between text-[12px] text-muted">
+                  <button type="button" disabled={busy} onClick={() => sendCode(pending.email, pending.password)} className="underline-offset-2 hover:text-ink hover:underline">
+                    {sent ? "Send a new code" : "Resend code"}
+                  </button>
+                  <button type="button" onClick={() => { setPending(null); setError(""); }} className="underline-offset-2 hover:text-ink hover:underline">
+                    Use a different email
+                  </button>
+                </p>
+              </form>
+            ) : (
+              <>
+              <div className="mt-6">
+                <GoogleButton text={isLogin ? "signin_with" : "continue_with"} onCredential={onGoogle} />
+              </div>
+              {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+                <p className="my-5 flex items-center gap-3 text-[12px] text-faint before:h-px before:flex-1 before:bg-line after:h-px after:flex-1 after:bg-line">or with email</p>
+              )}
+              <form onSubmit={onSubmit} className={cx("space-y-4", !process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && "mt-6")} noValidate>
+                <Field label="Work email">
+                  <input name="email" type="email" required autoComplete="email" className={inputClass} placeholder="you@company.com" />
+                </Field>
+                <Field label="Password" hint={isLogin ? undefined : "At least 8 characters."}>
+                  <PasswordInput name="password" required minLength={8} autoComplete={isLogin ? "current-password" : "new-password"} />
+                </Field>
+                {isLogin && (
+                  <p className="-mt-2 text-right text-[12px]">
+                    <Link href="/forgot-password" className="text-muted underline-offset-2 hover:text-ink hover:underline">Forgot your password?</Link>
+                  </p>
+                )}
+                {error && <ErrorBanner message={error} />}
+                <button type="submit" disabled={busy} className={cx(buttonClass("primary"), "w-full")}>
+                  {busy ? "Please wait..." : isLogin ? "Log in" : chosen ? "Create account and pay" : "Create account"}
+                  <ButtonArrow />
+                </button>
+                {!isLogin && (
+                  <p className="text-center text-[12px] text-faint">
+                    By creating an account you agree to the{" "}
+                    <a href={siteHref("/terms")} className="underline underline-offset-2 hover:text-ink">Terms</a> and{" "}
+                    <a href={siteHref("/privacy")} className="underline underline-offset-2 hover:text-ink">Privacy Policy</a>.
+                  </p>
+                )}
+              </form>
+              </>
             )}
-            <form onSubmit={onSubmit} className={cx("space-y-4", !process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && "mt-6")} noValidate>
-              <Field label="Work email">
-                <input name="email" type="email" required autoComplete="email" className={inputClass} placeholder="you@company.com" />
-              </Field>
-              <Field label="Password" hint={isLogin ? undefined : "At least 8 characters."}>
-                <PasswordInput name="password" required minLength={8} autoComplete={isLogin ? "current-password" : "new-password"} />
-              </Field>
-              {isLogin && (
-                <p className="-mt-2 text-right text-[12px]">
-                  <Link href="/forgot-password" className="text-muted underline-offset-2 hover:text-ink hover:underline">Forgot your password?</Link>
-                </p>
-              )}
-              {error && <ErrorBanner message={error} />}
-              <button type="submit" disabled={busy} className={cx(buttonClass("primary"), "w-full")}>
-                {busy ? "Please wait..." : isLogin ? "Log in" : chosen ? "Create account and pay" : "Create account"}
-                <ButtonArrow />
-              </button>
-              {!isLogin && (
-                <p className="text-center text-[12px] text-faint">
-                  By creating an account you agree to the{" "}
-                  <a href={siteHref("/terms")} className="underline underline-offset-2 hover:text-ink">Terms</a> and{" "}
-                  <a href={siteHref("/privacy")} className="underline underline-offset-2 hover:text-ink">Privacy Policy</a>.
-                </p>
-              )}
-            </form>
           </div>
           <p className="mt-5 text-center text-[13px] text-muted lg:text-left">
             {isLogin ? "New to Seenlense? " : "Already have an account? "}

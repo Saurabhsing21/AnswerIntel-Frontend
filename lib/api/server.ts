@@ -4,6 +4,7 @@ export const BACKEND_URL = (process.env.BACKEND_URL || "http://localhost:8000").
 const PROXY_SHARED_SECRET = process.env.PROXY_SHARED_SECRET ?? "";
 export const TOKEN_COOKIE = "ai_session";
 export const REFRESH_COOKIE = "ai_refresh";
+export const SIGNUP_COOKIE = "ai_signup"; // a pending sign-up, until the emailed code is entered
 
 // Both cookies live as long as the refresh token (30 days). The access token inside the first one
 // expires after minutes; the proxy notices the 401 and renews it, so the user is never signed out mid-work.
