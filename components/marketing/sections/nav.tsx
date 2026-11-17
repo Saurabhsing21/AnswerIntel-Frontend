@@ -18,7 +18,7 @@ import { IconTile } from "@/components/ui/icon-tile";
 import { Logo } from "@/components/ui/logo";
 import { cx } from "@/lib/cx";
 import { appHref } from "@/lib/urls";
-import { FREE_CHECK, WAITLIST_ONLY } from "@/lib/flags";
+import { WAITLIST_ONLY } from "@/lib/flags";
 import { ease } from "@/lib/motion";
 
 const product = [
@@ -33,7 +33,6 @@ const links = [
   { label: "How it works", href: "/#how-it-works" },
   { label: "Pricing", href: "/pricing" },
   { label: "Blog", href: "/blog" },
-  ...(FREE_CHECK ? [{ label: "Free check", href: "/check" }] : []),
   { label: "FAQ", href: "/#faq" },
 ];
 

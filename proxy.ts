@@ -12,7 +12,7 @@ function waitlistOnly(request: NextRequest) {
     if (OPEN_API.has(pathname)) return NextResponse.next();
     return NextResponse.json({ error: { code: "NOT_FOUND", message: "Not found." } }, { status: 404 });
   }
-  if (!isAppPath(pathname) && pathname !== "/check") return NextResponse.next();
+  if (!isAppPath(pathname)) return NextResponse.next();
   const url = new URL("/", SITE_URL || request.nextUrl.origin);
   url.hash = "waitlist";
   return NextResponse.redirect(url);
