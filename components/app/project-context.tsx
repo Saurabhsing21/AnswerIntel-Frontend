@@ -60,7 +60,13 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const { reload: reloadWorkspaces } = workspaces;
 
   // New or renamed projects and workspaces should appear in the switcher as soon as you land back in the app.
+  // Not on the first render: the two requests above have only just been sent.
+  const firstPath = useRef(true);
   useEffect(() => {
+    if (firstPath.current) {
+      firstPath.current = false;
+      return;
+    }
     reloadProjects();
     reloadWorkspaces();
   }, [pathname, reloadProjects, reloadWorkspaces]);
