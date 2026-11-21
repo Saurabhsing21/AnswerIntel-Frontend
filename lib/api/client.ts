@@ -24,6 +24,7 @@ export async function api<T>(path: string, init?: RequestInit & { json?: unknown
     body: json !== undefined ? JSON.stringify(json) : rest.body,
   });
   const data = await res.json().catch(() => null);
+  if (path.startsWith("/api/auth/") || res.status === 401) cache.clear(); // signing in or out: never show one person's data to the next
   if (!res.ok) {
     if (res.status === 401 && !path.startsWith("/api/auth")) {
       window.dispatchEvent(new Event(UNAUTHORIZED_EVENT)); // AppShell sends the user to /login
@@ -35,20 +36,42 @@ export async function api<T>(path: string, init?: RequestInit & { json?: unknown
   return data as T;
 }
 
+// The last answer for each GET path, so a page you come back to shows at once while a fresh copy loads.
+const cache = new Map<string, unknown>();
+// Requests under way, so components asking for the same path together (the sidebar and the banner both want
+// /auth/me) share one call: the API runs on a small server where every extra request makes the others wait.
+const inflight = new Map<string, Promise<unknown>>();
+
+/** A reload or a poll always asks the API again; a first load joins a request for the same path already under way. */
+function load<T>(path: string, fresh: boolean): Promise<T> {
+  let pending = fresh ? undefined : inflight.get(path);
+  if (!pending) {
+    const request: Promise<unknown> = api<T>(path)
+      .then((result) => {
+        cache.set(path, result);
+        return result;
+      })
+      .finally(() => inflight.get(path) === request && inflight.delete(path));
+    inflight.set(path, request);
+    pending = request;
+  }
+  return pending as Promise<T>;
+}
+
 /**
  * GET a resource. `refreshMs` may depend on the latest data, so a page can poll
  * only while, say, a scan is running.
  */
 export function useApi<T>(path: string | null, refreshMs?: number | ((data: T | null) => number | undefined)) {
-  const [data, setData] = useState<T | null>(null);
+  const [data, setData] = useState<T | null>(() => (path && cache.has(path) ? (cache.get(path) as T) : null));
   const [error, setError] = useState<ApiError | null>(null);
-  const [loading, setLoading] = useState(Boolean(path));
+  const [loading, setLoading] = useState(Boolean(path) && !(path && cache.has(path)));
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
     if (!path) return;
     let cancelled = false;
-    api<T>(path)
+    load<T>(path, tick > 0)
       .then((result) => {
         if (cancelled) return;
         setData(result);
