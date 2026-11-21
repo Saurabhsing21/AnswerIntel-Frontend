@@ -5,7 +5,7 @@ import { PLANS } from "@/lib/billing/plans";
 import { PUBLIC_URL } from "@/lib/urls";
 
 export const metadata: Metadata = {
-  title: "About Seenlense",
+  title: "About Seenlense, the AI Visibility Tracker",
   description: "Seenlense is an AI search visibility tracker for founders and small teams, built by Saurabh Singh.",
   alternates: { canonical: "/about" },
 };

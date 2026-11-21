@@ -15,8 +15,8 @@ import { PLANS, PRICING_FAQ } from "@/lib/billing/plans";
 import { PUBLIC_URL } from "@/lib/urls";
 
 export const metadata: Metadata = {
-  title: "Pricing - Seenlense",
-  description: "Seenlense plans from $20 a month: track how ChatGPT, Perplexity and Gemini recommend your brand against competitors.",
+  title: "AI Visibility Tracker Pricing, From $20/Month | Seenlense",
+  description: "AI visibility tracking from $20 a month: track how ChatGPT, Perplexity and Gemini recommend your brand against competitors. One free scan, no card.",
   alternates: { canonical: "/pricing" },
 };
 

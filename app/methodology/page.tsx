@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LegalPage } from "@/components/marketing/legal-page";
 
 export const metadata: Metadata = {
-  title: "Methodology - Seenlense",
+  title: "How We Measure AI Search Visibility | Seenlense Methodology",
   description: "How Seenlense measures AI search visibility: the questions, the engines, how answers are read, and how each rate is calculated.",
   alternates: { canonical: "/methodology" },
 };

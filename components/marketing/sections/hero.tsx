@@ -2,9 +2,10 @@ import { Reveal } from "@/components/marketing/effects/reveal";
 import { HeroMascot } from "@/components/marketing/mascot/hero-mascot";
 import { TrialCta } from "@/components/marketing/trial-cta";
 import { WaitlistForm } from "@/components/marketing/waitlist-form";
+import { EngineRotator } from "@/components/marketing/engine-rotator";
+import { Mark } from "@/components/ui/mark";
 import { AppFrame } from "@/components/product/app-frame";
 import { EngineIcon } from "@/components/product/engine-icon";
-import { Mark } from "@/components/ui/mark";
 import type { Engine } from "@/lib/data";
 import { WAITLIST_ONLY } from "@/lib/flags";
 
@@ -38,15 +39,15 @@ export function Hero() {
 
         <Reveal delay={0.05}>
           <h1 className="mt-7 font-display text-[40px] font-semibold leading-[1.02] tracking-[-0.045em] text-balance sm:text-[52px] md:text-[68px]">
-            See how AI <Mark delay={0.45}>recommends you,</Mark> and who it picks instead
+            Get your brand <Mark delay={0.45}>recommended</Mark> by{" "}
+            <span className="sr-only">Claude, Gemini, ChatGPT, Perplexity, DeepSeek, Llama and Mistral</span>
+            <EngineRotator /> and see who AI picks instead
           </h1>
         </Reveal>
 
         <Reveal delay={0.1}>
           <p className="mt-6 max-w-[560px] text-[17px] leading-relaxed text-muted md:text-[18px]">
-            Seenlense is an AI search visibility tracker. It asks ChatGPT, Perplexity, Gemini and Claude the questions your
-            buyers ask, every week, and shows how often you are mentioned and recommended against your competitors, and what to
-            fix.
+            Seenlense is the AI visibility tracker that shows who AI recommends instead of you, and what to fix.
           </p>
         </Reveal>
 

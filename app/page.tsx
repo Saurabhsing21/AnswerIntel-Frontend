@@ -43,7 +43,7 @@ const structuredData = {
       applicationCategory: "BusinessApplication",
       operatingSystem: "Web",
       url: PUBLIC_URL,
-      description: "AI search visibility tracking: see how ChatGPT, Perplexity, Gemini and Claude mention and recommend your brand against competitors, and what to fix.",
+      description: "AI visibility tracker: see how often ChatGPT, Perplexity, Gemini and Claude mention and recommend your brand against competitors, why they win, and what to fix.",
       publisher: { "@id": `${PUBLIC_URL}/#organization` },
       offers: PLANS.map((p) => ({ "@type": "Offer", name: p.name, price: p.monthly, priceCurrency: "USD", url: `${PUBLIC_URL}/pricing` })),
     },
