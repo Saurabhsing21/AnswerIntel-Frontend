@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowClockwise, Calendar, CircleNotch, Export, FileCsv, FileHtml, FilePdf, List, Play, Plus, SquaresFour } from "@phosphor-icons/react";
+import { ArrowClockwise, Calendar, CircleNotch, Export, FileCsv, FileHtml, FilePdf, List, Play, Plus, SquaresFour, Stop } from "@phosphor-icons/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -107,7 +107,7 @@ function ExportMenu() {
 
 export function Topbar({ onMenu }: { onMenu: () => void }) {
   const pathname = usePathname();
-  const { projectId, project, latestScan, scans, starting, startScan, billing } = useProject();
+  const { projectId, project, latestScan, scans, starting, startScan, stopping, stopScan, billing } = useProject();
   const active = isScanActive(latestScan);
   // What scans really ask: the project's engines, minus any the plan no longer includes (scans skip those).
   const allowed = billing?.limits.allowed_engines;
@@ -160,6 +160,11 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
           {projectId ? (
             <>
               <ExportMenu />
+              {active && (
+                <button type="button" onClick={stopScan} disabled={stopping || latestScan?.status === "stopping"} className={buttonClass("secondary", "sm")}>
+                  <Stop size={14} weight="fill" /> {latestScan?.status === "stopping" ? "Stopping" : "Stop scan"}
+                </button>
+              )}
               <button type="button" onClick={startScan} disabled={active || starting} className={buttonClass("primary", "sm")}>
                 {active || starting ? <CircleNotch size={14} className="animate-spin" /> : scans.length ? <ArrowClockwise size={14} weight="bold" /> : <Play size={14} weight="fill" />}
                 {active ? "Scanning" : scans.length ? "Run scan" : "Run first scan"}

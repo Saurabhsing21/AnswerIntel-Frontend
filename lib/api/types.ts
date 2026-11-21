@@ -84,7 +84,7 @@ export type Prompt = {
 
 export type Scan = {
   id: number;
-  status: "queued" | "running" | "completed" | "partial" | "failed";
+  status: "queued" | "running" | "stopping" | "completed" | "partial" | "failed";
   /** "retest" = only one opportunity's prompts, to check a fix. */
   kind?: "full" | "retest";
   provider: string | null;

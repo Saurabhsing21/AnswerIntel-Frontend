@@ -15,6 +15,7 @@ const STATUS = {
   partial: { label: "Partial", icon: Warning, tone: "text-[#a16207]" },
   failed: { label: "Failed", icon: XCircle, tone: "text-down" },
   running: { label: "Running", icon: CircleNotch, tone: "text-ink" },
+  stopping: { label: "Stopping", icon: CircleNotch, tone: "text-muted" },
   queued: { label: "Queued", icon: CircleNotch, tone: "text-muted" },
 } as const;
 
@@ -116,7 +117,7 @@ export default function ScansPage() {
                 <li key={scan.id}>
                   <Link href={`/projects/${id}/scans/${scan.id}`} className="group grid items-center gap-x-4 gap-y-1 px-5 py-3.5 transition-colors hover:bg-[#fbfbfa] md:grid-cols-[1.4fr_1fr_1fr_1.2fr_28px]">
                     <span className="flex items-center gap-3">
-                      <Icon size={20} weight="fill" className={cx(s.tone, (scan.status === "running" || scan.status === "queued") && "animate-spin")} />
+                      <Icon size={20} weight="fill" className={cx(s.tone, isScanActive(scan) && "animate-spin")} />
                       <span>
                         <span className="block text-[13px] font-medium text-ink">Scan #{scan.id}</span>
                         <span className="block text-[11px] text-muted">

@@ -7,7 +7,8 @@ import { loadPaddle } from "@/lib/billing/paddle";
 import type { Billing, Project, Scan, Schedule, Workspace } from "@/lib/api/types";
 import { useToast } from "@/components/app/toast";
 
-export const isScanActive = (scan?: Scan | null) => scan?.status === "queued" || scan?.status === "running";
+// "stopping" counts as active: pages keep polling until the scan has really ended.
+export const isScanActive = (scan?: Scan | null) => scan?.status === "queued" || scan?.status === "running" || scan?.status === "stopping";
 
 type ProjectState = {
   projectId: string | null;
@@ -24,6 +25,9 @@ type ProjectState = {
   scanKey: string;
   starting: boolean;
   startScan: () => Promise<void>;
+  stopping: boolean;
+  /** Stops the latest scan: answers already collected are kept and only those use credits. */
+  stopScan: () => Promise<void>;
   reloadScans: () => void;
   reloadSchedule: () => void;
   reloadProjects: () => void;
@@ -141,6 +145,23 @@ function ScopedProvider({
     }
   }, [projectId, reloadScans, reloadBilling, toast]);
 
+  const [stopping, setStopping] = useState(false);
+  const latestScanId = latestScan?.id;
+  const stopScan = useCallback(async () => {
+    if (!projectId || !latestScanId) return;
+    setStopping(true);
+    try {
+      await api(`/projects/${projectId}/scans/${latestScanId}/stop`, { method: "POST" });
+      toast.push("Stopping the scan. Answers it already collected are kept.", "info");
+      reloadScans();
+      reloadBilling(); // credits: only saved answers count
+    } catch (e) {
+      toast.push((e as ApiError).message, "error");
+    } finally {
+      setStopping(false);
+    }
+  }, [projectId, latestScanId, reloadScans, reloadBilling, toast]);
+
   const value = useMemo<ProjectState>(
     () => ({
       projectId,
@@ -155,13 +176,15 @@ function ScopedProvider({
       scanKey,
       starting,
       startScan,
+      stopping,
+      stopScan,
       reloadScans,
       reloadSchedule: scheduleQ.reload,
       reloadProjects,
       reloadBilling,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [projectId, projects, projectsLoading, workspaces, scansQ.data, scheduleQ.data, billingQ.data, scanKey, starting, startScan, reloadScans, scheduleQ.reload, reloadProjects, reloadBilling],
+    [projectId, projects, projectsLoading, workspaces, scansQ.data, scheduleQ.data, billingQ.data, scanKey, starting, startScan, stopping, stopScan, reloadScans, scheduleQ.reload, reloadProjects, reloadBilling],
   );
 
   return <ProjectContext.Provider value={value}>{children}</ProjectContext.Provider>;
