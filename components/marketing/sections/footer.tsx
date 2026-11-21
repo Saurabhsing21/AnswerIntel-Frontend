@@ -21,7 +21,7 @@ export function Footer() {
         <div>
           <Logo />
           <p className="mt-3 max-w-[280px] text-[14px] leading-relaxed text-muted">
-            AI visibility intelligence for founders and small teams.
+            AI visibility tracker for founders, marketing teams and agencies.
           </p>
         </div>
         <nav aria-label="Footer" className="md:ml-auto">

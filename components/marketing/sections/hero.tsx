@@ -38,15 +38,14 @@ export function Hero() {
 
         <Reveal delay={0.05}>
           <h1 className="mt-7 font-display text-[40px] font-semibold leading-[1.02] tracking-[-0.045em] text-balance sm:text-[52px] md:text-[68px]">
-            See how AI <Mark delay={0.45}>recommends you,</Mark> and who it picks instead
+            Get your brand <Mark delay={0.45}>recommended by ChatGPT,</Mark> Perplexity and Gemini
           </h1>
         </Reveal>
 
         <Reveal delay={0.1}>
           <p className="mt-6 max-w-[560px] text-[17px] leading-relaxed text-muted md:text-[18px]">
-            Seenlense is an AI search visibility tracker. It asks ChatGPT, Perplexity, Gemini and Claude the questions your
-            buyers ask, every week, and shows how often you are mentioned and recommended against your competitors, and what to
-            fix.
+            Seenlense is the AI visibility tracker that asks ChatGPT, Perplexity, Gemini and Claude the questions your buyers
+            ask, every week. See who AI recommends instead of you, why, and exactly what to fix.
           </p>
         </Reveal>
 
