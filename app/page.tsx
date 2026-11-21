@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { JsonLd } from "@/components/blog/json-ld";
+import { DemoVideo } from "@/components/marketing/sections/demo-video";
 import { Experiments } from "@/components/marketing/sections/experiments";
 import { Faq } from "@/components/marketing/sections/faq";
 import { FeaturesBento } from "@/components/marketing/sections/features-bento";
@@ -61,6 +62,7 @@ export default function Home() {
       <Nav />
       <main id="top">
         <Hero />
+        <DemoVideo />
         <Scan />
         <FeaturesBento />
         <HeadToHead />
