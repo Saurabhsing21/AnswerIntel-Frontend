@@ -1,20 +1,79 @@
 "use client";
 
-import { ArrowRight, CalendarCheck, ChartLine, Crown, Lightbulb, Plus, ShareNetwork, ShieldCheck, User, UsersThree } from "@phosphor-icons/react";
+import { ArrowRight, CalendarCheck, ChartLine, CircleNotch, Crown, Lightbulb, Plus, ShareNetwork, ShieldCheck, Trash, User, UsersThree } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { BrandTile } from "@/components/app/brand-tile";
 import { useProject } from "@/components/app/project-context";
-import { PageHeader, Skeleton } from "@/components/app/ui";
+import { useToast } from "@/components/app/toast";
+import { ErrorBanner, inputClass, PageHeader, Skeleton } from "@/components/app/ui";
+import { buttonClass } from "@/components/ui/button";
+import { api, ApiError } from "@/lib/api/client";
 import { YOU_COLOR } from "@/lib/brand";
 import type { Project, Role } from "@/lib/api/types";
+import { cx } from "@/lib/cx";
 
 const ROLE = { owner: { label: "Owner", icon: Crown }, admin: { label: "Admin", icon: ShieldCheck }, member: { label: "Member", icon: User } } as const;
 const host = (url: string) => url.replace(/^https?:\/\//, "").replace(/\/$/, "");
 
-function ProjectCard({ project }: { project: Project }) {
+/** Same rule as the project's settings page: type the name, because a project takes all its scans and reports with it. */
+function DeleteDialog({ project, onClose }: { project: Project; onClose: () => void }) {
+  const toast = useToast();
+  const { reloadProjects } = useProject();
+  const [confirm, setConfirm] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function remove() {
+    setDeleting(true);
+    setError(null);
+    try {
+      await api(`/projects/${project.id}`, { method: "DELETE" });
+      toast.push(`${project.brand_name} was deleted.`, "success");
+      reloadProjects();
+      onClose();
+    } catch (e) {
+      setError((e as ApiError).message);
+      setDeleting(false);
+    }
+  }
+
+  return (
+    <div role="dialog" aria-modal="true" aria-labelledby="delete-project-title" className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4">
+      <form
+        className="w-full max-w-md space-y-4 rounded-[16px] bg-surface p-6 shadow-xl"
+        onSubmit={(e) => {
+          e.preventDefault();
+          remove();
+        }}
+      >
+        <h2 id="delete-project-title" className="text-[16px] font-semibold text-ink">Delete {project.brand_name}?</h2>
+        <p className="text-[13px] text-muted">Removes its competitors, questions, scans, reports and experiments. It cannot be undone.</p>
+        <input
+          className={cx(inputClass, "h-9 w-full")}
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          autoComplete="off"
+          autoFocus
+          placeholder={`Type ${project.brand_name} to confirm`}
+          aria-label={`Type ${project.brand_name} to confirm`}
+        />
+        {error && <ErrorBanner message={error} />}
+        <div className="flex gap-2">
+          <button type="submit" disabled={confirm !== project.brand_name || deleting} className="inline-flex h-9 items-center gap-2 rounded-full bg-down px-4 text-sm font-medium text-white transition-opacity disabled:opacity-40">
+            {deleting ? <CircleNotch size={14} className="animate-spin" /> : <Trash size={14} />} Delete project
+          </button>
+          <button type="button" disabled={deleting} className={buttonClass("secondary", "sm")} onClick={onClose}>Cancel</button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function ProjectCard({ project, canDelete }: { project: Project; canDelete: boolean }) {
   const base = `/projects/${project.id}`;
+  const [deleting, setDeleting] = useState(false);
   return (
     <div className="group flex flex-col rounded-[16px] border border-line-strong bg-surface transition-shadow hover:shadow-[0_16px_40px_-24px_rgb(0_0_0/0.3)]">
       <Link href={base} className="flex flex-1 flex-col p-5">
@@ -38,7 +97,13 @@ function ProjectCard({ project }: { project: Project }) {
         <Link href={`${base}/reports`} className="flex flex-1 items-center justify-center gap-1.5 py-2.5 transition-colors hover:bg-[#fbfbfa] hover:text-ink">
           <ChartLine size={14} /> Reports
         </Link>
+        {canDelete && (
+          <button type="button" onClick={() => setDeleting(true)} className="flex items-center justify-center gap-1.5 px-4 py-2.5 text-muted transition-colors hover:bg-[#fdf8f8] hover:text-down" aria-label={`Delete ${project.brand_name}`}>
+            <Trash size={14} />
+          </button>
+        )}
       </div>
+      {deleting && <DeleteDialog project={project} onClose={() => setDeleting(false)} />}
     </div>
   );
 }
@@ -74,7 +139,7 @@ export default function ProjectsPage() {
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {mine.map((p) => (
-                    <ProjectCard key={p.id} project={p} />
+                    <ProjectCard key={p.id} project={p} canDelete={workspace.role === "owner" || workspace.role === "admin"} />
                   ))}
                   <Link
                     href={`/projects/new?workspace=${workspace.id}`}

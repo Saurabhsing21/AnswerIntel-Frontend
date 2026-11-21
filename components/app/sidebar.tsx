@@ -25,7 +25,7 @@ const itemClass = (active: boolean) =>
     active ? "bg-mark-soft font-medium text-ink" : "text-ink-2 hover:bg-black/[0.04] hover:text-ink",
   );
 
-const STATUS_COLOR = { completed: "bg-up", partial: "bg-[#eab308]", failed: "bg-down", queued: "bg-ink", running: "bg-ink" } as const;
+const STATUS_COLOR = { completed: "bg-up", partial: "bg-[#eab308]", failed: "bg-down", queued: "bg-ink", running: "bg-ink", stopping: "bg-faint" } as const;
 
 function ProjectSwitcher({ onNavigate }: { onNavigate?: () => void }) {
   const { project, projects, workspaces } = useProject();
